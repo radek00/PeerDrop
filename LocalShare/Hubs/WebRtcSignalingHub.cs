@@ -1,60 +1,53 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
+using System.Text.Json.Nodes;
 
-namespace LocalShare.Hubs
+namespace LocalShare.Hubs;
+
+public class WebRtcSignalingHub : Hub
 {
-    public class WebRtcSignalingHub: Hub
+    public class SdpMessage
     {
-        public static readonly string Url = "/signalling";
+        public string Sdp { get; set; }
+        public string Type { get; set; }
+    }
 
-        private static readonly ConcurrentDictionary<string, string> Connections = new ConcurrentDictionary<string, string>();
+    public static readonly string Url = "/signalling";
+    private static readonly ConcurrentDictionary<string, string> Connections = new ConcurrentDictionary<string, string>();
 
-        public override Task OnConnectedAsync()
+    public async Task Join()
+    {
+        Connections.TryAdd(Context.ConnectionId, Context.ConnectionId);
+        await Clients.Client(Context.ConnectionId).SendAsync("UpdateSelf", Context.ConnectionId);
+        await Clients.Others.SendAsync("UpdateClientList", Context.ConnectionId);
+    }
+
+    public async Task SendMessage(string user, string message)
+    {
+        await Clients.All.SendAsync("ReceiveMessage", user, message);
+    }
+
+    public async Task SendOffer(string targetClientId, SdpMessage offer)
+    {
+        if (Connections.TryGetValue(targetClientId, out var targetConnectionId))
         {
-            // Add the connection ID to the dictionary
-            Connections.TryAdd(Context.ConnectionId, Context.ConnectionId);
-            // Notify all clients about the updated list of connected clients
-            Clients.All.SendAsync("UpdateClientList", Context.ConnectionId);
-            return base.OnConnectedAsync();
+            await Clients.Client(targetConnectionId).SendAsync("ReceiveOffer", Context.ConnectionId, offer);
         }
+    }
 
-        public override Task OnDisconnectedAsync(Exception? exception)
+    public async Task SendAnswer(string targetClientId, SdpMessage answer)
+    {
+        if (Connections.TryGetValue(targetClientId, out var targetConnectionId))
         {
-            // Remove the connection ID from the dictionary
-            Connections.TryRemove(Context.ConnectionId, out var removedId);
-            // Notify all clients about the updated list of connected clients
-            Clients.All.SendAsync("UpdateClientList", removedId);
-            return base.OnDisconnectedAsync(exception);
+            await Clients.Client(targetConnectionId).SendAsync("ReceiveAnswer", Context.ConnectionId, answer);
         }
+    }
 
-        public async Task SendMessage(string user, string message)
+    public async Task SendIceCandidate(string targetClientId, object candidate)
+    {
+        if (Connections.TryGetValue(targetClientId, out var targetConnectionId))
         {
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
+            await Clients.Client(targetConnectionId).SendAsync("ReceiveIceCandidate", Context.ConnectionId, candidate);
         }
-
-        public async Task SendOffer(string targetConnectionId, string offer)
-        {
-            if (Connections.ContainsKey(targetConnectionId))
-            {
-                await Clients.Client(targetConnectionId).SendAsync("ReceiveOffer", Context.ConnectionId, offer);
-            }
-        }
-
-        public async Task SendAnswer(string targetConnectionId, string answer)
-        {
-            if (Connections.ContainsKey(targetConnectionId))
-            {
-                await Clients.Client(targetConnectionId).SendAsync("ReceiveAnswer", Context.ConnectionId, answer);
-            }
-        }
-
-        public async Task SendIceCandidate(string targetConnectionId, string candidate)
-        {
-            if (Connections.ContainsKey(targetConnectionId))
-            {
-                await Clients.Client(targetConnectionId).SendAsync("ReceiveIceCandidate", Context.ConnectionId, candidate);
-            }
-        }
-
     }
 }

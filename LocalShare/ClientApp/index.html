@@ -1,33 +1,156 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>SignalR Demo</title>
+    <title>SignalR WebRTC Demo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
 </head>
 <body>
-    <h1>SignalR Demo</h1>
+    <h1>SignalR WebRTC Demo</h1>
     <input type="text" id="userInput" placeholder="Enter your name" />
+    <button onclick="startConnection()">Start Connection</button>
+    <select id="clientSelect"></select>
     <input type="text" id="messageInput" placeholder="Enter a message" />
     <button onclick="sendMessage()">Send Message</button>
     <ul id="messagesList"></ul>
 
     <script>
+        const clientSelect = document.getElementById("clientSelect");
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/signalling")
             .build();
 
-        connection.on("ReceiveMessage", (user, message) => {
-            const li = document.createElement("li");
-            li.textContent = `${user}: ${message}`;
-            document.getElementById("messagesList").appendChild(li);
+        const configuration = {
+            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        };
+        let peerConnection = new RTCPeerConnection(configuration);
+        //let remotePeerConnection;
+
+        // navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        //     localStream = stream;
+        // }).catch(err => console.error(err.toString()));
+        // document.getElementById("localVideo").srcObject = localStream;
+
+        let clientId;
+        const ids = new Set();
+        let dataChannel;
+
+
+        connection.on("UpdateClientList", async (senderConnectionId) => {
+            ids.add(senderConnectionId);
+            const clientOption = document.createElement("option");
+            clientOption.value = senderConnectionId;
+            clientOption.text = senderConnectionId;
+            clientSelect.appendChild(clientOption);
+            console.log("UpdateClientsList", senderConnectionId);
+        })
+
+        connection.on("ReceiveOffer", async (senderConnectionId, offer) => {
+            createPeerConnection(senderConnectionId);
+            peerConnection.setRemoteDescription(offer);
+            const answer = await createPeerAnswer(peerConnection);
+            connection.invoke("SendAnswer", senderConnectionId, answer);
         });
 
-        connection.start().catch(err => console.error(err.toString()));
+        connection.on("ReceiveAnswer", async (senderConnectionId, answer) => {
+            await peerConnection.setRemoteDescription(answer);
+        //     if (peerConnection.signalingState === "have-local-offer") {
+        // }
+            //await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+        });
+
+        // connection.on("ReceiveMessage", (user, message) => {
+        //     const li = document.createElement("li");
+        //     li.textContent = `${user}: ${message}`;
+        //     document.getElementById("messagesList").appendChild(li);
+        // });
+
+        connection.on("ReceiveIceCandidate", async (senderConnectionId, candidate) => {
+            await peerConnection.addIceCandidate(candidate);
+        });
+
+        connection.on("UpdateSelf", (selfId) => {
+            clientId = selfId;
+            console.log("UpdateSelf", selfId);
+        })
+
+        connection.start().then(() => {
+            connection.invoke("Join");
+            // const clientOption = document.createElement("option");
+            // clientOption.value = clientId;
+            // clientOption.text = clientId;
+            // clientSelect.appendChild(clientOption);
+        }).catch(err => console.error(err.toString()));
+
+        async function startConnection() {
+            const targetConnectionId = clientSelect.value;
+            createPeerConnection(targetConnectionId);
+            const offer = await createPeerOffer(peerConnection);
+            connection.invoke("SendOffer", targetConnectionId, offer);
+        }
+
+        function createPeerConnection(clientId) {
+            peerConnection.addEventListener('icecandidate', event => {
+                if (event.candidate) {
+                    connection.invoke("SendIceCandidate", clientId, event.candidate);
+                }
+            });
+            return peerConnection;
+        }
+
+        async function createPeerOffer(connection) {
+            // offer-side creates the data channel
+            dataChannel = peerConnection.createDataChannel("my-rtc-chat");
+            // peerConnectionsRepo.setChannel(peerId, channel);
+
+            dataChannel.onopen = (_event) => {
+                dataChannel.send(
+                    "Hi! You have established peer-to-peer connection with me! Other users will also send you this message once they have their own connection!",
+                );
+
+                dataChannel.onmessage = (event) => {
+                appendMessage(event.data);
+            }
+            };
+
+            // create offer
+            const offer = await peerConnection.createOffer();
+            peerConnection.setLocalDescription(offer);
+            return offer;
+        }
+
+        async function createPeerAnswer(peerConnection) {
+            // answer-side will receive 'new data channel' event
+            peerConnection.ondatachannel = (event) => {
+                dataChannel = event.channel;
+                //peerConnectionsRepo.setChannel(peerId, channel);
+
+                dataChannel.onopen = (_event) => {
+                    dataChannel.send("Hi, I am new to this chat room!");
+                };
+                dataChannel.onmessage = (event) => {
+                    appendMessage(event.data);
+                };
+            };
+
+            // create answer
+            const answer = await peerConnection.createAnswer();
+            peerConnection.setLocalDescription(answer);
+            return answer;
+            
+        }
 
         function sendMessage() {
-            const user = document.getElementById("userInput").value;
             const message = document.getElementById("messageInput").value;
-            connection.invoke("SendMessage", user, message).catch(err => console.error(err.toString()));
+            const li = document.createElement("li");
+            li.textContent = `You: ${message}`;
+            document.getElementById("messagesList").appendChild(li);
+            dataChannel.send(message);
+        }
+
+        function appendMessage(message) {
+            const li = document.createElement("li");
+            li.textContent = message;
+            document.getElementById("messagesList").appendChild(li);
         }
     </script>
 </body>
