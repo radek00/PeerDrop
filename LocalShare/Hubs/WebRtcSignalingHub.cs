@@ -1,23 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
-using System.Text.Json.Nodes;
+using LocalShare.Hubs.Messages;
 
 namespace LocalShare.Hubs;
 
-public class WebRtcSignalingHub : Hub
+public class WebRtcSignallingHub : Hub
 {
-    public class SdpMessage
-    {
-        public string Sdp { get; set; }
-        public string Type { get; set; }
-    }
-    
-    public class CleintInfo
-    {
-        public string SelfId { get; set; }
-        public string[] OtherClients { get; set; }
-    }
-
     public static readonly string Url = "/signalling";
     private static readonly ConcurrentDictionary<string, string> Connections = new ConcurrentDictionary<string, string>();
 
@@ -32,7 +20,7 @@ public class WebRtcSignalingHub : Hub
     {
         await Join();
     }
-    public async Task Join()
+    private async Task Join()
     {
         Connections.TryAdd(Context.ConnectionId, Context.ConnectionId);
         await Clients.Client(Context.ConnectionId).SendAsync("UpdateSelf", new CleintInfo() {SelfId = Context.ConnectionId, OtherClients = Connections.Keys.Where(x => x != Context.ConnectionId).ToArray()});

@@ -25,7 +25,7 @@ app.MapGet("/", async context =>
 });
 // Configure the HTTP request pipeline.
 
-app.MapHub<WebRtcSignalingHub>(WebRtcSignalingHub.Url);
+app.MapHub<WebRtcSignallingHub>(WebRtcSignallingHub.Url);
 
 app.UseAuthorization();
 
