@@ -24,6 +24,7 @@ public class WebRtcSignalingHub : Hub
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         Connections.TryRemove(Context.ConnectionId, out _);
+        Clients.Others.SendAsync("RemoveDisconnectedClient", Context.ConnectionId);
         return base.OnDisconnectedAsync(exception);
     }
     
@@ -35,7 +36,7 @@ public class WebRtcSignalingHub : Hub
     {
         Connections.TryAdd(Context.ConnectionId, Context.ConnectionId);
         await Clients.Client(Context.ConnectionId).SendAsync("UpdateSelf", new CleintInfo() {SelfId = Context.ConnectionId, OtherClients = Connections.Keys.Where(x => x != Context.ConnectionId).ToArray()});
-        await Clients.Others.SendAsync("UpdateClientList", Context.ConnectionId);
+        await Clients.Others.SendAsync("AddConnectedClient", Context.ConnectionId);
     }
 
     public async Task SendMessage(string user, string message)

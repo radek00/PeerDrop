@@ -6,7 +6,6 @@
 </head>
 <body>
     <h1>SignalR WebRTC Demo</h1>
-    <input type="text" id="userInput" placeholder="Enter your name" />
     <button onclick="startConnection()">Start Connection</button>
     <select id="clientSelect"></select>
     <input type="text" id="messageInput" placeholder="Enter a message" />
@@ -28,46 +27,36 @@
             iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
         };
         let peerConnection = new RTCPeerConnection(configuration);
-        //let remotePeerConnection;
-
-        // navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-        //     localStream = stream;
-        // }).catch(err => console.error(err.toString()));
-        // document.getElementById("localVideo").srcObject = localStream;
-
         let clientId;
         const ids = new Set();
         let dataChannel;
 
 
-        connection.on("UpdateClientList", async (senderConnectionId) => {
+        connection.on("AddConnectedClient", async (senderConnectionId) => {
             ids.add(senderConnectionId);
             const clientOption = document.createElement("option");
             clientOption.value = senderConnectionId;
             clientOption.text = senderConnectionId;
             clientSelect.appendChild(clientOption);
-            console.log("UpdateClientsList", senderConnectionId);
-        })
+            console.log("AddConnectedClient", senderConnectionId);
+        });
+        
+        connection.on("RemoveDisconnectedClient", async (senderConnectionId) => {
+            ids.delete(senderConnectionId);
+            clientSelect.querySelector(`option[value="${senderConnectionId}"]`).remove();
+            console.log("RemoveDisconnectedClient", senderConnectionId);
+        });
 
         connection.on("ReceiveOffer", async (senderConnectionId, offer) => {
             createPeerConnection(senderConnectionId);
-            peerConnection.setRemoteDescription(offer);
+            await peerConnection.setRemoteDescription(offer);
             const answer = await createPeerAnswer(peerConnection);
             connection.invoke("SendAnswer", senderConnectionId, answer);
         });
 
         connection.on("ReceiveAnswer", async (senderConnectionId, answer) => {
             await peerConnection.setRemoteDescription(answer);
-        //     if (peerConnection.signalingState === "have-local-offer") {
-        // }
-            //await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
         });
-
-        // connection.on("ReceiveMessage", (user, message) => {
-        //     const li = document.createElement("li");
-        //     li.textContent = `${user}: ${message}`;
-        //     document.getElementById("messagesList").appendChild(li);
-        // });
 
         connection.on("ReceiveIceCandidate", async (senderConnectionId, candidate) => {
             await peerConnection.addIceCandidate(candidate);
@@ -105,9 +94,7 @@
         }
 
         async function createPeerOffer(connection) {
-            // offer-side creates the data channel
             dataChannel = peerConnection.createDataChannel("my-rtc-chat");
-            // peerConnectionsRepo.setChannel(peerId, channel);
 
             dataChannel.onopen = (_event) => {
                 dataChannel.send(
@@ -126,10 +113,8 @@
         }
 
         async function createPeerAnswer(peerConnection) {
-            // answer-side will receive 'new data channel' event
             peerConnection.ondatachannel = (event) => {
                 dataChannel = event.channel;
-                //peerConnectionsRepo.setChannel(peerId, channel);
 
                 dataChannel.onopen = (_event) => {
                     dataChannel.send("Hi, I am new to this chat room!");
@@ -141,7 +126,7 @@
 
             // create answer
             const answer = await peerConnection.createAnswer();
-            peerConnection.setLocalDescription(answer);
+            await peerConnection.setLocalDescription(answer);
             return answer;
             
         }
