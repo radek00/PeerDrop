@@ -23,7 +23,7 @@ public class WebRtcSignallingHub : Hub
     private async Task Join()
     {
         Connections.TryAdd(Context.ConnectionId, Context.ConnectionId);
-        await Clients.Client(Context.ConnectionId).SendAsync("UpdateSelf", new CleintInfo() {SelfId = Context.ConnectionId, OtherClients = Connections.Keys.Where(x => x != Context.ConnectionId).ToArray()});
+        await Clients.Client(Context.ConnectionId).SendAsync("UpdateSelf", new ClientInfo() {SelfId = Context.ConnectionId, OtherClients = Connections.Keys.Where(x => x != Context.ConnectionId).ToArray()});
         await Clients.Others.SendAsync("AddConnectedClient", Context.ConnectionId);
     }
 
