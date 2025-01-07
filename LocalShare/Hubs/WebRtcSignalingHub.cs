@@ -11,14 +11,30 @@ public class WebRtcSignalingHub : Hub
         public string Sdp { get; set; }
         public string Type { get; set; }
     }
+    
+    public class CleintInfo
+    {
+        public string SelfId { get; set; }
+        public string[] OtherClients { get; set; }
+    }
 
     public static readonly string Url = "/signalling";
     private static readonly ConcurrentDictionary<string, string> Connections = new ConcurrentDictionary<string, string>();
 
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        Connections.TryRemove(Context.ConnectionId, out _);
+        return base.OnDisconnectedAsync(exception);
+    }
+    
+    public override async Task OnConnectedAsync()
+    {
+        await Join();
+    }
     public async Task Join()
     {
         Connections.TryAdd(Context.ConnectionId, Context.ConnectionId);
-        await Clients.Client(Context.ConnectionId).SendAsync("UpdateSelf", Context.ConnectionId);
+        await Clients.Client(Context.ConnectionId).SendAsync("UpdateSelf", new CleintInfo() {SelfId = Context.ConnectionId, OtherClients = Connections.Keys.Where(x => x != Context.ConnectionId).ToArray()});
         await Clients.Others.SendAsync("UpdateClientList", Context.ConnectionId);
     }
 

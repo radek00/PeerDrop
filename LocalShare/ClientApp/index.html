@@ -14,6 +14,11 @@
     <ul id="messagesList"></ul>
 
     <script>
+        //to do
+        //1. Get all clients on connection to fill the select
+        //2. Handle disconnecting\
+        //3. Refactor the hub. A lot of stuff is redundant
+        //4. Figure out how to send files
         const clientSelect = document.getElementById("clientSelect");
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/signalling")
@@ -68,17 +73,19 @@
             await peerConnection.addIceCandidate(candidate);
         });
 
-        connection.on("UpdateSelf", (selfId) => {
-            clientId = selfId;
+        connection.on("UpdateSelf", (clientInfo) => {
+            clientId = clientInfo.selfId;
+            for (const id of clientInfo.otherClients) {
+                ids.add(id);
+                const clientOption = document.createElement("option");
+                clientOption.value = id;
+                clientOption.text = id;
+                clientSelect.appendChild(clientOption);
+            }
             console.log("UpdateSelf", selfId);
         })
 
         connection.start().then(() => {
-            connection.invoke("Join");
-            // const clientOption = document.createElement("option");
-            // clientOption.value = clientId;
-            // clientOption.text = clientId;
-            // clientSelect.appendChild(clientOption);
         }).catch(err => console.error(err.toString()));
 
         async function startConnection() {
