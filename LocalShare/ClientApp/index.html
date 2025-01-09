@@ -65,6 +65,7 @@
         <button onclick="sendMessage()">Send Message</button>
         <input id="fileInput" type="file">
         <button onclick="sendFile()">Send File</button>
+        <button onclick="closeDataChannels()">Close Connection</button>
         <ul id="messagesList"></ul>
     </div>
 
@@ -74,6 +75,9 @@
         //2. Handle disconnecting\
         //3. Refactor the hub. A lot of stuff is redundant
         //4. Figure out how to send files
+        //5. Close channels after file transfer
+        //6. Send file metadata over one of the channels
+        //7. Add progress bar for file transfer
         const clientSelect = document.getElementById("clientSelect");
         const fileInput = document.getElementById("fileInput");
         const connection = new signalR.HubConnectionBuilder()
@@ -196,10 +200,10 @@
                     fileTransferDataChannel = channel;
                     fileTransferDataChannel.binaryType = "arraybuffer";
                     fileTransferDataChannel.onmessage = onReceiveMessageCallback;
-                    // fileTransferDataChannel.onopen = onFileTransferChannelStateChange;
-                    // fileTransferDataChannel.addEventListener('open', onFileTransferChannelStateChange);
-                    // fileTransferDataChannel.addEventListener('close', onFileTransferChannelStateChange);
-                    // fileTransferDataChannel.addEventListener('error', onFileTransferChannelError);
+                    fileTransferDataChannel.onopen = onFileTransferChannelStateChange;
+                    fileTransferDataChannel.addEventListener('open', onFileTransferChannelStateChange);
+                    fileTransferDataChannel.addEventListener('close', onFileTransferChannelStateChange);
+                    fileTransferDataChannel.addEventListener('error', onFileTransferChannelError);
                 }
             };
 
@@ -304,6 +308,17 @@
 
                 //closeDataChannels();
             }
+        }
+
+        function closeDataChannels() {
+            console.log('Closing data channels');
+            fileTransferDataChannel.close();
+            chatDataChannel.close();
+            fileTransferDataChannel = null;
+            chatDataChannel = null;
+            peerConnection.close();
+            peerConnection = null;
+            console.log('Closed peer connections');
         }
         
     </script>
