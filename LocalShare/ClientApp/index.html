@@ -57,272 +57,220 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>SignalR WebRTC Demo</h1>
-        <button onclick="startConnection()">Start Connection</button>
-        <select id="clientSelect"></select>
-        <input type="text" id="messageInput" placeholder="Enter a message" />
-<!--        <button onclick="sendMessage()">Send Message</button>-->
-        <input id="fileInput" type="file">
-        <button onclick="prepareFileTransfer()">Send File</button>
-        <button onclick="closeDataChannels()">Close Connection</button>
-        <ul id="messagesList"></ul>
-    </div>
+<div class="container">
+    <h1>SignalR WebRTC Demo</h1>
+    <button onclick="startConnection()">Start Connection</button>
+    <select id="clientSelect"></select>
+    <input id="fileInput" type="file">
+    <button onclick="prepareFileTransfer()">Send File</button>
+    <button onclick="closeDataChannels()">Close Connection</button>
+    <ul id="messagesList"></ul>
+</div>
 
-    <script>
-        //to do
-        //1. Get all clients on connection to fill the select
-        //2. Handle disconnecting\
-        //3. Refactor the hub. A lot of stuff is redundant
-        //4. Figure out how to send files
-        //5. Close channels after file transfer
-        //6. Send file metadata over one of the channels
-        //7. Add progress bar for file transfer
-        const clientSelect = document.getElementById("clientSelect");
-        const fileInput = document.getElementById("fileInput");
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/signalling")
-            .build();
+<script>
+    const clientSelect = document.getElementById("clientSelect");
+    const fileInput = document.getElementById("fileInput");
+    const connection = new signalR.HubConnectionBuilder().withUrl("/signalling").build();
+    const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+    let peerConnection = new RTCPeerConnection(configuration);
+    let clientId;
+    const ids = new Set();
+    let metaDataChannel;
+    let fileTransferDataChannel;
+    let receiveBuffer = [];
+    let receivedSize = 0;
+    let fileTransferMetadata = {};
 
-        const configuration = {
-            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    connection.on("AddConnectedClient", addConnectedClient);
+    connection.on("RemoveDisconnectedClient", removeDisconnectedClient);
+    connection.on("ReceiveOffer", receiveOffer);
+    connection.on("ReceiveAnswer", receiveAnswer);
+    connection.on("ReceiveIceCandidate", receiveIceCandidate);
+    connection.on("UpdateSelf", updateSelf);
+
+    connection.start().catch(err => console.error(err.toString()));
+
+    async function startConnection() {
+        const targetConnectionId = clientSelect.value;
+        createPeerConnection(targetConnectionId);
+        const offer = await createPeerOffer(peerConnection);
+        connection.invoke("SendOffer", targetConnectionId, offer);
+    }
+
+    function createPeerConnection(clientId) {
+        peerConnection.addEventListener('icecandidate', event => {
+            if (event.candidate) {
+                connection.invoke("SendIceCandidate", clientId, event.candidate);
+            }
+        });
+        return peerConnection;
+    }
+
+    async function createPeerOffer(connection) {
+        metaDataChannel = peerConnection.createDataChannel("file-metadata-channel");
+        metaDataChannel.onopen = handleMetaDataChannelOpen;
+        fileTransferDataChannel = peerConnection.createDataChannel("file-transfer");
+        fileTransferDataChannel.binaryType = "arraybuffer";
+        fileTransferDataChannel.addEventListener('open', onChannelStateChange);
+        fileTransferDataChannel.addEventListener('close', onChannelStateChange);
+        fileTransferDataChannel.addEventListener('error', onFileTransferChannelError);
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        return offer;
+    }
+
+    async function createPeerAnswer(peerConnection) {
+        peerConnection.ondatachannel = handleDataChannel;
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        return answer;
+    }
+
+    function prepareFileTransfer() {
+        const file = fileInput.files[0];
+        if (file.size === 0) {
+            console.error('File is empty, please select a non-empty file');
+            return;
+        }
+        metaDataChannel.send(JSON.stringify({
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            lastModified: file.lastModified
+        }));
+    }
+
+    function sendFile() {
+        const file = fileInput.files[0];
+        const chunkSize = 16384;
+        const fileReader = new FileReader();
+        let offset = 0;
+
+        fileReader.addEventListener('error', error => console.error('Error reading file:', error));
+        fileReader.addEventListener('abort', event => console.log('File reading aborted:', event));
+        fileReader.addEventListener('load', e => {
+            fileTransferDataChannel.send(e.target.result);
+            offset += e.target.result.byteLength;
+            if (offset < file.size) {
+                readSlice(offset);
+            }
+        });
+
+        const readSlice = o => {
+            const slice = file.slice(offset, o + chunkSize);
+            fileReader.readAsArrayBuffer(slice);
         };
-        let peerConnection = new RTCPeerConnection(configuration);
-        let clientId;
-        const ids = new Set();
-        let metaDataChannel;
-        let fileTransferDataChannel;
-        let receiveBuffer = [];
-        let receivedSize = 0;
-        let fileTransferMetadata = {};
+        readSlice(0);
+    }
 
-
-        connection.on("AddConnectedClient", async (senderConnectionId) => {
-            ids.add(senderConnectionId);
-            const clientOption = document.createElement("option");
-            clientOption.value = senderConnectionId;
-            clientOption.text = senderConnectionId;
-            clientSelect.appendChild(clientOption);
-            console.log("AddConnectedClient", senderConnectionId);
-        });
-        
-        connection.on("RemoveDisconnectedClient", async (senderConnectionId) => {
-            ids.delete(senderConnectionId);
-            clientSelect.querySelector(`option[value="${senderConnectionId}"]`).remove();
-            console.log("RemoveDisconnectedClient", senderConnectionId);
-        });
-
-        connection.on("ReceiveOffer", async (senderConnectionId, offer) => {
-            createPeerConnection(senderConnectionId);
-            await peerConnection.setRemoteDescription(offer);
-            const answer = await createPeerAnswer(peerConnection);
-            connection.invoke("SendAnswer", senderConnectionId, answer);
-        });
-
-        connection.on("ReceiveAnswer", async (senderConnectionId, answer) => {
-            await peerConnection.setRemoteDescription(answer);
-        });
-
-        connection.on("ReceiveIceCandidate", async (senderConnectionId, candidate) => {
-            await peerConnection.addIceCandidate(candidate);
-        });
-
-        connection.on("UpdateSelf", (clientInfo) => {
-            clientId = clientInfo.selfId;
-            for (const id of clientInfo.otherClients) {
-                ids.add(id);
-                const clientOption = document.createElement("option");
-                clientOption.value = id;
-                clientOption.text = id;
-                clientSelect.appendChild(clientOption);
-            }
-            console.log("UpdateSelf", selfId);
-        })
-
-        connection.start().then(() => {
-        }).catch(err => console.error(err.toString()));
-
-        async function startConnection() {
-            const targetConnectionId = clientSelect.value;
-            createPeerConnection(targetConnectionId);
-            const offer = await createPeerOffer(peerConnection);
-            connection.invoke("SendOffer", targetConnectionId, offer);
+    function onChannelStateChange() {
+        if (fileTransferDataChannel && metaDataChannel) {
+            const { readyState } = fileTransferDataChannel;
+            console.log(`Send channel state is: ${readyState}`);
         }
+    }
 
-        function createPeerConnection(clientId) {
-            peerConnection.addEventListener('icecandidate', event => {
-                if (event.candidate) {
-                    connection.invoke("SendIceCandidate", clientId, event.candidate);
-                }
-            });
-            return peerConnection;
-        }
+    function onFileTransferChannelError(error) {
+        console.error('Error in sendChannel:', error);
+    }
 
-        async function createPeerOffer(connection) {
-            metaDataChannel = peerConnection.createDataChannel("file-metadata-channel");
+    function onReceiveMessageCallback(event) {
+        receiveBuffer.push(event.data);
+        receivedSize += event.data.byteLength;
 
-            metaDataChannel.onopen = (_event) => {
-                metaDataChannel.onmessage = (event) => {
-                    const data  = JSON.parse(event.data);
-                    console.log('metadata ready', data);
-                //appendMessage(event.data);
-                    if (data.isTransferReady) {
-                        fileTransferMetadata = event.data;
-                        sendFile();
-                    }
-
-            }
-            
-            };
-            fileTransferDataChannel = peerConnection.createDataChannel("file-transfer");
-            fileTransferDataChannel.binaryType = "arraybuffer";
-            fileTransferDataChannel.addEventListener('open', onFileTransferChannelStateChange);
-            fileTransferDataChannel.addEventListener('close', onFileTransferChannelStateChange);
-            fileTransferDataChannel.addEventListener('error', onFileTransferChannelError);
-
-            // create offer
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            return offer;
-        }
-
-        async function createPeerAnswer(peerConnection) {
-            peerConnection.ondatachannel = (event) => {
-                receivedSize = 0;
-                receiveBuffer = [];
-                console.log('event', event);
-                const { channel } = event;
-                if (channel.label === "file-metadata-channel") {
-                    metaDataChannel = channel;
-                    metaDataChannel.onmessage = (event) => {
-                        console.log('metadata offer', event);
-                        const data = JSON.parse(event.data);
-                        data.isTransferReady = true;
-                        fileTransferMetadata = data;
-                        metaDataChannel.send(JSON.stringify(data));
-                    };
-                } else if (channel.label === "file-transfer") {
-                    fileTransferDataChannel = channel;
-                    fileTransferDataChannel.binaryType = "arraybuffer";
-                    fileTransferDataChannel.onmessage = onReceiveMessageCallback;
-                    fileTransferDataChannel.onopen = onFileTransferChannelStateChange;
-                    fileTransferDataChannel.addEventListener('open', onFileTransferChannelStateChange);
-                    fileTransferDataChannel.addEventListener('close', onFileTransferChannelStateChange);
-                    fileTransferDataChannel.addEventListener('error', onFileTransferChannelError);
-                }
-            };
-
-            // create answer
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-            return answer;
-            
-        }
-
-        function  prepareFileTransfer() {
-            const file = fileInput.files[0];
-            console.log(`File is ${[file.name, file.size, file.type, file.lastModified].join(' ')}`);
-
-            // Handle 0 size files.
-            if (file.size === 0) {
-                console.error('File is empty, please select a non-empty file');
-                return;
-            }
-            metaDataChannel.send(JSON.stringify({
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                lastModified: file.lastModified
-            }));
-        }
-        function sendFile() {
-            const file = fileInput.files[0];
-            const chunkSize = 16384;
-            const fileReader = new FileReader();
-            let offset = 0;
-            fileReader.addEventListener('error', error => console.error('Error reading file:', error));
-            fileReader.addEventListener('abort', event => console.log('File reading aborted:', event));
-            fileReader.addEventListener('load', e => {
-                console.log('FileRead.onload ', e);
-                fileTransferDataChannel.send(e.target.result);
-                offset += e.target.result.byteLength;
-                console.log('offset', offset);
-                if (offset < file.size) {
-                    readSlice(offset);
-                }
-            });
-            const readSlice = o => {
-                console.log('readSlice ', o);
-                const slice = file.slice(offset, o + chunkSize);
-                fileReader.readAsArrayBuffer(slice);
-            };
-            readSlice(0);
-        }
-
-        function onFileTransferChannelStateChange() {
-            if (fileTransferDataChannel) {
-                const {readyState} = fileTransferDataChannel;
-                console.log(`Send channel state is: ${readyState}`);
-                if (readyState === 'open') {
-                    //sendFile();
-                }
-            }
-        }
-
-        function onFileTransferChannelError(error) {
-            if (fileTransferDataChannel) {
-                console.error('Error in sendChannel:', error);
-                return;
-            }
-            console.log('Error in sendChannel which is already closed:', error);
-        }
-
-        function onReceiveMessageCallback(event) {
-            console.log(`Received Message ${event.data.byteLength}`);
-            receiveBuffer.push(event.data);
-            receivedSize += event.data.byteLength;
-            
-            console.log('progress', receivedSize);
-
-            // we are assuming that our signaling protocol told
-            // about the expected file size (and name, hash, etc).
-            if (receivedSize === fileTransferMetadata.size) {
-                const downloadAnchor = document.createElement('a');
-                const received = new Blob(receiveBuffer);
-                receiveBuffer = [];
-
-                downloadAnchor.href = URL.createObjectURL(received);
-                downloadAnchor.download = fileTransferMetadata.name;
-                downloadAnchor.click();
-
-                // const bitrate = Math.round(receivedSize * 8 /
-                //     ((new Date()).getTime() - timestampStart));
-                // bitrateDiv.innerHTML =
-                //     `<strong>Average Bitrate:</strong> ${bitrate} kbits/sec (max: ${bitrateMax} kbits/sec)`;
-
-                // if (statsInterval) {
-                //     clearInterval(statsInterval);
-                //     statsInterval = null;
-                // }
-
-                //closeDataChannels();
-            }
-        }
-
-        function closeDataChannels() {
-            console.log('Closing data channels');
-            fileTransferDataChannel.close();
-            metaDataChannel.close();
-            fileTransferDataChannel = null;
-            metaDataChannel = null;
-            peerConnection.close();
-            peerConnection = null;
-            fileTransferMetadata = {};
+        if (receivedSize === fileTransferMetadata.size) {
+            const received = new Blob(receiveBuffer);
             receiveBuffer = [];
-            receivedSize = 0;
-            console.log('Closed peer connections');
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.href = URL.createObjectURL(received);
+            downloadAnchor.download = fileTransferMetadata.name;
+            downloadAnchor.click();
         }
-        
-    </script>
+    }
+
+    function closeDataChannels() {
+        fileTransferDataChannel.close();
+        metaDataChannel.close();
+        peerConnection.close();
+        fileTransferDataChannel = null;
+        metaDataChannel = null;
+        peerConnection = null;
+        fileTransferMetadata = {};
+        receiveBuffer = [];
+        receivedSize = 0;
+    }
+
+    function addConnectedClient(senderConnectionId) {
+        ids.add(senderConnectionId);
+        const clientOption = document.createElement("option");
+        clientOption.value = senderConnectionId;
+        clientOption.text = senderConnectionId;
+        clientSelect.appendChild(clientOption);
+    }
+
+    function removeDisconnectedClient(senderConnectionId) {
+        ids.delete(senderConnectionId);
+        clientSelect.querySelector(`option[value="${senderConnectionId}"]`).remove();
+    }
+
+    async function receiveOffer(senderConnectionId, offer) {
+        createPeerConnection(senderConnectionId);
+        await peerConnection.setRemoteDescription(offer);
+        const answer = await createPeerAnswer(peerConnection);
+        connection.invoke("SendAnswer", senderConnectionId, answer);
+    }
+
+    async function receiveAnswer(senderConnectionId, answer) {
+        await peerConnection.setRemoteDescription(answer);
+    }
+
+    async function receiveIceCandidate(senderConnectionId, candidate) {
+        await peerConnection.addIceCandidate(candidate);
+    }
+
+    function updateSelf(clientInfo) {
+        clientId = clientInfo.selfId;
+        clientInfo.otherClients.forEach(id => {
+            ids.add(id);
+            const clientOption = document.createElement("option");
+            clientOption.value = id;
+            clientOption.text = id;
+            clientSelect.appendChild(clientOption);
+        });
+    }
+
+    function handleMetaDataChannelOpen() {
+        metaDataChannel.onmessage = event => {
+            const data = JSON.parse(event.data);
+            if (data.isTransferReady) {
+                fileTransferMetadata = event.data;
+                sendFile();
+            }
+        };
+    }
+
+    function handleDataChannel(event) {
+        receivedSize = 0;
+        receiveBuffer = [];
+        const { channel } = event;
+        if (channel.label === "file-metadata-channel") {
+            metaDataChannel = channel;
+            metaDataChannel.onmessage = event => {
+                const data = JSON.parse(event.data);
+                data.isTransferReady = true;
+                fileTransferMetadata = data;
+                metaDataChannel.send(JSON.stringify(data));
+            };
+        } else if (channel.label === "file-transfer") {
+            fileTransferDataChannel = channel;
+            fileTransferDataChannel.binaryType = "arraybuffer";
+            fileTransferDataChannel.onmessage = onReceiveMessageCallback;
+            fileTransferDataChannel.addEventListener('open', onChannelStateChange);
+            fileTransferDataChannel.addEventListener('close', onChannelStateChange);
+            fileTransferDataChannel.addEventListener('error', onFileTransferChannelError);
+        }
+    }
+</script>
 </body>
 </html>
