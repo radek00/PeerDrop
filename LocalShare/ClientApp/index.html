@@ -59,11 +59,9 @@
 <body>
 <div class="container">
     <h1>SignalR WebRTC Demo</h1>
-    <button onclick="startConnection()">Start Connection</button>
     <select id="clientSelect"></select>
     <input id="fileInput" type="file">
-    <button onclick="prepareFileTransfer()">Send File</button>
-    <button onclick="closeDataChannels()">Close Connection</button>
+    <button onclick="startConnection()">Send File</button>
     <ul id="messagesList"></ul>
 </div>
 
@@ -72,7 +70,7 @@
     const fileInput = document.getElementById("fileInput");
     const connection = new signalR.HubConnectionBuilder().withUrl("/signalling").build();
     const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-    let peerConnection = new RTCPeerConnection(configuration);
+    let peerConnection;
     let clientId;
     const ids = new Set();
     let metaDataChannel;
@@ -91,6 +89,7 @@
     connection.start().catch(err => console.error(err.toString()));
 
     async function startConnection() {
+        peerConnection = new RTCPeerConnection(configuration);
         const targetConnectionId = clientSelect.value;
         createPeerConnection(targetConnectionId);
         const offer = await createPeerOffer(peerConnection);
@@ -165,9 +164,10 @@
     }
 
     function onChannelStateChange() {
-        if (fileTransferDataChannel && metaDataChannel) {
-            const { readyState } = fileTransferDataChannel;
-            console.log(`Send channel state is: ${readyState}`);
+        if (fileTransferDataChannel?.readyState === 'open' && metaDataChannel.readyState === 'open') {
+            console.log(`File transfer channel state is: ${fileTransferDataChannel.readyState}`);
+            console.log(`Meta data channel state is: ${metaDataChannel.readyState}`);
+            prepareFileTransfer();
         }
     }
 
@@ -186,10 +186,13 @@
             downloadAnchor.href = URL.createObjectURL(received);
             downloadAnchor.download = fileTransferMetadata.name;
             downloadAnchor.click();
+            metaDataChannel.send(JSON.stringify({ isTransferComplete: true }));
+            closeDataChannels();
         }
     }
 
     function closeDataChannels() {
+        console.log('Closing data channels');
         fileTransferDataChannel.close();
         metaDataChannel.close();
         peerConnection.close();
@@ -215,6 +218,7 @@
     }
 
     async function receiveOffer(senderConnectionId, offer) {
+        peerConnection = new RTCPeerConnection(configuration);
         createPeerConnection(senderConnectionId);
         await peerConnection.setRemoteDescription(offer);
         const answer = await createPeerAnswer(peerConnection);
@@ -246,6 +250,8 @@
             if (data.isTransferReady) {
                 fileTransferMetadata = event.data;
                 sendFile();
+            } else if (data.isTransferComplete) {
+                closeDataChannels();
             }
         };
     }
@@ -266,8 +272,8 @@
             fileTransferDataChannel = channel;
             fileTransferDataChannel.binaryType = "arraybuffer";
             fileTransferDataChannel.onmessage = onReceiveMessageCallback;
-            fileTransferDataChannel.addEventListener('open', onChannelStateChange);
-            fileTransferDataChannel.addEventListener('close', onChannelStateChange);
+            // fileTransferDataChannel.addEventListener('open', onChannelStateChange);
+            // fileTransferDataChannel.addEventListener('close', onChannelStateChange);
             fileTransferDataChannel.addEventListener('error', onFileTransferChannelError);
         }
     }
