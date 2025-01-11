@@ -62,9 +62,9 @@
         <button onclick="startConnection()">Start Connection</button>
         <select id="clientSelect"></select>
         <input type="text" id="messageInput" placeholder="Enter a message" />
-        <button onclick="sendMessage()">Send Message</button>
+<!--        <button onclick="sendMessage()">Send Message</button>-->
         <input id="fileInput" type="file">
-        <button onclick="sendFile()">Send File</button>
+        <button onclick="prepareFileTransfer()">Send File</button>
         <button onclick="closeDataChannels()">Close Connection</button>
         <ul id="messagesList"></ul>
     </div>
@@ -90,10 +90,11 @@
         let peerConnection = new RTCPeerConnection(configuration);
         let clientId;
         const ids = new Set();
-        let chatDataChannel;
+        let metaDataChannel;
         let fileTransferDataChannel;
         let receiveBuffer = [];
         let receivedSize = 0;
+        let fileTransferMetadata = {};
 
 
         connection.on("AddConnectedClient", async (senderConnectionId) => {
@@ -158,15 +159,18 @@
         }
 
         async function createPeerOffer(connection) {
-            chatDataChannel = peerConnection.createDataChannel("my-rtc-chat");
+            metaDataChannel = peerConnection.createDataChannel("file-metadata-channel");
 
-            chatDataChannel.onopen = (_event) => {
-                chatDataChannel.send(
-                    "Hi! You have established peer-to-peer connection with me! Other users will also send you this message once they have their own connection!",
-                );
+            metaDataChannel.onopen = (_event) => {
+                metaDataChannel.onmessage = (event) => {
+                    const data  = JSON.parse(event.data);
+                    console.log('metadata ready', data);
+                //appendMessage(event.data);
+                    if (data.isTransferReady) {
+                        fileTransferMetadata = event.data;
+                        sendFile();
+                    }
 
-                chatDataChannel.onmessage = (event) => {
-                appendMessage(event.data);
             }
             
             };
@@ -188,13 +192,14 @@
                 receiveBuffer = [];
                 console.log('event', event);
                 const { channel } = event;
-                if (channel.label === "my-rtc-chat") {
-                    chatDataChannel = channel;
-                    chatDataChannel.onopen = (_event) => {
-                        chatDataChannel.send("Hi, I am new to this chat room!");
-                    };
-                    chatDataChannel.onmessage = (event) => {
-                        appendMessage(event.data);
+                if (channel.label === "file-metadata-channel") {
+                    metaDataChannel = channel;
+                    metaDataChannel.onmessage = (event) => {
+                        console.log('metadata offer', event);
+                        const data = JSON.parse(event.data);
+                        data.isTransferReady = true;
+                        fileTransferMetadata = data;
+                        metaDataChannel.send(JSON.stringify(data));
                     };
                 } else if (channel.label === "file-transfer") {
                     fileTransferDataChannel = channel;
@@ -214,21 +219,7 @@
             
         }
 
-        function sendMessage() {
-            const message = document.getElementById("messageInput").value;
-            const li = document.createElement("li");
-            li.textContent = `You: ${message}`;
-            document.getElementById("messagesList").appendChild(li);
-            chatDataChannel.send(message);
-        }
-
-        function appendMessage(message) {
-            const li = document.createElement("li");
-            li.textContent = message;
-            document.getElementById("messagesList").appendChild(li);
-        }
-
-        function sendFile() {
+        function  prepareFileTransfer() {
             const file = fileInput.files[0];
             console.log(`File is ${[file.name, file.size, file.type, file.lastModified].join(' ')}`);
 
@@ -237,6 +228,15 @@
                 console.error('File is empty, please select a non-empty file');
                 return;
             }
+            metaDataChannel.send(JSON.stringify({
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                lastModified: file.lastModified
+            }));
+        }
+        function sendFile() {
+            const file = fileInput.files[0];
             const chunkSize = 16384;
             const fileReader = new FileReader();
             let offset = 0;
@@ -286,14 +286,13 @@
 
             // we are assuming that our signaling protocol told
             // about the expected file size (and name, hash, etc).
-            const file = fileInput.files[0];
-            if (receivedSize === file.size) {
+            if (receivedSize === fileTransferMetadata.size) {
                 const downloadAnchor = document.createElement('a');
                 const received = new Blob(receiveBuffer);
                 receiveBuffer = [];
 
                 downloadAnchor.href = URL.createObjectURL(received);
-                downloadAnchor.download = file.name;
+                downloadAnchor.download = fileTransferMetadata.name;
                 downloadAnchor.click();
 
                 // const bitrate = Math.round(receivedSize * 8 /
@@ -313,11 +312,14 @@
         function closeDataChannels() {
             console.log('Closing data channels');
             fileTransferDataChannel.close();
-            chatDataChannel.close();
+            metaDataChannel.close();
             fileTransferDataChannel = null;
-            chatDataChannel = null;
+            metaDataChannel = null;
             peerConnection.close();
             peerConnection = null;
+            fileTransferMetadata = {};
+            receiveBuffer = [];
+            receivedSize = 0;
             console.log('Closed peer connections');
         }
         
