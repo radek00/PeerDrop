@@ -78,6 +78,8 @@
     let receiveBuffer = [];
     let receivedSize = 0;
     let fileTransferMetadata = {};
+    
+    const broadcast = new BroadcastChannel('worker');
 
     connection.on("AddConnectedClient", addConnectedClient);
     connection.on("RemoveDisconnectedClient", removeDisconnectedClient);
@@ -176,19 +178,28 @@
     }
 
     function onReceiveMessageCallback(event) {
-        receiveBuffer.push(event.data);
-        receivedSize += event.data.byteLength;
-
-        if (receivedSize === fileTransferMetadata.size) {
-            const received = new Blob(receiveBuffer);
-            receiveBuffer = [];
+        //receiveBuffer.push(event.data);
+        
+        
+        if (receivedSize === 0) {
             const downloadAnchor = document.createElement('a');
-            downloadAnchor.href = URL.createObjectURL(received);
-            downloadAnchor.download = fileTransferMetadata.name;
+            downloadAnchor.href = '/download';
+            // downloadAnchor.download = fileTransferMetadata.name;
             downloadAnchor.click();
-            metaDataChannel.send(JSON.stringify({ isTransferComplete: true }));
-            closeDataChannels();
         }
+        receivedSize += event.data.byteLength;
+        broadcast.postMessage({chunkData: event.data, fileTransferMetadata});
+
+        // if (receivedSize === fileTransferMetadata.size) {
+        //     const received = new Blob(receiveBuffer);
+        //     receiveBuffer = [];
+        //     const downloadAnchor = document.createElement('a');
+        //     downloadAnchor.href = URL.createObjectURL(received);
+        //     downloadAnchor.download = fileTransferMetadata.name;
+        //     downloadAnchor.click();
+        //     metaDataChannel.send(JSON.stringify({ isTransferComplete: true }));
+        //     closeDataChannels();
+        // }
     }
 
     function closeDataChannels() {
@@ -277,6 +288,29 @@
             fileTransferDataChannel.addEventListener('error', onFileTransferChannelError);
         }
     }
+
+    const registerServiceWorker = async () => {
+        if ("serviceWorker" in navigator) {
+            try {
+                const registration = await navigator.serviceWorker.register(
+                    `/serviceWorker.js`,
+                    { type: "classic", scope: "/" }
+                );
+
+                if (registration.installing) {
+                    console.log("Service worker installing");
+                } else if (registration.waiting) {
+                    console.log("Service worker installed");
+                } else if (registration.active) {
+                    console.log("Service worker active");
+                }
+
+            } catch (error) {
+                console.error(`Registration failed with ${error}`);
+            }
+        }
+    };
+    registerServiceWorker();
 </script>
 </body>
 </html>

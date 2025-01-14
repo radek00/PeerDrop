@@ -23,6 +23,11 @@ app.MapGet("/", async context =>
     context.Response.ContentType = "text/html";
     await context.Response.SendFileAsync("ClientApp/index.html");
 });
+app.MapGet("/serviceWorker.js", async context =>
+{
+    context.Response.ContentType = "application/javascript";
+    await context.Response.SendFileAsync("ClientApp/serviceWorker.js");
+});
 // Configure the HTTP request pipeline.
 
 app.MapHub<WebRtcSignallingHub>(WebRtcSignallingHub.Url);
