@@ -3,6 +3,7 @@
 <head>
     <title>SignalR WebRTC Demo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
+    <script src="https://jimmywarting.github.io/StreamSaver.js/StreamSaver.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -178,28 +179,23 @@
     }
 
     function onReceiveMessageCallback(event) {
-        //receiveBuffer.push(event.data);
-        
-        
         if (receivedSize === 0) {
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.href = '/download';
-            // downloadAnchor.download = fileTransferMetadata.name;
-            downloadAnchor.click();
+            const fileStream = streamSaver.createWriteStream(
+                fileTransferMetadata.name,
+                {
+                    size: fileTransferMetadata.size
+                }
+            );
+            writer = fileStream.getWriter();
         }
-        receivedSize += event.data.byteLength;
-        broadcast.postMessage({chunkData: event.data, fileTransferMetadata});
 
-        // if (receivedSize === fileTransferMetadata.size) {
-        //     const received = new Blob(receiveBuffer);
-        //     receiveBuffer = [];
-        //     const downloadAnchor = document.createElement('a');
-        //     downloadAnchor.href = URL.createObjectURL(received);
-        //     downloadAnchor.download = fileTransferMetadata.name;
-        //     downloadAnchor.click();
-        //     metaDataChannel.send(JSON.stringify({ isTransferComplete: true }));
-        //     closeDataChannels();
-        // }
+        writer.write(new Uint8Array(event.data));
+        receivedSize += event.data.byteLength;
+
+        if (receivedSize === fileTransferMetadata.size) {
+            writer.close();
+            closeDataChannels();
+        }
     }
 
     function closeDataChannels() {
@@ -310,7 +306,7 @@
             }
         }
     };
-    registerServiceWorker();
+    //registerServiceWorker();
 </script>
 </body>
 </html>
