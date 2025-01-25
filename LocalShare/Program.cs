@@ -28,6 +28,11 @@ app.MapGet("/serviceWorker.js", async context =>
     context.Response.ContentType = "application/javascript";
     await context.Response.SendFileAsync("ClientApp/serviceWorker.js");
 });
+app.MapGet("/streamSaver.js", async context =>
+{
+    context.Response.ContentType = "application/javascript";
+    await context.Response.SendFileAsync("ClientApp/streamSaver.js");
+});
 // Configure the HTTP request pipeline.
 
 app.MapHub<WebRtcSignallingHub>(WebRtcSignallingHub.Url);
