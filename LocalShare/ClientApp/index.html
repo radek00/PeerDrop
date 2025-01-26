@@ -84,7 +84,7 @@
     // const broadcast = new BroadcastChannel('worker');
     setInterval(() => {
         navigator.serviceWorker.controller.postMessage("ping")
-    },100);
+    },10000);
 
     connection.on("AddConnectedClient", addConnectedClient);
     connection.on("RemoveDisconnectedClient", removeDisconnectedClient);
