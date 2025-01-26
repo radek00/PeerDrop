@@ -51,6 +51,7 @@ self.onmessage = (event) => {
                 chunkBroadcast.onmessage = (event) => {
                     if (event.data.done) {
                         controller.close();
+                        return;
                     }
                     controller.enqueue(new Uint8Array(event.data.chunkData));
                 }
@@ -62,39 +63,5 @@ self.onmessage = (event) => {
     
     
     metadataBroadcast.postMessage({download: downloadUrl});
-    
-}
-
-class ChunkStream {
-    fileMetadata;
-    receivedSize = 0;
-    broadcast = new BroadcastChannel('worker');
-    
-    constructor(fileMetadata) {
-        this.fileMetadata = fileMetadata;
-    }
-    
-    start(controller) {
-        this.broadcast.onmessage = (event) => {
-            controller.enqueue(new Uint8Array(event.data.chunkData));
-            if (this.fileMetadata == null) {
-                this.fileMetadata = event.data.fileTransferMetadata;
-            }
-            this.receivedSize += event.data.chunkData.byteLength;
-
-            if (this.receivedSize >= this.fileMetadata.size) {
-                controller.close();
-                this.broadcast.close();
-            }
-        }
-    }
-    
-    pull(controller) {
-        // Do nothing
-    }
-    
-    cancel(reason) {
-        console.log(reason);
-    }
     
 }
