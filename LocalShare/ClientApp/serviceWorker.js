@@ -53,6 +53,10 @@ self.onmessage = (event) => {
                         controller.close();
                         return;
                     }
+                    if (event.data.abort) {
+                        controller.error(new Error('Download aborted'))
+                        return;
+                    }
                     controller.enqueue(new Uint8Array(event.data.chunkData));
                 }
             }
