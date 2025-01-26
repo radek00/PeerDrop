@@ -1,72 +1,57 @@
 ﻿function createWriteStream(fileTransferMetadata) {
     navigator.serviceWorker.controller.postMessage({fileTransferMetadata});
-    let metadataBroadcast = new BroadcastChannel("metadata");
-    let chunkBroadcast = new BroadcastChannel("chunk");
-    let downloadUrl = null;
-    let bytesWritten = 0;
-
-    metadataBroadcast.onmessage = (event) => {
-        if (event.data.download) {
-            if (bytesWritten) {
-                const atag = document.createElement('a');
-                atag.href = event.data.download;
-                atag.click();
-                // location.href = event.data.download
-            } else {
-                downloadUrl = event.data.download
-            }
-        }
-
-        // if (event.data.error) {
-        //     console.error(event.data.error);
-        //     return;
-        // }
-        //
-        // if (event.data.done) {
-        //     broadcast.close();
-        //     return;
-        // }
-        //
-        // if (event.data.chunkData) {
-        //     const chunk = new Uint8Array(event.data.chunkData);
-        //     channel.port1.postMessage(chunk);
-        //     bytesWritten += chunk.length;
-        // }
-    }
-
-    return new WritableStream({
-        write(chunk) {
-            if (!(chunk instanceof Uint8Array)) {
-                throw new TypeError('Can only write Uint8Arrays')
-            }
-            chunkBroadcast.postMessage({chunkData: chunk})
-            bytesWritten += chunk.length
-            if (bytesWritten === fileTransferMetadata.size) {
-                chunkBroadcast.postMessage({done: true})
-            }
-
-            if (downloadUrl) {
-
-                const atag = document.createElement('a');
-                atag.href = event.data.download;
-                atag.click();
-                downloadUrl = null
-            }
-        }
-    })
+    return new WritableStream(new WritableChunkStream(fileTransferMetadata));
 }
 
-// class WritableChunkStream {
-//     write(chunk) {
-//         if (!(chunk instanceof Uint8Array)) {
-//             throw new TypeError('Can only write Uint8Arrays')
-//         }
-//         channel.port1.postMessage(chunk)
-//         bytesWritten += chunk.length
-//
-//         if (downloadUrl) {
-//             location.href = downloadUrl
-//             downloadUrl = null
-//         }
-//     }
-// }
+class WritableChunkStream{
+    fileTransferMetadata = null;
+    metadataBroadcast = new BroadcastChannel("metadata");
+    chunkBroadcast = new BroadcastChannel("chunk");
+    downloadUrl = null;
+    bytesWritten = 0;
+    
+    constructor(fileTransferMetadata) {
+        this.fileTransferMetadata = fileTransferMetadata;
+        this.metadataBroadcast.onmessage = (event) => {
+            if (event.data.download) {
+                if (this.bytesWritten) {
+                    this.startDownload(event.data.download);
+                } else {
+                    this.downloadUrl = event.data.download
+                }
+            }
+        }
+    }
+
+    write(chunk) {
+        if (!(chunk instanceof Uint8Array)) {
+            throw new TypeError('Can only write Uint8Arrays')
+        }
+        this.chunkBroadcast.postMessage({chunkData: chunk})
+        this.bytesWritten += chunk.length
+
+        if (this.downloadUrl) {
+            this.startDownload();
+        }
+    }
+    startDownload() {
+        const atag = document.createElement('a');
+        atag.href = event.data.download;
+        atag.click();
+        this.downloadUrl = null
+    }
+    close() {
+        console.log('close')
+        this.chunkBroadcast.postMessage({done: true});
+        this.closeChannels();
+    }
+    abort() {
+        console.log('abort')
+        this.chunkBroadcast.postMessage({abort: true});
+        this.closeChannels();
+    }
+    closeChannels() {
+        this.metadataBroadcast.close();
+        this.chunkBroadcast.close();
+    }
+}

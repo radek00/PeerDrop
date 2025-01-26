@@ -183,7 +183,7 @@
     }
 
     let writer;
-    function onReceiveMessageCallback(event) {
+    async function onReceiveMessageCallback(event) {
         if (receivedSize === 0) {
             const fileStream = createWriteStream(
                 fileTransferMetadata
@@ -192,11 +192,11 @@
         }
         
 
-        writer.write(new Uint8Array(event.data));
+        await writer.write(new Uint8Array(event.data));
         receivedSize += event.data.byteLength;
 
         if (receivedSize === fileTransferMetadata.size) {
-            writer.close();
+            await writer.close();
             closeDataChannels();
         }
     }
