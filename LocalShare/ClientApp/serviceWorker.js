@@ -7,7 +7,6 @@ self.addEventListener("activate", (event) => {
 });
 
 let map = new Map();
-let url;
 let metadataBroadcast = new BroadcastChannel("metadata");
 let chunkBroadcast = new BroadcastChannel("chunk");
 
@@ -28,13 +27,6 @@ self.addEventListener("fetch", (event) => {
         event.respondWith(
             new Response(streamData.stream, { headers })
         );
-        //     event.respondWith(
-        //         decrypt(
-        //             new URL(event.request.url).searchParams.get("id"),
-        //         event.request.url
-        // )
-        // );
-    
 });
 
 self.onmessage = (event) => {
@@ -46,26 +38,34 @@ self.onmessage = (event) => {
     
     const streamData = {
         fileTransferMetadata,
-        stream: new ReadableStream({
-            start(controller) {
-                chunkBroadcast.onmessage = (event) => {
-                    if (event.data.done) {
-                        controller.close();
-                        return;
-                    }
-                    if (event.data.abort) {
-                        controller.error(new Error('Download aborted'))
-                        return;
-                    }
-                    controller.enqueue(new Uint8Array(event.data.chunkData));
-                }
-            }
-        })
+        stream: new ReadableStream(new ReadableChunkStream(downloadUrl))
     }
-    url = downloadUrl;
     map.set(downloadUrl, streamData);
-    
-    
     metadataBroadcast.postMessage({download: downloadUrl});
     
+}
+
+class ReadableChunkStream {
+    downloadUrl = null;
+    constructor(downloadUrl) {
+        this.downloadUrl = downloadUrl;
+    }
+    start(controller) {
+        chunkBroadcast.onmessage = (event) => {
+            if (event.data.done) {
+                controller.close();
+                return;
+            }
+            if (event.data.abort) {
+                controller.error(new Error('Download aborted'))
+                return;
+            }
+            controller.enqueue(new Uint8Array(event.data.chunkData));
+        }
+    }
+    
+    close() {
+        console.log("Closing readable chunk stream");
+        map.delete(this.downloadUrl);
+    }
 }
