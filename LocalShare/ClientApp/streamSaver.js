@@ -31,13 +31,17 @@ class WritableChunkStream{
         this.bytesWritten += chunk.length
 
         if (this.downloadUrl) {
-            this.startDownload();
+            this.startDownload(this.downloadUrl);
         }
     }
-    startDownload() {
-        const atag = document.createElement('a');
-        atag.href = event.data.download;
-        atag.click();
+    startDownload(downloadUrl) {
+        const anchorElement = document.createElement('a');
+        if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
+            anchorElement.setAttribute('download', "");
+        }
+        anchorElement.href = downloadUrl;
+        anchorElement.click();
+        anchorElement.remove();
         this.downloadUrl = null
     }
     close() {
