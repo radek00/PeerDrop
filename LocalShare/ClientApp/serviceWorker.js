@@ -20,7 +20,7 @@ self.addEventListener("fetch", (event) => {
         }
 
         const headers = {
-            'Content-Type': 'image/jpg',
+            'Content-Type': 'application/octet-stream',
             'Content-Disposition': `attachment; filename="${streamData.fileTransferMetadata.name}"`,
             'Content-Length': streamData.fileTransferMetadata.size
         }        
