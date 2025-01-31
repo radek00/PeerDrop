@@ -6,7 +6,7 @@ import {
   } from '@microsoft/signalr';
 
   
-  export const createSignalRConnection = async (path: string) => {
+  export const createSignalRConnection = (path: string) => {
   
     const options: IHttpConnectionOptions = {
       logMessageContent: true,
@@ -22,8 +22,6 @@ import {
   
     connection.serverTimeoutInMilliseconds = 60000;
     connection.keepAliveIntervalInMilliseconds = 15000;
-    
-    await connection.start();
     
     return connection;
   
