@@ -24,8 +24,8 @@ const registerServiceWorker = async () => {
   };
   registerServiceWorker();
 
-const connection = await createSignalRConnection("signalr/signalling");
-
+const connection = createSignalRConnection("signalr/signalling");
+connection.start();
 
 connection.on("UpdateSelf", (id) => {
     console.log(id);
