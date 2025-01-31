@@ -1,3 +1,5 @@
+import { createSignalRConnection } from "./utils/signalr";
+
 const registerServiceWorker = async () => {
     if ("serviceWorker" in navigator) {
       try {
@@ -21,3 +23,10 @@ const registerServiceWorker = async () => {
     }
   };
   registerServiceWorker();
+
+const connection = await createSignalRConnection("signalr/signalling");
+
+
+connection.on("UpdateSelf", (id) => {
+    console.log(id);
+})

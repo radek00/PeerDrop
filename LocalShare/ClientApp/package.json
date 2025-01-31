@@ -11,6 +11,7 @@
     "build-worker": "vite build --mode worker"
   },
   "dependencies": {
+    "@microsoft/signalr": "^8.0.7",
     "lit": "^3.2.1"
   },
   "devDependencies": {
