@@ -22,10 +22,10 @@ const baseConfig: UserConfig = {
         secure: false,
         rewrite: (path: string) => path.replace(/^\/api/, "/api"),
       },
-      '/signalr': {
-        target: 'wss://localhost:7109',
+      "/signalr": {
+        target: "wss://localhost:7109",
         ws: true,
-        secure: false
+        secure: false,
       },
     },
   },
