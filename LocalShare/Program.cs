@@ -4,7 +4,13 @@ using Microsoft.Net.Http.Headers;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddSignalR();
+
+builder.Services.AddSignalR(hubOptions =>
+{
+    hubOptions.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    hubOptions.HandshakeTimeout = TimeSpan.FromSeconds(15);
+    hubOptions.EnableDetailedErrors = true;
+});
 
 builder.Services.AddSpaStaticFiles(config =>
 {
@@ -32,7 +38,9 @@ app.UseSpa(config =>
     config.Options.SourcePath = "ClientApp";
 });
 
-app.MapHub<WebRtcSignallingHub>(WebRtcSignallingHub.Url);
+app.MapHub<WebRtcSignallingHub>($"/signalr{WebRtcSignallingHub.Url}");
+
+app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

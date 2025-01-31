@@ -18,10 +18,15 @@ const baseConfig: UserConfig = {
     https: true,
     proxy: {
       "/api": {
-        target: "http://localhost:5033",
+        target: "https://localhost:7109",
         changeOrigin: true,
         secure: false,
         rewrite: (path: string) => path.replace(/^\/api/, "/api"),
+      },
+      '/signalr': {
+        target: 'wss://localhost:7109',
+        ws: true,
+        secure: false
       },
     },
   },
