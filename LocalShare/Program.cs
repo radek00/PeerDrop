@@ -1,39 +1,36 @@
 using LocalShare.Hubs;
+using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", builder =>
-    {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
-    });
-});
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
 
-var app = builder.Build();
-app.UseCors("AllowAll");
+builder.Services.AddSpaStaticFiles(config =>
+{
+    config.RootPath = "ClientApp/dist";
+});
 
-app.MapGet("/", async context =>
+var app = builder.Build();
+
+app.UseSpaStaticFiles(new StaticFileOptions()
 {
-    context.Response.ContentType = "text/html";
-    await context.Response.SendFileAsync("ClientApp/index.html");
+    OnPrepareResponse = ctx =>
+    {
+        var headers = ctx.Context.Response.GetTypedHeaders();
+        headers.CacheControl = new CacheControlHeaderValue
+        {
+            Public = true,
+            MaxAge = TimeSpan.FromDays(400)
+        };
+
+    }
 });
-app.MapGet("/serviceWorker.js", async context =>
+
+app.UseSpa(config =>
 {
-    context.Response.ContentType = "application/javascript";
-    await context.Response.SendFileAsync("ClientApp/serviceWorker.js");
+    config.Options.SourcePath = "ClientApp";
 });
-app.MapGet("/streamSaver.js", async context =>
-{
-    context.Response.ContentType = "application/javascript";
-    await context.Response.SendFileAsync("ClientApp/streamSaver.js");
-});
-// Configure the HTTP request pipeline.
 
 app.MapHub<WebRtcSignallingHub>(WebRtcSignallingHub.Url);
 
