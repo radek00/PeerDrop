@@ -15,7 +15,6 @@ const baseConfig: UserConfig = {
   server: {
     port: 3000,
     strictPort: true,
-    https: true,
     proxy: {
       "/api": {
         target: "https://localhost:7109",
