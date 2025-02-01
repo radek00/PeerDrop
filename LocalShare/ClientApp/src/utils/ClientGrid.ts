@@ -8,8 +8,9 @@ export class ClientGrid {
     private dw: number;
     private step: number = 0;
     private isAnimating: boolean = true;
+    private pulsateStep: number = 0;
 
-    private circles: { x: number, y: number, radius: number }[] = [];
+    private circles: { x: number, y: number, radius: number, color: string }[] = [];
 
 
     constructor() {
@@ -53,7 +54,7 @@ export class ClientGrid {
         this.canvasContext.arc(this.x0, this.y0, radius, 0, 2 * Math.PI);
         this.canvasContext.stroke();
         this.canvasContext.lineWidth = 2;
-        this.circles.push({ x: this.x0, y: this.y0, radius: radius });
+        this.circles.push({ x: this.x0, y: this.y0, radius: radius, color: 'rgba(' + color + ',' + color + ',' + color + ',0.1)' });
     }
 
     private drawCircles() {
@@ -86,10 +87,39 @@ export class ClientGrid {
         return { x, y };
     }
 
+    private redrawCircles() {
+        this.canvasContext.clearRect(0, 0, this.width, this.height);
+        for (const circle of this.circles) {
+            this.canvasContext.beginPath();
+            this.canvasContext.strokeStyle = circle.color;
+            this.canvasContext.arc(circle.x, circle.y, circle.radius, 0, 2 * Math.PI);
+            this.canvasContext.stroke();
+            this.canvasContext.lineWidth = 2;
+        }
+    }
+
+    private isPulsating: boolean = false;
     public changeStage() {
         this.isAnimating = !this.isAnimating;
         const elementIndex = Math.min(Math.max(1, Math.floor(Math.random() * 3)), this.circles.length - 1);
         const circle = this.circles[elementIndex];
+
+        const pulsate = () => {
+            // if (this.isPulsating) {
+            //     return;
+            // }
+            requestAnimationFrame(() => {
+                this.pulsateStep += 0.025;
+                const alpha = 0.5 + 0.5 * (Math.sin(this.pulsateStep) + 1) / 2;// Value between 0 and 1
+                for (let i = 0; i < this.circles.length; i++) {
+                    this.circles[i].color = `rgba(52, 129, 94, ${alpha})`; // Green color with varying alpha
+                }
+                this.redrawCircles();
+                pulsate();
+            });
+        };
+        pulsate();
+        //this.isPulsating = true;
         return this.getRandomPointOnCirclePerimeter(circle);
     }
 }
