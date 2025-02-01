@@ -28,6 +28,21 @@ registerServiceWorker();
 const grid = new ClientGrid();
 grid.renderCanvas();
 
+const button = document.getElementById("testButton");
+button?.addEventListener("click", changeStage);
+
+function changeStage() {
+  const circle = grid.changeStage();
+  const divElement = document.createElement("div");
+  divElement.style.position = "absolute";
+  divElement.innerHTML = "Hello World";
+  divElement.style.top = `${circle.y}px`;
+  divElement.style.left = `${circle.x}px`;
+  document.body.appendChild(divElement);
+  console.log(circle);
+}
+
+
 // const connection = createSignalRConnection("signalr/signalling");
 // connection.start();
 

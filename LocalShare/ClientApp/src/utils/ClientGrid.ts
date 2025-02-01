@@ -7,7 +7,9 @@ export class ClientGrid {
     private y0: number;
     private dw: number;
     private step: number = 0;
-    private isLoading: boolean = false;
+    private isAnimating: boolean = true;
+
+    private circles: { x: number, y: number, radius: number }[] = [];
 
 
     constructor() {
@@ -39,7 +41,7 @@ export class ClientGrid {
         // offset = this.height > 800 ? 116 : offset;
         this.x0 = this.width / 2;
         this.y0 = this.height - offset;
-        this.dw = Math.max(this.width, this.height, 1000) / 8;
+        this.dw = Math.max(this.width, this.height, 1000) / 13;
         this.drawCircles();
     }
 
@@ -51,9 +53,12 @@ export class ClientGrid {
         this.canvasContext.arc(this.x0, this.y0, radius, 0, 2 * Math.PI);
         this.canvasContext.stroke();
         this.canvasContext.lineWidth = 2;
+        this.circles.push({ x: this.x0, y: this.y0, radius: radius });
     }
 
     private drawCircles() {
+        console.log("Drawing Circles", this.circles);
+        this.circles = [];
         this.canvasContext.clearRect(0, 0, this.width, this.height);
         for (let i = 0; i < 8; i++) {
             this.drawCircle(this.dw * i + this.step % this.dw);
@@ -63,18 +68,28 @@ export class ClientGrid {
 
     public renderCanvas() {
         const animate = () => {
+            if (!this.isAnimating) {
+                return;
+            }
             requestAnimationFrame(() => {
                 this.drawCircles();
                 animate();
             });
-            // if (this.isLoading || this.step % this.dw < this.dw - 5) {
-            // }
         }
-        // window.animateBackground = (l) => {
-        //     this.isLoading = l;
-        //     animate();
-        // };
         this.init();
         animate();
+    }
+    private getRandomPointOnCirclePerimeter(circle: { x: number, y: number, radius: number }): { x: number, y: number } {
+        const angle = Math.random() * 2 * Math.PI;
+        const x = circle.x + circle.radius * Math.cos(angle);
+        const y = circle.y + circle.radius * Math.sin(angle);
+        return { x, y };
+    }
+
+    public changeStage() {
+        this.isAnimating = !this.isAnimating;
+        const elementIndex = Math.min(Math.max(1, Math.floor(Math.random() * 3)), this.circles.length - 1);
+        const circle = this.circles[elementIndex];
+        return this.getRandomPointOnCirclePerimeter(circle);
     }
 }
