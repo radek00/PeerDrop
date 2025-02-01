@@ -1,3 +1,4 @@
+import { ClientGrid } from "./utils/ClientGrid";
 import { createSignalRConnection } from "./utils/signalr";
 
 const registerServiceWorker = async () => {
@@ -24,9 +25,12 @@ const registerServiceWorker = async () => {
 };
 registerServiceWorker();
 
-const connection = createSignalRConnection("signalr/signalling");
-connection.start();
+const grid = new ClientGrid();
+grid.renderCanvas();
 
-connection.on("UpdateSelf", (id) => {
-  console.log(id);
-});
+// const connection = createSignalRConnection("signalr/signalling");
+// connection.start();
+
+// connection.on("UpdateSelf", (id) => {
+//   console.log(id);
+// });
