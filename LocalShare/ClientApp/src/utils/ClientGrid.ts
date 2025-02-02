@@ -66,7 +66,7 @@ export class ClientGrid {
         if (this.circleColor === CircleColor.NoClients) {
             this.canvasContext.strokeStyle = `rgba(${intensity},${intensity},${intensity},0.2)`;
         } else {
-            this.canvasContext.strokeStyle = `rgba(52,${intensity},50,0.25)`;
+            this.canvasContext.strokeStyle = `rgba(45,${intensity},191,0.3)`;
     }
         this.canvasContext.arc(this.x0, this.y0, radius, 0, 2 * Math.PI);
         this.canvasContext.stroke();
