@@ -5,16 +5,54 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: var(--dark-green);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --nyanza: #d8f3dcff;
+  --celadon: #b7e4c7ff;
+  --celadon-2: #95d5b2ff;
+  --mint: #74c69dff;
+  --mint-2: #52b788ff;
+  --sea-green: #40916cff;
+  --dartmouth-green: #2d6a4fff;
+  --brunswick-green: #1b4332ff;
+  --dark-green: #081c15ff;
 }
+
 
 body {
   margin: 0;
+}
+
+.client__container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.client__container div {
+  text-align: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: var(--mint-2); /* Green color to represent your device */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 @media (prefers-color-scheme: light) {
