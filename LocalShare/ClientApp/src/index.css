@@ -36,20 +36,15 @@ body {
   height: 100vh;
 }
 
-.client__container div {
+.client__container img {
+  color: var(--celadon) !important;
+  padding: 5px;
   text-align: center;
-  width: 100px;
-  height: 100px;
+  height: 60px;
   border-radius: 50%;
-  background-color: var(--mint-2); /* Green color to represent your device */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.2rem;
-  font-weight: bold;
+  background-color: var(--mint-2);
   position: absolute;
-  top: 50%;
+  bottom: 5%;
   left: 50%;
   transform: translate(-50%, -50%);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
