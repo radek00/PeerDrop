@@ -1,110 +1,107 @@
-enum AnimationState {
-  ANIMATING,
-  PULSATING,
+interface Circle {
+    x: number;
+    y: number;
+    radius: number;
 }
 
-enum CircleColor {
-  NoClients = 197,
-  ClientConnected = 52,
+enum AnimationState {
+    IDLE,
+    ACTIVE
 }
 
 export class ClientGrid {
-  private canvas: HTMLCanvasElement;
-  private canvasContext: CanvasRenderingContext2D;
-  private height: number;
-  private width: number;
-  private x0: number;
-  private y0: number;
-  private dw: number;
-  private step: number = 0;
-  private circleColor = CircleColor.NoClients;
+    private readonly canvas: HTMLCanvasElement;
+    private readonly ctx: CanvasRenderingContext2D;
+    private dimensions = { width: 0, height: 0 };
+    private center = { x: 0, y: 0 };
+    private circleSpacing = 0;
+    private animationFrame: number | null = null;
+    private step = 0;
+    private state = AnimationState.IDLE;
 
-  private strokeMap = new Map<CircleColor, (color: string) => string>();
-
-  constructor() {
-    this.strokeMap.set(
-      CircleColor.NoClients,
-      (color: string) => `rgba(${color},${color}},${color},0.1)`
-    );
-    this.strokeMap.set(
-      CircleColor.ClientConnected,
-      (color: string) => `rgba(0,${color},0,0.1)`
-    );
-    this.canvas = document.createElement("canvas");
-    this.canvas.style.width = "100%";
-    this.canvas.style.zIndex = "-1";
-    this.canvas.style.position = "absolute";
-    this.canvas.style.top = "0";
-    this.canvas.style.left = "0";
-
-    document.body.appendChild(this.canvas);
-    this.canvasContext = this.canvas.getContext("2d")!;
-    this.height = 0;
-    this.width = 0;
-    this.x0 = 0;
-    this.y0 = 0;
-    this.dw = 0;
-
-    window.addEventListener("resize", () => this.init());
-  }
-
-  private init() {
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
-    this.canvas.width = this.width;
-    this.canvas.height = this.height;
-
-    //let offset = this.height /2;
-    let offset = this.height > 380 ? 100 : 65;
-    offset = this.height > 800 ? 116 : offset;
-    this.x0 = this.width / 2;
-    this.y0 = this.height - offset;
-    this.dw = Math.max(this.width, this.height, 1000) / 13;
-    this.drawCircles();
-  }
-
-  private drawCircle(radius: number) {
-    this.canvasContext.beginPath();
-    const intensity = Math.round(
-      197 * (1 - radius / Math.max(this.width, this.height))
-    );
-
-    if (this.circleColor === CircleColor.NoClients) {
-      this.canvasContext.strokeStyle = `rgba(${intensity},${intensity},${intensity},0.2)`;
-    } else {
-      this.canvasContext.strokeStyle = `rgba(45,${intensity},191,0.3)`;
+    constructor() {
+        this.canvas = document.createElement('canvas');
+        this.setupCanvas();
+        this.ctx = this.canvas.getContext('2d')!;
+        window.addEventListener('resize', this.handleResize);
+        this.init();
     }
-    this.canvasContext.arc(this.x0, this.y0, radius, 0, 2 * Math.PI);
-    this.canvasContext.stroke();
-    this.canvasContext.lineWidth = 2;
-  }
 
-  private drawCircles() {
-    this.canvasContext.clearRect(0, 0, this.width, this.height);
-    for (let i = 0; i < 8; i++) {
-      this.drawCircle(this.dw * i + (this.step % this.dw));
+    private setupCanvas(): void {
+        this.canvas.style.width = '100%';
+        this.canvas.style.position = 'absolute';
+        this.canvas.style.top = '0';
+        this.canvas.style.left = '0';
+        this.canvas.style.zIndex = '-1';
+        document.body.appendChild(this.canvas);
     }
-    this.step += 1;
-  }
 
-  public renderCanvas() {
-    this.init();
-    this.animate();
-  }
-
-  private animate() {
-    requestAnimationFrame(() => {
-      console.log(this.circleColor);
-      this.drawCircles();
-      this.animate();
-    });
-  }
-
-  public changeStage() {
-    if (this.circleColor === CircleColor.NoClients) {
-      this.circleColor = CircleColor.ClientConnected;
-    } else {
-      this.circleColor = CircleColor.NoClients;
+    private handleResize = (): void => {
+        this.init();
     }
-  }
+
+    private init(): void {
+        this.dimensions = {
+            width: window.innerWidth,
+            height: window.innerHeight
+        };
+        this.canvas.width = this.dimensions.width;
+        this.canvas.height = this.dimensions.height;
+
+        const offset = this.dimensions.height > 800 ? 116 : 100;
+        this.center = {
+            x: this.dimensions.width / 2,
+            y: this.dimensions.height - offset
+        };
+        this.circleSpacing = Math.max(this.dimensions.width, this.dimensions.height, 1000) / 12;
+    }
+
+    private drawCircle(radius: number): void {
+        this.ctx.beginPath();
+        const intensity = Math.round(
+            197 * (1 - radius / Math.max(this.dimensions.width, this.dimensions.height))
+        );
+        
+        this.ctx.strokeStyle = this.state === AnimationState.IDLE
+            ? `rgba(${intensity},${intensity},${intensity},0.2)`
+            : `rgba(45,${intensity},191,0.3)`;
+            
+        this.ctx.lineWidth = 2;
+        this.ctx.arc(this.center.x, this.center.y, radius, 0, 2 * Math.PI);
+        this.ctx.stroke();
+    }
+
+    private render = (): void => {
+        this.ctx.clearRect(0, 0, this.dimensions.width, this.dimensions.height);
+        for (let i = 0; i < 8; i++) {
+            this.drawCircle(this.circleSpacing * i + (this.step % this.circleSpacing));
+        }
+        this.step++;
+        this.animationFrame = requestAnimationFrame(this.render);
+    }
+
+    public start(): void {
+        if (this.animationFrame === null) {
+            this.render();
+        }
+    }
+
+    public stop(): void {
+        if (this.animationFrame !== null) {
+            cancelAnimationFrame(this.animationFrame);
+            this.animationFrame = null;
+        }
+    }
+
+    public toggleState(): void {
+        this.state = this.state === AnimationState.IDLE 
+            ? AnimationState.ACTIVE 
+            : AnimationState.IDLE;
+    }
+
+    public cleanup(): void {
+        this.stop();
+        window.removeEventListener('resize', this.handleResize);
+        this.canvas.remove();
+    }
 }
