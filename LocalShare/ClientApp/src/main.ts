@@ -42,7 +42,6 @@ function changeStage() {
   console.log(circle);
 }
 
-
 // const connection = createSignalRConnection("signalr/signalling");
 // connection.start();
 

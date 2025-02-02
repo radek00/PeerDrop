@@ -26,20 +26,19 @@
   /* Accent Colors */
   --teal-400: #2dd4bf;
   --sky-400: #38bdf8;
-  
+
   /* Background Colors */
   --bg-dark: #041520;
   --bg-light: #f8fafc;
-  
+
   /* Text Colors */
   --text-light: #f8fafc;
   --text-dark: #0f172a;
-  
+
   /* Shadow */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
-
 
 body {
   margin: 0;
