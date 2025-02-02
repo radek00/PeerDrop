@@ -1,3 +1,8 @@
+enum AnimationState {
+    ANIMATING,
+    PULSATING
+}
+
 export class ClientGrid {
     private canvas: HTMLCanvasElement;
     private canvasContext: CanvasRenderingContext2D;
@@ -10,7 +15,12 @@ export class ClientGrid {
     private isAnimating: boolean = true;
     private pulsateStep: number = 0;
 
+    private transitionStep: number = 0;
+    private transitionDuration: number = 120; 
+
     private circles: { x: number, y: number, radius: number, color: string }[] = [];
+
+    private state: AnimationState = AnimationState.ANIMATING;
 
 
     constructor() {
@@ -38,7 +48,8 @@ export class ClientGrid {
         this.canvas.width = this.width;
         this.canvas.height = this.height;
 
-        let offset = this.height / 2;
+        let offset = this.height /2;
+        // let offset = this.height > 380 ? 100 : 65;
         // offset = this.height > 800 ? 116 : offset;
         this.x0 = this.width / 2;
         this.y0 = this.height - offset;
@@ -68,17 +79,8 @@ export class ClientGrid {
     }
 
     public renderCanvas() {
-        const animate = () => {
-            if (!this.isAnimating) {
-                return;
-            }
-            requestAnimationFrame(() => {
-                this.drawCircles();
-                animate();
-            });
-        }
         this.init();
-        animate();
+        this.animate();
     }
     private getRandomPointOnCirclePerimeter(circle: { x: number, y: number, radius: number }): { x: number, y: number } {
         const angle = Math.random() * 2 * Math.PI;
@@ -94,32 +96,84 @@ export class ClientGrid {
             this.canvasContext.strokeStyle = circle.color;
             this.canvasContext.arc(circle.x, circle.y, circle.radius, 0, 2 * Math.PI);
             this.canvasContext.stroke();
-            this.canvasContext.lineWidth = 2;
+            this.canvasContext.lineWidth = 4;
         }
     }
 
-    private isPulsating: boolean = false;
-    public changeStage() {
-        this.isAnimating = !this.isAnimating;
-        const elementIndex = Math.min(Math.max(1, Math.floor(Math.random() * 3)), this.circles.length - 1);
-        const circle = this.circles[elementIndex];
+    private animate() {
+        if (this.state === AnimationState.ANIMATING) {
+            requestAnimationFrame(() => {
+                this.drawCircles();
+                this.animate();
+            });
+        }
+    }
 
-        const pulsate = () => {
-            // if (this.isPulsating) {
-            //     return;
-            // }
+    
+    private pulsate() {
+        if (this.state === AnimationState.PULSATING) {
             requestAnimationFrame(() => {
                 this.pulsateStep += 0.025;
-                const alpha = 0.5 + 0.5 * (Math.sin(this.pulsateStep) + 1) / 2;// Value between 0 and 1
+                const alpha = 0.5 + 0.5 * (Math.sin(this.pulsateStep) + 1) / 2; // Value between 0.5 and 1
                 for (let i = 0; i < this.circles.length; i++) {
                     this.circles[i].color = `rgba(52, 129, 94, ${alpha})`; // Green color with varying alpha
                 }
                 this.redrawCircles();
-                pulsate();
+                this.pulsate();
             });
-        };
-        pulsate();
-        //this.isPulsating = true;
+        }
+    }
+
+    private transition() {
+        console.log(this.circles.length);
+        if (this.transitionStep < this.transitionDuration) {
+            requestAnimationFrame(() => {
+                this.transitionStep++;
+                const progress = this.transitionStep / this.transitionDuration;
+                const alpha = 0.5 + 0.5 * (Math.sin(this.pulsateStep) + 1) / 2; // Value between 0.5 and 1
+                for (let i = 0; i < this.circles.length; i++) {
+                    const currentColor = this.circles[i].color;
+                    const targetColor = `rgba(52, 129, 94, ${alpha})`;
+                    this.circles[i].color = this.interpolateColor(currentColor, targetColor, progress);
+                }
+                this.redrawCircles();
+                this.transition();
+            });
+        } else {
+            this.transitionStep = 0;
+            this.state = AnimationState.PULSATING;
+            this.pulsate();
+        }
+    }
+
+    public getNextClientPosition() {
+        const elementIndex = Math.min(Math.max(0, Math.floor(Math.random() * 3)), this.circles.length - 1);
+        const circle = this.circles[elementIndex];
         return this.getRandomPointOnCirclePerimeter(circle);
     }
+    public changeStage() {
+        if (this.state === AnimationState.ANIMATING) {
+            this.circles.shift();
+            this.state = AnimationState.PULSATING;
+            this.transition();
+        } else {
+            this.state = AnimationState.ANIMATING;
+            this.animate();
+        }
+    }
+
+    private interpolateColor(currentColor: string, targetColor: string, progress: number): string {
+        const currentRGBA = this.parseRGBA(currentColor);
+        const targetRGBA = this.parseRGBA(targetColor);
+        const interpolatedRGBA = currentRGBA.map((current, index) => {
+            return current + (targetRGBA[index] - current) * progress;
+        });
+        return `rgba(${interpolatedRGBA[0]}, ${interpolatedRGBA[1]}, ${interpolatedRGBA[2]}, ${interpolatedRGBA[3]})`;
+    }
+    
+    private parseRGBA(color: string): number[] {
+        const rgba = color.match(/\d+(\.\d+)?/g)?.map(Number) || [0, 0, 0, 1];
+        return rgba;
+    }
+    
 }
