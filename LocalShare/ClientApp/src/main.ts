@@ -1,5 +1,8 @@
+import { html, LitElement } from "lit";
 import { ClientGrid } from "./utils/ClientGrid";
-import { createSignalRConnection } from "./utils/signalr";
+// import { createSignalRConnection } from "./utils/signalr";
+import { customElement } from "lit/decorators.js";
+import "./components/ClientWrapper";
 
 const registerServiceWorker = async () => {
   if ("serviceWorker" in navigator) {
@@ -33,6 +36,13 @@ button?.addEventListener("click", changeStage);
 
 function changeStage() {
   grid.toggleState();
+}
+
+@customElement("app-component")
+export class App extends LitElement {
+  render() {
+    return html`<client-wrapper></client-wrapper>`;
+  }
 }
 
 // const connection = createSignalRConnection("signalr/signalling");
