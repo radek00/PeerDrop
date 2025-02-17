@@ -44,18 +44,6 @@ body {
   margin: 0;
 }
 
-.client__container svg {
-  padding: 12px;
-  height: 64px;
-  width: 64px;
-  border-radius: 50%;
-  position: absolute;
-  bottom: 3%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #042337;
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
     background-color: var(--bg-dark);
