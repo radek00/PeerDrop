@@ -1,5 +1,5 @@
 import { HubConnection } from "@microsoft/signalr";
-import { html, LitElement } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { createSignalRConnection } from "../utils/signalr";
 import { repeat } from "lit/directives/repeat.js";
@@ -12,6 +12,22 @@ type Client = {
 
 @customElement("client-wrapper")
 export class ClientWrapper extends LitElement {
+
+    static styles = css`
+    signal-icon svg {
+      
+  padding: 12px;
+  height: 64px;
+  width: 64px;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 3%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #042337;
+
+    }
+    `
 
     @state()
     private _clients: Client[] = [];
@@ -49,6 +65,7 @@ export class ClientWrapper extends LitElement {
             `
           )}
         </div>
+        <signal-icon></signal-icon>
       `;
     }
 }
