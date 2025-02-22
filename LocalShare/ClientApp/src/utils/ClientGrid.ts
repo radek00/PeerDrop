@@ -1,4 +1,4 @@
-enum AnimationState {
+export enum AnimationState {
   IDLE,
   ACTIVE,
 }
@@ -14,7 +14,7 @@ export class ClientGrid {
   private circleSpacing = 0;
   private animationFrame: number | null = null;
   private step = 0;
-  private state = AnimationState.IDLE;
+  state = AnimationState.IDLE;
 
   constructor() {
     this.canvas = document.createElement("canvas");
