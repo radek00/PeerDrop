@@ -1,8 +1,8 @@
 export enum SignallingEvents {
-    UpdateSelf = "UpdateSelf",
-    AddConnectedClient = "AddConnectedClient",
-    ReceiveOffer = "ReceiveOffer",
-    ReceiveAnswer = "ReceiveAnswer",
-    ReceiveIceCandidate = "ReceiveIceCandidate",
-    RemoveDisconnectedClient = "RemoveDisconnectedClient",
+  UpdateSelf = "UpdateSelf",
+  AddConnectedClient = "AddConnectedClient",
+  ReceiveOffer = "ReceiveOffer",
+  ReceiveAnswer = "ReceiveAnswer",
+  ReceiveIceCandidate = "ReceiveIceCandidate",
+  RemoveDisconnectedClient = "RemoveDisconnectedClient",
 }

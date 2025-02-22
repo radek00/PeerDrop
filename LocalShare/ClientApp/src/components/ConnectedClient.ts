@@ -1,9 +1,25 @@
-import { css, html, LitElement } from "lit";
+import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "../icons/PhoneIcon";
+import "../icons/SignalIcon";
+
+type IconType = "phone" | "signal";
 
 @customElement("connected-client")
 export class ConnectedClient extends LitElement {
+  @property({ type: String })
+  name = "";
+
+  iconMap: Record<IconType, TemplateResult> = {
+    phone: html`<phone-icon></phone-icon>`,
+    // computer: html`<computer-icon></computer-icon>`,
+    // tablet: html`<tablet-icon></tablet-icon>`,
+    signal: html`<signal-icon></signal-icon>`,
+  };
+
+  @property({ type: String })
+  icon: IconType = "phone";
+
   static styles = css`
     .client {
       display: flex;
@@ -18,15 +34,11 @@ export class ConnectedClient extends LitElement {
       font-weight: 600;
     }
   `;
-  // Make property reactive
-  @property({ type: String })
-  name = "";
 
   render() {
-    console.log("rendering client", this.name);
     return html`
       <div class="client">
-        <phone-icon></phone-icon>
+        ${this.iconMap[this.icon]}
         <div class="client--name">${this.name}</div>
       </div>
     `;
