@@ -27,6 +27,14 @@ export class ClientWrapper extends LitElement {
   background-color: #042337;
 
     }
+    .client-wrapper {
+        display: flex;
+        height: 100vh;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+
+    }
     `
 
     @state()
@@ -51,7 +59,6 @@ export class ClientWrapper extends LitElement {
     addConnectedClient(connectionId: string) {
         console.log("Client connected: " + connectionId);
         this._clients = [...this._clients, { id: connectionId, name: "Client" }];
-        this.requestUpdate();
     }
     render() {
       console.log("Rendering with clients:", this._clients);
