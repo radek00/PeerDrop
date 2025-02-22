@@ -1,4 +1,4 @@
 export interface ClientInfo {
-    selfId: string;
-    otherClients: string[];
+  selfId: string;
+  otherClients: string[];
 }

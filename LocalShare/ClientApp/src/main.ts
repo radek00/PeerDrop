@@ -1,8 +1,12 @@
-import { html, LitElement } from "lit";
+import { css, html, LitElement } from "lit";
 import { ClientGrid } from "./utils/ClientGrid";
 // import { createSignalRConnection } from "./utils/signalr";
-import { customElement } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
 import "./components/ClientWrapper";
+import { HubConnection } from "@microsoft/signalr";
+import { ClientInfo } from "./models/ClientInfo";
+import { SignallingEvents } from "./models/SignallingEvents";
+import { createSignalRConnection } from "./utils/signalr";
 
 const registerServiceWorker = async () => {
   if ("serviceWorker" in navigator) {
@@ -40,14 +44,60 @@ function changeStage() {
 
 @customElement("app-component")
 export class App extends LitElement {
+  static styles = css`
+    .client-main {
+      position: absolute;
+      bottom: -1%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  `;
+
+  @state()
+  private _clients: string[] = [];
+  @state()
+  private _currentClient: string = "";
+
+  connection: HubConnection = createSignalRConnection("signalr/signalling");
+  constructor() {
+    super();
+    this.connection.start();
+    this.addConnectedClient = this.addConnectedClient.bind(this);
+    this.updateSelf = this.updateSelf.bind(this);
+    this.removeDisconnectedClient = this.removeDisconnectedClient.bind(this);
+    this.connection.on(SignallingEvents.UpdateSelf, this.updateSelf);
+    this.connection.on(
+      SignallingEvents.AddConnectedClient,
+      this.addConnectedClient
+    );
+    this.connection.on(
+      SignallingEvents.RemoveDisconnectedClient,
+      this.removeDisconnectedClient
+    );
+  }
+  updateSelf(clientInfo: ClientInfo) {
+    console.log("Updating self", clientInfo);
+    this._currentClient = clientInfo.selfId;
+    this._clients = clientInfo.otherClients;
+  }
+
+  addConnectedClient(connectionId: string) {
+    console.log("Client connected: " + connectionId);
+    this._clients = [...this._clients, connectionId];
+  }
+
+  removeDisconnectedClient(connectionId: string) {
+    console.log("Client disconnected: " + connectionId);
+    this._clients = this._clients.filter((client) => client !== connectionId);
+  }
   render() {
-    return html`<client-wrapper></client-wrapper>`;
+    console.log("Rendering app");
+    return html`<client-wrapper .clients=${this._clients}></client-wrapper>
+      <div class="client-main">
+        <connected-client
+          icon="signal"
+          .name=${this._currentClient}
+        ></connected-client>
+      </div> `;
   }
 }
-
-// const connection = createSignalRConnection("signalr/signalling");
-// connection.start();
-
-// connection.on("UpdateSelf", (id) => {
-//   console.log(id);
-// });
