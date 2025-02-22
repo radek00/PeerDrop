@@ -1,5 +1,5 @@
 import { css, html, LitElement } from "lit";
-import { ClientGrid } from "./utils/ClientGrid";
+import { AnimationState, ClientGrid } from "./utils/ClientGrid";
 // import { createSignalRConnection } from "./utils/signalr";
 import { customElement, state } from "lit/decorators.js";
 import "./components/ClientWrapper";
@@ -32,16 +32,6 @@ const registerServiceWorker = async () => {
 };
 registerServiceWorker();
 
-const grid = new ClientGrid();
-grid.start();
-
-const button = document.getElementById("testButton");
-button?.addEventListener("click", changeStage);
-
-function changeStage() {
-  grid.toggleState();
-}
-
 @customElement("app-component")
 export class App extends LitElement {
   static styles = css`
@@ -53,6 +43,7 @@ export class App extends LitElement {
     }
   `;
 
+  grid = new ClientGrid();
   @state()
   private _clients: string[] = [];
   @state()
@@ -61,6 +52,7 @@ export class App extends LitElement {
   connection: HubConnection = createSignalRConnection("signalr/signalling");
   constructor() {
     super();
+    this.grid.start();
     this.connection.start();
     this.addConnectedClient = this.addConnectedClient.bind(this);
     this.updateSelf = this.updateSelf.bind(this);
@@ -79,16 +71,22 @@ export class App extends LitElement {
     console.log("Updating self", clientInfo);
     this._currentClient = clientInfo.selfId;
     this._clients = clientInfo.otherClients;
+    if (this._clients.length > 0 && this.grid.state === AnimationState.IDLE)
+      this.grid.toggleState();
   }
 
   addConnectedClient(connectionId: string) {
     console.log("Client connected: " + connectionId);
     this._clients = [...this._clients, connectionId];
+    if (this._clients.length > 0 && this.grid.state === AnimationState.IDLE)
+      this.grid.toggleState();
   }
 
   removeDisconnectedClient(connectionId: string) {
     console.log("Client disconnected: " + connectionId);
     this._clients = this._clients.filter((client) => client !== connectionId);
+    if (this._clients.length === 0 && this.grid.state === AnimationState.ACTIVE)
+      this.grid.toggleState();
   }
   render() {
     console.log("Rendering app");
