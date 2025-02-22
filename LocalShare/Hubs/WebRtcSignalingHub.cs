@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 using LocalShare.Hubs.Messages;
+using LocalShare.Models;
 
 namespace LocalShare.Hubs;
 
@@ -12,7 +13,7 @@ public class WebRtcSignallingHub : Hub
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         Connections.TryRemove(Context.ConnectionId, out _);
-        Clients.Others.SendAsync("RemoveDisconnectedClient", Context.ConnectionId);
+        Clients.Others.SendAsync(SignallingEvents.RemoveDisconnectedClient, Context.ConnectionId);
         return base.OnDisconnectedAsync(exception);
     }
     
@@ -23,20 +24,15 @@ public class WebRtcSignallingHub : Hub
     private async Task Join()
     {
         Connections.TryAdd(Context.ConnectionId, Context.ConnectionId);
-        await Clients.Client(Context.ConnectionId).SendAsync("UpdateSelf", new ClientInfo() {SelfId = Context.ConnectionId, OtherClients = Connections.Keys.Where(x => x != Context.ConnectionId).ToArray()});
-        await Clients.Others.SendAsync("AddConnectedClient", Context.ConnectionId);
-    }
-
-    public async Task SendMessage(string user, string message)
-    {
-        await Clients.All.SendAsync("ReceiveMessage", user, message);
+        await Clients.Client(Context.ConnectionId).SendAsync(SignallingEvents.UpdateSelf, new ClientInfo() {SelfId = Context.ConnectionId, OtherClients = Connections.Keys.Where(x => x != Context.ConnectionId).ToArray()});
+        await Clients.Others.SendAsync(SignallingEvents.AddConnectedClient, Context.ConnectionId);
     }
 
     public async Task SendOffer(string targetClientId, SdpMessage offer)
     {
         if (Connections.TryGetValue(targetClientId, out var targetConnectionId))
         {
-            await Clients.Client(targetConnectionId).SendAsync("ReceiveOffer", Context.ConnectionId, offer);
+            await Clients.Client(targetConnectionId).SendAsync(SignallingEvents.ReceiveOffer, Context.ConnectionId, offer);
         }
     }
 
@@ -44,7 +40,7 @@ public class WebRtcSignallingHub : Hub
     {
         if (Connections.TryGetValue(targetClientId, out var targetConnectionId))
         {
-            await Clients.Client(targetConnectionId).SendAsync("ReceiveAnswer", Context.ConnectionId, answer);
+            await Clients.Client(targetConnectionId).SendAsync(SignallingEvents.ReceiveAnswer, Context.ConnectionId, answer);
         }
     }
 
@@ -52,7 +48,7 @@ public class WebRtcSignallingHub : Hub
     {
         if (Connections.TryGetValue(targetClientId, out var targetConnectionId))
         {
-            await Clients.Client(targetConnectionId).SendAsync("ReceiveIceCandidate", Context.ConnectionId, candidate);
+            await Clients.Client(targetConnectionId).SendAsync(SignallingEvents.ReceiveIceCandidate, Context.ConnectionId, candidate);
         }
     }
 }
