@@ -4,6 +4,8 @@ import { customElement, property, state } from "lit/decorators.js";
 import { createSignalRConnection } from "../utils/signalr";
 import { repeat } from "lit/directives/repeat.js";
 import "./ConnectedClient";
+import { SignallingEvents } from "../models/SignallingEvents";
+import { ClientInfo } from "../models/ClientInfo";
 
 type Client = {
   id: string;
@@ -34,9 +36,9 @@ export class ClientWrapper extends LitElement {
   `;
 
   @state()
-  private _clients: Client[] = [];
+  private _clients: string[] = [];
   @state()
-  private _currentClient: Client | null = null;
+  private _currentClient: string | null = null;
 
   connection: HubConnection = createSignalRConnection("signalr/signalling");
   constructor() {
@@ -44,17 +46,26 @@ export class ClientWrapper extends LitElement {
     this.connection.start();
     this.addConnectedClient = this.addConnectedClient.bind(this);
     this.updateSelf = this.updateSelf.bind(this);
-    this.connection.on("UpdateSelf", this.updateSelf);
-    this.connection.on("AddConnectedClient", this.addConnectedClient);
+    this.removeDisconnectedClient = this.removeDisconnectedClient.bind(this);
+    this.connection.on(SignallingEvents.UpdateSelf, this.updateSelf);
+    this.connection.on(SignallingEvents.AddConnectedClient, this.addConnectedClient);
+    this.connection.on(SignallingEvents.RemoveDisconnectedClient, this.removeDisconnectedClient);
+
   }
-  updateSelf(connectionId: string) {
-    this._currentClient = { id: connectionId, name: "Client" };
-    console.log(this._currentClient);
+  updateSelf(clientInfo: ClientInfo) {
+    console.log("Updating self", clientInfo);
+    this._currentClient = clientInfo.selfId;
+    this._clients = clientInfo.otherClients;
   }
 
   addConnectedClient(connectionId: string) {
     console.log("Client connected: " + connectionId);
-    this._clients = [...this._clients, { id: connectionId, name: "Client" }];
+    this._clients = [...this._clients, connectionId];
+  }
+
+  removeDisconnectedClient(connectionId: string) {
+    console.log("Client disconnected: " + connectionId);
+    this._clients = this._clients.filter((client) => client !== connectionId);
   }
   render() {
     console.log("Rendering with clients:", this._clients);
@@ -62,9 +73,9 @@ export class ClientWrapper extends LitElement {
       <div class="client-wrapper">
         ${repeat(
           this._clients,
-          (client) => client.id,
+          (client) => client,
           (client) => html`
-            <connected-client .name=${client.name}></connected-client>
+            <connected-client .name=${client}></connected-client>
           `
         )}
       </div>
