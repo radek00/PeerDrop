@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
-using LocalShare.Hubs.Messages;
 using LocalShare.Models;
+using LocalShare.Models.Messages;
 
 namespace LocalShare.Hubs;
 
-public class WebRtcSignallingHub : Hub
+public class WebRtcSignallingHub() : Hub
 {
     public static readonly string Url = "/signalling";
-    private static readonly ConcurrentDictionary<string, string> Connections = new ConcurrentDictionary<string, string>();
+    private static readonly ConcurrentDictionary<string, ClientConnectionInfo> Connections = new ConcurrentDictionary<string, ClientConnectionInfo>();
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
@@ -19,20 +19,29 @@ public class WebRtcSignallingHub : Hub
     
     public override async Task OnConnectedAsync()
     {
+        var context = Context.GetHttpContext();
+        var userAgent = context?.Request.Headers["User-Agent"].ToString();
         await Join();
     }
     private async Task Join()
     {
-        Connections.TryAdd(Context.ConnectionId, Context.ConnectionId);
-        await Clients.Client(Context.ConnectionId).SendAsync(SignallingEvents.UpdateSelf, new ClientInfo() {SelfId = Context.ConnectionId, OtherClients = Connections.Keys.Where(x => x != Context.ConnectionId).ToArray()});
-        await Clients.Others.SendAsync(SignallingEvents.AddConnectedClient, Context.ConnectionId);
+        var httpContext = Context.GetHttpContext();
+        var userAgent = Utils.Utils.ParseUserAgent(httpContext?.Request.Headers["User-Agent"].ToString() ?? "");
+        Connections.TryAdd(Context.ConnectionId, new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent });
+        await Clients.Client(Context.ConnectionId).SendAsync(SignallingEvents.UpdateSelf, new AllClientsConnectionInfo() {Self = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent }
+        , OtherClients = Connections
+        .Where(x => x.Key != Context.ConnectionId)
+        .Select(x => new ClientConnectionInfo { Id = x.Key, UserAgent = x.Value.UserAgent })
+        .ToArray()
+        });
+        await Clients.Others.SendAsync(SignallingEvents.AddConnectedClient, new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent});
     }
 
     public async Task SendOffer(string targetClientId, SdpMessage offer)
     {
         if (Connections.TryGetValue(targetClientId, out var targetConnectionId))
         {
-            await Clients.Client(targetConnectionId).SendAsync(SignallingEvents.ReceiveOffer, Context.ConnectionId, offer);
+            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveOffer, Context.ConnectionId, offer);
         }
     }
 
@@ -40,7 +49,7 @@ public class WebRtcSignallingHub : Hub
     {
         if (Connections.TryGetValue(targetClientId, out var targetConnectionId))
         {
-            await Clients.Client(targetConnectionId).SendAsync(SignallingEvents.ReceiveAnswer, Context.ConnectionId, answer);
+            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveAnswer, Context.ConnectionId, answer);
         }
     }
 
@@ -48,7 +57,7 @@ public class WebRtcSignallingHub : Hub
     {
         if (Connections.TryGetValue(targetClientId, out var targetConnectionId))
         {
-            await Clients.Client(targetConnectionId).SendAsync(SignallingEvents.ReceiveIceCandidate, Context.ConnectionId, candidate);
+            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveIceCandidate, Context.ConnectionId, candidate);
         }
     }
 }
