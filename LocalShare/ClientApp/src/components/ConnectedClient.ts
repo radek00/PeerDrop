@@ -2,13 +2,14 @@ import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "../icons/PhoneIcon";
 import "../icons/SignalIcon";
+import { UserAgent } from "../models/ClientInfo";
 
 type IconType = "phone" | "signal";
 
 @customElement("connected-client")
 export class ConnectedClient extends LitElement {
-  @property({ type: String })
-  name = "";
+  @property({ type: Object })
+  userAgent?: UserAgent;
 
   iconMap: Record<IconType, TemplateResult> = {
     phone: html`<phone-icon></phone-icon>`,
@@ -35,11 +36,20 @@ export class ConnectedClient extends LitElement {
     }
   `;
 
+  renderClient() {
+    if (this.userAgent) {
+      return html`
+        <div class="client--name">${this.userAgent.browser}</div>
+        <div>${this.userAgent.os}</div>
+      `;
+    }
+  }
+
   render() {
     return html`
       <div class="client">
-        ${this.iconMap[this.icon]}
-        <div class="client--name">${this.name}</div>
+        ${this.iconMap[this.icon]} ${this.renderClient()}
+        <slot></slot>
       </div>
     `;
   }
