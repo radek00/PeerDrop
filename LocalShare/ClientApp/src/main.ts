@@ -1,12 +1,14 @@
 import { css, html, LitElement } from "lit";
 import { AnimationState, ClientGrid } from "./utils/ClientGrid";
-// import { createSignalRConnection } from "./utils/signalr";
 import { customElement, state } from "lit/decorators.js";
 import "./components/ClientWrapper";
 import { HubConnection } from "@microsoft/signalr";
-import { ClientInfo } from "./models/ClientInfo";
 import { SignallingEvents } from "./models/SignallingEvents";
 import { createSignalRConnection } from "./utils/signalr";
+import {
+  AllClientsConnectionInfo,
+  ClientConnectionInfo,
+} from "./models/ClientInfo";
 
 const registerServiceWorker = async () => {
   if ("serviceWorker" in navigator) {
@@ -37,17 +39,21 @@ export class App extends LitElement {
   static styles = css`
     .client-main {
       position: absolute;
-      bottom: -1%;
+      bottom: -3%;
       left: 50%;
       transform: translate(-50%, -50%);
+    }
+    .client--name {
+      color: var(--text-light);
+      font-weight: 400;
     }
   `;
 
   grid = new ClientGrid();
   @state()
-  private _clients: string[] = [];
+  private _clients: ClientConnectionInfo[] = [];
   @state()
-  private _currentClient: string = "";
+  private _currentClient: ClientConnectionInfo | null = null;
 
   connection: HubConnection = createSignalRConnection("signalr/signalling");
   constructor() {
@@ -67,35 +73,42 @@ export class App extends LitElement {
       this.removeDisconnectedClient
     );
   }
-  updateSelf(clientInfo: ClientInfo) {
-    console.log("Updating self", clientInfo);
-    this._currentClient = clientInfo.selfId;
-    this._clients = clientInfo.otherClients;
+  updateSelf(allClientsInfo: AllClientsConnectionInfo) {
+    console.log("Updating self", allClientsInfo);
+    this._currentClient = allClientsInfo.self;
+    this._clients = allClientsInfo.otherClients;
     if (this._clients.length > 0 && this.grid.state === AnimationState.IDLE)
       this.grid.toggleState();
   }
 
-  addConnectedClient(connectionId: string) {
-    console.log("Client connected: " + connectionId);
-    this._clients = [...this._clients, connectionId];
+  addConnectedClient(clientInfo: ClientConnectionInfo) {
+    console.log("Client connected: " + clientInfo);
+    this._clients = [...this._clients, clientInfo];
     if (this._clients.length > 0 && this.grid.state === AnimationState.IDLE)
       this.grid.toggleState();
   }
 
   removeDisconnectedClient(connectionId: string) {
     console.log("Client disconnected: " + connectionId);
-    this._clients = this._clients.filter((client) => client !== connectionId);
+    this._clients = this._clients.filter(
+      (client) => client.id !== connectionId
+    );
     if (this._clients.length === 0 && this.grid.state === AnimationState.ACTIVE)
       this.grid.toggleState();
+  }
+
+  getCurrentClient() {
+    if (this._currentClient) {
+      return html`<connected-client icon="signal">
+        <span class="client--name"
+          >You're known as ${this._currentClient.userAgent.browser}</span
+        >
+      </connected-client>`;
+    }
   }
   render() {
     console.log("Rendering app");
     return html`<client-wrapper .clients=${this._clients}></client-wrapper>
-      <div class="client-main">
-        <connected-client
-          icon="signal"
-          .name=${this._currentClient}
-        ></connected-client>
-      </div> `;
+      <div class="client-main">${this.getCurrentClient()}</div> `;
   }
 }

@@ -1,7 +1,8 @@
 import { css, html, LitElement } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import "./ConnectedClient";
+import { ClientConnectionInfo } from "../models/ClientInfo";
 
 @customElement("client-wrapper")
 export class ClientWrapper extends LitElement {
@@ -16,7 +17,7 @@ export class ClientWrapper extends LitElement {
   `;
 
   @property({ type: Array })
-  private clients: string[] = [];
+  private clients: ClientConnectionInfo[] = [];
 
   render() {
     console.log("Rendering with clients:", this.clients);
@@ -26,7 +27,10 @@ export class ClientWrapper extends LitElement {
           this.clients,
           (client) => client,
           (client) => html`
-            <connected-client icon="phone" .name=${client}></connected-client>
+            <connected-client
+              icon="phone"
+              .userAgent=${client.userAgent}
+            ></connected-client>
           `
         )}
       </div>
