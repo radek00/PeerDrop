@@ -4,40 +4,30 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  background-color: var(--emerald-950);
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --emerald-50: #ecfdf5;
-  --emerald-100: #d1fae5;
-  --emerald-200: #a7f3d0;
-  --emerald-300: #6ee7b7;
-  --emerald-400: #34d399;
-  --emerald-500: #10b981;
-  --emerald-600: #059669;
-  --emerald-700: #047857;
-  --emerald-800: #065f46;
-  --emerald-900: #064e3b;
-  --emerald-950: #022c22;
-
-  /* Accent Colors */
-  --teal-400: #2dd4bf;
-  --sky-400: #38bdf8;
-
   /* Background Colors */
-  --bg-dark: #041520;
-  --bg-light: #f8fafc;
+  --bg-dark: var(--color-primary-950);
+  --bg-light: var(--color-primary-50);
 
   /* Text Colors */
   --text-light: #f8fafc;
   --text-dark: #0f172a;
 
-  /* Shadow */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bbe6fc;
+  --color-primary-300: #7fd3fa;
+  --color-primary-400: #3bbdf5;
+  --color-primary-500: #11a6e6;
+  --color-primary-600: #0584c4;
+  --color-primary-700: #05699f;
+  --color-primary-800: #095983;
+  --color-primary-900: #0e4b6c;
+  --color-primary-950: #041520;
 }
 
 body {

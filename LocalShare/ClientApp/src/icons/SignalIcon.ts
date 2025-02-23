@@ -9,7 +9,7 @@ export class SignalIcon extends LitElement {
       height: 64px;
       width: 64px;
       border-radius: 50%;
-      background-color: #042337;
+      background-color: var(--color-primary-900);
     }
   `;
 
@@ -17,18 +17,23 @@ export class SignalIcon extends LitElement {
     return html`
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="50"
-        height="50"
-        viewBox="0 0 50 50"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
       >
-        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <path stroke="#344054" stroke-width="3" d="M24.896 25h.208" />
-          <path
-            stroke="#306cfe"
-            stroke-width="2"
-            d="M11.75 38.25a18.75 18.75 0 0 1 0-26.5m5.875 5.875a10.417 10.417 0 0 0 0 14.75M38.25 38.25a18.75 18.75 0 0 0 0-26.5m-5.875 20.625a10.415 10.415 0 0 0 0-14.75"
-          />
-        </g>
+        <path fill="currentColor" d="M9 8a1 1 0 1 1-2 0a1 1 0 0 1 2 0" />
+        <path
+          fill="currentColor"
+          fill-rule="evenodd"
+          d="M9.68 5.26a.75.75 0 0 1 1.06 0a3.875 3.875 0 0 1 0 5.48a.75.75 0 1 1-1.06-1.06a2.375 2.375 0 0 0 0-3.36a.75.75 0 0 1 0-1.06m-3.36 0a.75.75 0 0 1 0 1.06a2.375 2.375 0 0 0 0 3.36a.75.75 0 1 1-1.06 1.06a3.875 3.875 0 0 1 0-5.48a.75.75 0 0 1 1.06 0"
+          clip-rule="evenodd"
+        />
+        <path
+          fill="currentColor"
+          fill-rule="evenodd"
+          d="M11.89 3.05a.75.75 0 0 1 1.06 0a7 7 0 0 1 0 9.9a.75.75 0 1 1-1.06-1.06a5.5 5.5 0 0 0 0-7.78a.75.75 0 0 1 0-1.06m-7.78 0a.75.75 0 0 1 0 1.06a5.5 5.5 0 0 0 0 7.78a.75.75 0 1 1-1.06 1.06a7 7 0 0 1 0-9.9a.75.75 0 0 1 1.06 0"
+          clip-rule="evenodd"
+        />
       </svg>
     `;
   }

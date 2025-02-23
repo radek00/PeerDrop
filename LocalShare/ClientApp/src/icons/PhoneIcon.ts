@@ -9,7 +9,7 @@ export class PhoneIcon extends LitElement {
       height: 64px;
       width: 64px;
       border-radius: 50%;
-      background-color: #042337;
+      background-color: var(--color-primary-900);
     }
   `;
   render() {
