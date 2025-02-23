@@ -1,4 +1,4 @@
-﻿namespace LocalShare.Hubs.Messages;
+﻿namespace LocalShare.Models.Messages;
 
 public class SdpMessage
 {
