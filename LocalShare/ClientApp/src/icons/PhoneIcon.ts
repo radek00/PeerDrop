@@ -1,17 +1,10 @@
-import { css, html, LitElement } from "lit";
+import { html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
+import { clientIconStyles } from "../styles/sharedStyle";
 
 @customElement("phone-icon")
 export class PhoneIcon extends LitElement {
-  static styles = css`
-    svg {
-      padding: 12px;
-      height: 64px;
-      width: 64px;
-      border-radius: 50%;
-      background-color: var(--color-primary-900);
-    }
-  `;
+  static styles = [clientIconStyles];
   render() {
     return html`<svg
       xmlns="http://www.w3.org/2000/svg"
