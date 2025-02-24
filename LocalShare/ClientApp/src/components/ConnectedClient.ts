@@ -12,6 +12,9 @@ export class ConnectedClient extends LitElement {
   @property({ type: Object })
   client?: ClientConnectionInfo;
 
+  @property({ type: Boolean })
+  clickable = true;
+
   iconMap: Record<IconType, TemplateResult> = {
     phone: html`<phone-icon></phone-icon>`,
     // computer: html`<computer-icon></computer-icon>`,
@@ -29,6 +32,14 @@ export class ConnectedClient extends LitElement {
       align-items: center;
       justify-content: center;
       gap: 3px;
+    }
+
+    .client--clickable {
+      transition: transform 0.3s ease;
+    }
+
+    .client--clickable:hover {
+      transform: scale(1.1);
     }
 
     .client--name {
@@ -61,7 +72,7 @@ export class ConnectedClient extends LitElement {
 
   render() {
     return html`
-      <div class="client">
+      <div class="client ${this.clickable ? "client--clickable" : ""}">
         ${this.iconMap[this.icon]} ${this.renderClient()}
         <slot></slot>
       </div>

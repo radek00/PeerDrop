@@ -1,10 +1,10 @@
 import { html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
-import { clientIconStyles } from "../styles/sharedStyle";
+import { clickableIcon, clientIconStyles } from "../styles/sharedStyle";
 
 @customElement("phone-icon")
 export class PhoneIcon extends LitElement {
-  static styles = [clientIconStyles];
+  static styles = [clientIconStyles, clickableIcon];
   render() {
     return html`<svg
       xmlns="http://www.w3.org/2000/svg"

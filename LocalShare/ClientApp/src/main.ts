@@ -103,7 +103,7 @@ export class App extends LitElement {
 
   getCurrentClient() {
     if (this._currentClient) {
-      return html`<connected-client icon="signal">
+      return html`<connected-client .clickable=${false} icon="signal">
         <span class="client--name"
           >You're known as ${this._currentClient.userAgent.browser}</span
         >

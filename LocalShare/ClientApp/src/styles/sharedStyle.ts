@@ -9,3 +9,13 @@ export const clientIconStyles = css`
     background-color: var(--color-primary-900);
   }
 `;
+
+export const clickableIcon = css`
+  svg {
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+  }
+  svg:hover {
+    background-color: var(--color-primary-600);
+  }
+`;
