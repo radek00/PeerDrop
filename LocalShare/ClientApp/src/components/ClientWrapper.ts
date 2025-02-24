@@ -12,7 +12,7 @@ export class ClientWrapper extends LitElement {
       height: 100vh;
       justify-content: center;
       align-items: center;
-      gap: 1rem;
+      gap: 2.5rem;
     }
   `;
 
