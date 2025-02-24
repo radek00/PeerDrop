@@ -27,10 +27,7 @@ export class ClientWrapper extends LitElement {
           this.clients,
           (client) => client,
           (client) => html`
-            <connected-client
-              icon="phone"
-              .userAgent=${client.userAgent}
-            ></connected-client>
+            <connected-client icon="phone" .client=${client}></connected-client>
           `
         )}
       </div>

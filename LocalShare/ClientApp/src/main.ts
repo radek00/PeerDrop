@@ -97,6 +97,10 @@ export class App extends LitElement {
       this.grid.toggleState();
   }
 
+  private _clientClickListener = (event: CustomEvent<ClientConnectionInfo>) => {
+    console.log("Client clicked", event.detail);
+  };
+
   getCurrentClient() {
     if (this._currentClient) {
       return html`<connected-client icon="signal">
@@ -108,7 +112,10 @@ export class App extends LitElement {
   }
   render() {
     console.log("Rendering app");
-    return html`<client-wrapper .clients=${this._clients}></client-wrapper>
+    return html`<client-wrapper
+        @onClientClick=${this._clientClickListener}
+        .clients=${this._clients}
+      ></client-wrapper>
       <div class="client-main">${this.getCurrentClient()}</div> `;
   }
 }
