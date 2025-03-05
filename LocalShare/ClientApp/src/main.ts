@@ -8,7 +8,7 @@ import { createSignalRConnection } from "./utils/signalr";
 import {
   AllClientsConnectionInfo,
   ClientConnectionInfo,
-} from "./models/ClientInfo";
+} from "./models/messages/ClientInfo";
 
 const registerServiceWorker = async () => {
   if ("serviceWorker" in navigator) {

@@ -6,4 +6,6 @@ export enum SignallingEvents {
   ReceiveIceCandidate = "ReceiveIceCandidate",
   RemoveDisconnectedClient = "RemoveDisconnectedClient",
   SendIceCandidate = "SendIceCandidate",
+  SendAnswer = "SendAnswer",
+  SendOffer = "SendOffer",
 }

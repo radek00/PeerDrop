@@ -2,7 +2,7 @@ import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import "./ConnectedClient";
-import { ClientConnectionInfo } from "../models/ClientInfo";
+import { ClientConnectionInfo } from "../models/messages/ClientInfo";
 
 @customElement("client-wrapper")
 export class ClientWrapper extends LitElement {

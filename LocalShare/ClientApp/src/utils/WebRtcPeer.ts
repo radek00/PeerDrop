@@ -1,4 +1,6 @@
 import { SignallingEvents } from "../models/SignallingEvents";
+import { SendAnswer } from "../models/messages/SendAnswer";
+import { SendIceCandidate } from "../models/messages/SendIceCandidate";
 
 export class WebRtcPeer {
     private _peerConnection: RTCPeerConnection;
@@ -15,7 +17,11 @@ export class WebRtcPeer {
     async initConnection(targetClient: string) {
         this._peerConnection.addEventListener('icecandidate', event => {
             if (event.candidate) {
-                this._signalRConnection.invoke(SignallingEvents.SendIceCandidate, targetClient, event.candidate)
+                const payload: SendIceCandidate = {
+                    targetConnectionId: targetClient,
+                    candidate: event.candidate
+                  };
+                this._signalRConnection.invoke(SignallingEvents.SendIceCandidate, payload)
             }
         });
         this.metadataChannel =  this._peerConnection.createDataChannel("file-metadata-channel");
@@ -23,19 +29,28 @@ export class WebRtcPeer {
 
         const offer = await this._peerConnection.createOffer();
         await this._peerConnection.setLocalDescription(offer);
+        this._signalRConnection.invoke(SignallingEvents.SendOffer)
     }
 
     async receiveOffer(offer: RTCSessionDescriptionInit, senderConnectionId: string) {
         this._peerConnection.setRemoteDescription(offer);
         this._peerConnection.addEventListener('icecandidate', event => {
             if (event.candidate) {
-                this._signalRConnection.invoke(SignallingEvents.SendIceCandidate, senderConnectionId, event.candidate)
+                const payload: SendIceCandidate = {
+                    targetConnectionId: senderConnectionId,
+                    candidate: event.candidate
+                  };
+                this._signalRConnection.invoke(SignallingEvents.SendIceCandidate, payload)
             }
         });
         this._peerConnection.ondatachannel = this.handleDataChannel;
         const answer = await this._peerConnection.createAnswer();
         await this._peerConnection.setLocalDescription(answer);
-        this._signalRConnection.invoke(SignallingEvents.ReceiveAnswer,senderConnectionId, answer);
+        const payload: SendAnswer = {
+            answer: answer,
+            targetConnectionId: senderConnectionId
+          };
+        this._signalRConnection.invoke(SignallingEvents.SendAnswer, payload);
     }
 
     async receiveAnswer(answer: RTCSessionDescriptionInit) {
