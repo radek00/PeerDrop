@@ -37,27 +37,27 @@ public class WebRtcSignallingHub() : Hub
         await Clients.Others.SendAsync(SignallingEvents.AddConnectedClient, new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent});
     }
 
-    public async Task SendOffer(string targetClientId, SdpMessage offer)
+    public async Task SendOffer(SendOffer payload)
     {
-        if (Connections.TryGetValue(targetClientId, out var targetConnectionId))
+        if (Connections.TryGetValue(payload.TargetConnectionId, out var targetConnectionId))
         {
-            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveOffer, Context.ConnectionId, offer);
+            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveOffer, Context.ConnectionId, payload.Offer);
         }
     }
 
-    public async Task SendAnswer(string targetClientId, SdpMessage answer)
+    public async Task SendAnswer(SendAnswer payload)
     {
-        if (Connections.TryGetValue(targetClientId, out var targetConnectionId))
+        if (Connections.TryGetValue(payload.TargetConnectionId, out var targetConnectionId))
         {
-            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveAnswer, Context.ConnectionId, answer);
+            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveAnswer, Context.ConnectionId, payload.Answer);
         }
     }
 
-    public async Task SendIceCandidate(string targetClientId, object candidate)
+    public async Task SendIceCandidate(SendIceCandidate payload)
     {
-        if (Connections.TryGetValue(targetClientId, out var targetConnectionId))
+        if (Connections.TryGetValue(payload.TargetConnectionId, out var targetConnectionId))
         {
-            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveIceCandidate, Context.ConnectionId, candidate);
+            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveIceCandidate, Context.ConnectionId, payload.Candidate);
         }
     }
 }

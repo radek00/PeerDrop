@@ -2,7 +2,7 @@ import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "../icons/PhoneIcon";
 import "../icons/SignalIcon";
-import { ClientConnectionInfo } from "../models/ClientInfo";
+import { ClientConnectionInfo } from "../models/messages/ClientInfo";
 import { Events } from "../models/Events";
 
 type IconType = "phone" | "signal";
