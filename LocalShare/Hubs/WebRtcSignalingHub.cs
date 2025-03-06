@@ -41,7 +41,7 @@ public class WebRtcSignallingHub() : Hub
     {
         if (Connections.TryGetValue(payload.TargetConnectionId, out var targetConnectionId))
         {
-            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveOffer, Context.ConnectionId, payload.Offer);
+            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveOffer, new ReceiveOffer() { Offer = payload.Offer, SenderConnectionId = Context.ConnectionId});
         }
     }
 
@@ -49,7 +49,7 @@ public class WebRtcSignallingHub() : Hub
     {
         if (Connections.TryGetValue(payload.TargetConnectionId, out var targetConnectionId))
         {
-            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveAnswer, Context.ConnectionId, payload.Answer);
+            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveAnswer, new ReceiveAnswer() { Answer = payload.Answer, SenderConnectionId = Context.ConnectionId});
         }
     }
 
@@ -57,7 +57,7 @@ public class WebRtcSignallingHub() : Hub
     {
         if (Connections.TryGetValue(payload.TargetConnectionId, out var targetConnectionId))
         {
-            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveIceCandidate, Context.ConnectionId, payload.Candidate);
+            await Clients.Client(targetConnectionId.Id).SendAsync(SignallingEvents.ReceiveIceCandidate, new ReceiveIceCandidate() { Candidate = payload.Candidate, SenderConnectionId = Context.ConnectionId });
         }
     }
 }

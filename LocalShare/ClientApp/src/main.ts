@@ -9,6 +9,10 @@ import {
   AllClientsConnectionInfo,
   ClientConnectionInfo,
 } from "./models/messages/ClientInfo";
+import { WebRtcPeer } from "./utils/WebRtcPeer";
+import { ReceiveOffer } from "./models/messages/ReceiveOffer";
+import { ReceiveIceCandidate } from "./models/messages/ReceiveIceCandidate";
+import { ReceiveAnswer } from "./models/messages/ReceiveAnswer";
 
 const registerServiceWorker = async () => {
   if ("serviceWorker" in navigator) {
@@ -55,6 +59,8 @@ export class App extends LitElement {
   @state()
   private _currentClient: ClientConnectionInfo | null = null;
 
+  private _connectionMap: Map<string, WebRtcPeer> = new Map();
+
   connection: HubConnection = createSignalRConnection("signalr/signalling");
   constructor() {
     super();
@@ -62,6 +68,9 @@ export class App extends LitElement {
     this.connection.start();
     this.addConnectedClient = this.addConnectedClient.bind(this);
     this.updateSelf = this.updateSelf.bind(this);
+    this.receiveOffer = this.receiveOffer.bind(this);
+    this.receiveIceCandidate = this.receiveIceCandidate.bind(this);
+    this.receiveAnswer = this.receiveAnswer.bind(this);
     this.removeDisconnectedClient = this.removeDisconnectedClient.bind(this);
     this.connection.on(SignallingEvents.UpdateSelf, this.updateSelf);
     this.connection.on(
@@ -72,6 +81,12 @@ export class App extends LitElement {
       SignallingEvents.RemoveDisconnectedClient,
       this.removeDisconnectedClient
     );
+    this.connection.on(SignallingEvents.ReceiveOffer, this.receiveOffer);
+    this.connection.on(
+      SignallingEvents.ReceiveIceCandidate,
+      this.receiveIceCandidate
+    );
+    this.connection.on(SignallingEvents.ReceiveAnswer, this.receiveAnswer);
   }
   updateSelf(allClientsInfo: AllClientsConnectionInfo) {
     console.log("Updating self", allClientsInfo);
@@ -97,8 +112,32 @@ export class App extends LitElement {
       this.grid.toggleState();
   }
 
-  private _clientClickListener = (event: CustomEvent<ClientConnectionInfo>) => {
+  receiveOffer(payload: ReceiveOffer) {
+    const peerConnection = new WebRtcPeer(this.connection);
+    this._connectionMap.set(payload.senderConnectionId, peerConnection);
+    peerConnection.receiveOffer(payload.offer, payload.senderConnectionId);
+    
+  }
+
+  receiveIceCandidate(payload: ReceiveIceCandidate) {
+    const peerConnection = this._connectionMap.get(payload.senderConnectionId);
+    if (peerConnection) {
+      peerConnection.receiveIceCandidate(payload.candidate);
+    }
+  }
+
+  receiveAnswer(payload: ReceiveAnswer) {
+    const peerConnection = this._connectionMap.get(payload.senderConnectionId);
+    if (peerConnection) {
+      peerConnection.receiveAnswer(payload.answer);
+    }
+  }
+
+  private _clientClickListener = async (event: CustomEvent<ClientConnectionInfo>) => {
     console.log("Client clicked", event.detail);
+    const peerConnection = new WebRtcPeer(this.connection);
+    await peerConnection.initConnection(event.detail.id);
+    this._connectionMap.set(event.detail.id, peerConnection);
   };
 
   getCurrentClient() {

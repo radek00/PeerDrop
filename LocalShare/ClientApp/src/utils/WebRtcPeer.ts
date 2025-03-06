@@ -1,7 +1,9 @@
 import { SignallingEvents } from "../models/SignallingEvents";
 import { SendAnswer } from "../models/messages/SendAnswer";
 import { SendIceCandidate } from "../models/messages/SendIceCandidate";
+import { SendOffer } from "../models/messages/SendOffer";
 
+const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 export class WebRtcPeer {
     private _peerConnection: RTCPeerConnection;
     private _signalRConnection: signalR.HubConnection;
@@ -10,7 +12,7 @@ export class WebRtcPeer {
 
     constructor(signalRConnection: signalR.HubConnection) {
         this._signalRConnection = signalRConnection;
-        this._peerConnection = new RTCPeerConnection();
+        this._peerConnection = new RTCPeerConnection(configuration);
         this.handleDataChannel = this.handleDataChannel.bind(this);
     }
 
@@ -29,7 +31,17 @@ export class WebRtcPeer {
 
         const offer = await this._peerConnection.createOffer();
         await this._peerConnection.setLocalDescription(offer);
-        this._signalRConnection.invoke(SignallingEvents.SendOffer)
+        const payload: SendOffer = {
+            targetConnectionId: targetClient,
+            offer: offer
+        }
+        this._signalRConnection.invoke(SignallingEvents.SendOffer, payload)
+        this.metadataChannel.onopen = () => {
+            this.metadataChannel?.send("Metadata channel open");
+        }
+        this.metadataChannel.onmessage = event => {
+            console.log("Metadata channel message", event.data);
+        }
     }
 
     async receiveOffer(offer: RTCSessionDescriptionInit, senderConnectionId: string) {
@@ -65,12 +77,10 @@ export class WebRtcPeer {
         const { channel } = event;
         if (channel.label === "file-metadata-channel") {
             this.metadataChannel = channel;
-            // metaDataChannel.onmessage = event => {
-            //     const data = JSON.parse(event.data);
-            //     data.isTransferReady = true;
-            //     fileTransferMetadata = data;
-            //     metaDataChannel.send(JSON.stringify(data));
-            // };
+            this.metadataChannel.onmessage = event => {
+                console.log("Metadata channel message", event.data);
+                this.metadataChannel?.send("Metadata channel open");
+            };
         } else if (channel.label === "file-transfer") {
             this.fileTransferChannel = channel;
             this.fileTransferChannel.binaryType = "arraybuffer";
