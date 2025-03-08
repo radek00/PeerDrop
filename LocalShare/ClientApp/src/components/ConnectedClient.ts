@@ -3,7 +3,6 @@ import { customElement, property } from "lit/decorators.js";
 import "../icons/PhoneIcon";
 import "../icons/SignalIcon";
 import { ClientConnectionInfo } from "../models/messages/ClientInfo";
-import { Events } from "../models/Events";
 
 type IconType = "phone" | "signal";
 
@@ -47,19 +46,6 @@ export class ConnectedClient extends LitElement {
       font-weight: 600;
     }
   `;
-
-  constructor() {
-    super();
-    this.addEventListener("click", () => {
-      this.dispatchEvent(
-        new CustomEvent(Events.OnClientClick, {
-          bubbles: true,
-          detail: this.client,
-          composed: true,
-        })
-      );
-    });
-  }
 
   renderClient() {
     if (this.client) {

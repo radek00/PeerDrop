@@ -13,6 +13,7 @@ import { WebRtcPeer } from "./utils/WebRtcPeer";
 import { ReceiveOffer } from "./models/messages/ReceiveOffer";
 import { ReceiveIceCandidate } from "./models/messages/ReceiveIceCandidate";
 import { ReceiveAnswer } from "./models/messages/ReceiveAnswer";
+import { ClientSelectedEvent } from "./models/events/ClientSelectedEvent";
 
 const registerServiceWorker = async () => {
   if ("serviceWorker" in navigator) {
@@ -133,11 +134,11 @@ export class App extends LitElement {
     }
   }
 
-  private _clientClickListener = async (event: CustomEvent<ClientConnectionInfo>) => {
-    console.log("Client clicked", event.detail);
-    const peerConnection = new WebRtcPeer(this.connection);
-    await peerConnection.initConnection(event.detail.id);
-    this._connectionMap.set(event.detail.id, peerConnection);
+  private _clientSelectedListener = async (event: ClientSelectedEvent) => {
+    console.log("Client selected", event.client, event.file);
+    // const peerConnection = new WebRtcPeer(this.connection);
+    // await peerConnection.initConnection(event.detail.id);
+    // this._connectionMap.set(event.detail.id, peerConnection);
   };
 
   getCurrentClient() {
@@ -152,7 +153,7 @@ export class App extends LitElement {
   render() {
     console.log("Rendering app");
     return html`<client-wrapper
-        @onClientClick=${this._clientClickListener}
+        @onClientSelected=${this._clientSelectedListener}
         .clients=${this._clients}
       ></client-wrapper>
       <div class="client-main">${this.getCurrentClient()}</div> `;
