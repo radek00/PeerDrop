@@ -28,13 +28,15 @@ export class WebRtcPeer {
     private _fileData?: FileMetadata;
     private _fileDataBuffer: Array<ArrayBuffer> = [];
     private _receivedSize = 0;
+    private _closeCallback?: () => void;
 
-    constructor(signalRConnection: signalR.HubConnection, file?: File) {
+    constructor(signalRConnection: signalR.HubConnection, file?: File, closeCallback?: () => void) {
         this._signalRConnection = signalRConnection;
         this._peerConnection = new RTCPeerConnection(configuration);
         this.handleDataChannel = this.handleDataChannel.bind(this);
         this.onFileDataReceived = this.onFileDataReceived.bind(this);
         this._file = file;
+        this._closeCallback = closeCallback;
     }
 
     async initConnection(targetClient: string) {
@@ -82,6 +84,9 @@ export class WebRtcPeer {
                             this.sendFileData();
                         });
                     }
+            } else if (data.status === TransferStatus.Completed) {
+                console.log("File transfer complete");
+                this.closeConnections();
             }
         }
     }
@@ -176,7 +181,15 @@ export class WebRtcPeer {
             anchor.href = URL.createObjectURL(new Blob(this._fileDataBuffer));
             anchor.download = this._fileData!.name;
             anchor.click();
+            this.closeConnections();
         }
+    }
+
+    private closeConnections() {
+        this.fileTransferChannel?.close();
+        this.metadataChannel?.close();
+        this._peerConnection.close();
+        this._closeCallback?.();
     }
 
 }
