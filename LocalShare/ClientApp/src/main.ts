@@ -136,9 +136,9 @@ export class App extends LitElement {
 
   private _clientSelectedListener = async (event: ClientSelectedEvent) => {
     console.log("Client selected", event.client, event.file);
-    // const peerConnection = new WebRtcPeer(this.connection);
-    // await peerConnection.initConnection(event.detail.id);
-    // this._connectionMap.set(event.detail.id, peerConnection);
+    const peerConnection = new WebRtcPeer(this.connection, event.file);
+    await peerConnection.initConnection(event.client.id);
+    this._connectionMap.set(event.client.id, peerConnection);
   };
 
   getCurrentClient() {
