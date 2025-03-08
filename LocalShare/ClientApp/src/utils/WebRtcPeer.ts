@@ -4,16 +4,34 @@ import { SendIceCandidate } from "../models/messages/SendIceCandidate";
 import { SendOffer } from "../models/messages/SendOffer";
 
 const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+enum TransferStatus {
+    Pending,
+    InProgress,
+    Completed,
+    Error
+}
+
+interface FileMetadata {
+    name: string;
+    size: number;
+    type: string;
+    lastModified: number;
+    status: TransferStatus;
+}
 export class WebRtcPeer {
     private _peerConnection: RTCPeerConnection;
     private _signalRConnection: signalR.HubConnection;
     public metadataChannel?: RTCDataChannel;
     public fileTransferChannel?: RTCDataChannel;
+    private _file?: File;
+    private _fileData?: FileMetadata;
 
-    constructor(signalRConnection: signalR.HubConnection) {
+    constructor(signalRConnection: signalR.HubConnection, file?: File) {
         this._signalRConnection = signalRConnection;
         this._peerConnection = new RTCPeerConnection(configuration);
         this.handleDataChannel = this.handleDataChannel.bind(this);
+        this._file = file;
     }
 
     async initConnection(targetClient: string) {
@@ -37,10 +55,24 @@ export class WebRtcPeer {
         }
         this._signalRConnection.invoke(SignallingEvents.SendOffer, payload)
         this.metadataChannel.onopen = () => {
-            this.metadataChannel?.send("Metadata channel open");
+            //send file metadata
+            this._fileData = {
+                name: this._file!.name,
+                size: this._file!.size,
+                type: this._file!.type,
+                lastModified: this._file!.lastModified,
+                status: TransferStatus.Pending
+            }
+            this.metadataChannel?.send(JSON.stringify(this._fileData));
         }
         this.metadataChannel.onmessage = event => {
-            console.log("Metadata channel message", event.data);
+            const data = JSON.parse(event.data) as FileMetadata;
+            this._fileData = data;
+            console.log(data);
+            if (data.status === TransferStatus.InProgress) {
+                    //send file data
+                    console.log("Sending file data");
+            }
         }
     }
 
@@ -78,8 +110,12 @@ export class WebRtcPeer {
         if (channel.label === "file-metadata-channel") {
             this.metadataChannel = channel;
             this.metadataChannel.onmessage = event => {
+                //confirm that metadata was received
+                const data = JSON.parse(event.data) as FileMetadata;
+                data.status = TransferStatus.InProgress;
                 console.log("Metadata channel message", event.data);
-                this.metadataChannel?.send("Metadata channel open");
+                this._fileData = data;
+                this.metadataChannel?.send(JSON.stringify(data));
             };
         } else if (channel.label === "file-transfer") {
             this.fileTransferChannel = channel;
