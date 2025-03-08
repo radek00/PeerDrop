@@ -26,11 +26,14 @@ export class WebRtcPeer {
     public fileTransferChannel?: RTCDataChannel;
     private _file?: File;
     private _fileData?: FileMetadata;
+    private _fileDataBuffer: Array<ArrayBuffer> = [];
+    private _receivedSize = 0;
 
     constructor(signalRConnection: signalR.HubConnection, file?: File) {
         this._signalRConnection = signalRConnection;
         this._peerConnection = new RTCPeerConnection(configuration);
         this.handleDataChannel = this.handleDataChannel.bind(this);
+        this.onFileDataReceived = this.onFileDataReceived.bind(this);
         this._file = file;
     }
 
@@ -71,7 +74,14 @@ export class WebRtcPeer {
             console.log(data);
             if (data.status === TransferStatus.InProgress) {
                     //send file data
-                    console.log("Sending file data");
+                    if (this.fileTransferChannel?.readyState === 'open') {
+                        console.log("Sending file data");
+                        this.sendFileData();
+                    } else {
+                        this.fileTransferChannel?.addEventListener('open', () => {
+                            this.sendFileData();
+                        });
+                    }
             }
         }
     }
@@ -120,10 +130,52 @@ export class WebRtcPeer {
         } else if (channel.label === "file-transfer") {
             this.fileTransferChannel = channel;
             this.fileTransferChannel.binaryType = "arraybuffer";
-            // fileTransferDataChannel.onmessage = onReceiveMessageCallback;
+            this.fileTransferChannel.onmessage = this.onFileDataReceived;
             // fileTransferDataChannel.addEventListener('open', onChannelStateChange);
             // fileTransferDataChannel.addEventListener('close', onChannelStateChange);
             // fileTransferDataChannel.addEventListener('error', onFileTransferChannelError);
+        }
+    }
+
+    private sendFileData() {
+        const chunkSize = 16384;
+        const fileReader = new FileReader();
+        let offset = 0;
+
+        fileReader.addEventListener('error', error => console.error('Error reading file:', error));
+        fileReader.addEventListener('abort', event => console.log('File reading aborted:', event));
+        fileReader.addEventListener('load', e => {
+            if (!e.target?.result)
+                return;
+            const result = e.target.result as ArrayBuffer;
+                this.fileTransferChannel!.send(result);
+                offset += result.byteLength;
+                if (offset < this._file!.size) {
+                    readSlice(offset);
+                }
+            
+        });
+
+        const readSlice = (o: number) => {
+            const slice = this._file!.slice(offset, o + chunkSize);
+            fileReader.readAsArrayBuffer(slice);
+        };
+        readSlice(0);
+    }
+
+    private onFileDataReceived(event: MessageEvent) {
+        const data = event.data as ArrayBuffer;
+        this._receivedSize += data.byteLength;
+        this._fileDataBuffer.push(data);
+        console.log("Received data", data.byteLength, this._receivedSize);
+        if (this._receivedSize === this._fileData!.size) {
+            console.log("File transfer complete");
+            this._fileData!.status = TransferStatus.Completed;
+            this.metadataChannel?.send(JSON.stringify(this._fileData));
+            const anchor = document.createElement('a');
+            anchor.href = URL.createObjectURL(new Blob(this._fileDataBuffer));
+            anchor.download = this._fileData!.name;
+            anchor.click();
         }
     }
 
