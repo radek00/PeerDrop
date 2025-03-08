@@ -21,7 +21,6 @@ export class ClientWrapper extends LitElement {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 100%;
     }
 
     .file-input-wrapper input {
