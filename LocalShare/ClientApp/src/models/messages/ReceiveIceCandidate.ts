@@ -1,5 +1,4 @@
-
 export interface ReceiveIceCandidate {
-    candidate: RTCIceCandidate;
-    senderConnectionId: string;
+  candidate: RTCIceCandidate;
+  senderConnectionId: string;
 }

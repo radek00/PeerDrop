@@ -1,5 +1,4 @@
-
 export interface SendOffer {
-    targetConnectionId: string;
-    offer: RTCSessionDescriptionInit;
+  targetConnectionId: string;
+  offer: RTCSessionDescriptionInit;
 }

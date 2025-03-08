@@ -50,8 +50,17 @@ export class ClientWrapper extends LitElement {
           (client) => html`
             <div class="file-input-wrapper">
               <label>
-                <connected-client icon="phone" .client=${client}></connected-client>
-                <input @change=${(event: Event) => this._onInputChange(event, client)} type="file" class="file-input" id="file-input-${client.id}" />
+                <connected-client
+                  icon="phone"
+                  .client=${client}
+                ></connected-client>
+                <input
+                  @change=${(event: Event) =>
+                    this._onInputChange(event, client)}
+                  type="file"
+                  class="file-input"
+                  id="file-input-${client.id}"
+                />
               </label>
             </div>
           `
