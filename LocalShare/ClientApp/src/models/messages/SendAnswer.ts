@@ -1,5 +1,4 @@
-
 export interface SendAnswer {
-    answer: RTCSessionDescriptionInit;
-    targetConnectionId: string;
+  answer: RTCSessionDescriptionInit;
+  targetConnectionId: string;
 }

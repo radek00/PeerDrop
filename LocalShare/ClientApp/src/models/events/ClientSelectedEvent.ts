@@ -1,7 +1,6 @@
 import { ClientConnectionInfo } from "../messages/ClientInfo";
 import { Events } from "./Events";
 
-
 export class ClientSelectedEvent extends Event {
   client: ClientConnectionInfo;
   file: File;

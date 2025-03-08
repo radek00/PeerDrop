@@ -1,5 +1,4 @@
-
 export interface ReceiveAnswer {
-    answer: RTCSessionDescriptionInit;
-    senderConnectionId: string;
+  answer: RTCSessionDescriptionInit;
+  senderConnectionId: string;
 }
