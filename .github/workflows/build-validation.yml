@@ -32,18 +32,24 @@ jobs:
       - name: Test
         run:  dotnet test --no-restore --verbosity normal
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
+          cache: 'pnpm'
 
-      - name: Install npm packages
+      - name: Install dependencies
         working-directory: ./LocalShare/ClientApp
-        run: npm install
+        run: pnpm install
 
       - name: Prettier verify
         working-directory: ./LocalShare/ClientApp
-        run: npm run prettier-check
+        run: pnpm prettier-check
 
       # - name: Eslint verify
       #   working-directory: ./LocalShare/ClientApp
@@ -55,5 +61,5 @@ jobs:
 
       - name: Build Vite project
         working-directory: ./LocalShare/ClientApp
-        run: npm run build
+        run: pnpm build
 
