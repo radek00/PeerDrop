@@ -1,0 +1,59 @@
+name: build
+
+on:
+  pull_request:
+    branches: [master]
+
+env:
+  DOTNET_VERSION: '9.x' # The .NET SDK version to use
+
+jobs:
+  build:
+
+    name: build-${{matrix.os}}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+      
+      - name: Test
+        run:  dotnet test --no-restore --verbosity normal
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: Install npm packages
+        working-directory: ./LocalShare/ClientApp
+        run: npm install
+
+      - name: Prettier verify
+        working-directory: ./LocalShare/ClientApp
+        run: npm run prettier-check
+
+      # - name: Eslint verify
+      #   working-directory: ./LocalShare/ClientApp
+      #   run: npm run lint
+
+      # - name: Test Vitest
+      #   working-directory: ./LocalShare/ClientApp
+      #   run: npm run test
+
+      - name: Build Vite project
+        working-directory: ./LocalShare/ClientApp
+        run: npm run build
+
