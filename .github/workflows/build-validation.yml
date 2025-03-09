@@ -39,9 +39,9 @@ jobs:
 
       - name: Setup Node
         uses: actions/setup-node@v4
-        working-directory: ./LocalShare/ClientApp
         with:
           node-version: 22.x
+          cache-dependency-path: ./LocalShare/ClientApp/pnpm-lock.yaml
           cache: 'pnpm'
 
       - name: Install dependencies
