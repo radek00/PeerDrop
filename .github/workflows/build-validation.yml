@@ -39,6 +39,7 @@ jobs:
 
       - name: Setup Node
         uses: actions/setup-node@v4
+        working-directory: ./LocalShare/ClientApp
         with:
           node-version: 22.x
           cache: 'pnpm'
