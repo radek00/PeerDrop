@@ -1,26 +1,15 @@
+import { FileMetadata } from "../models/FileMetadata";
 import { SignallingEvents } from "../models/SignallingEvents";
 import { SendAnswer } from "../models/messages/SendAnswer";
 import { SendIceCandidate } from "../models/messages/SendIceCandidate";
 import { SendOffer } from "../models/messages/SendOffer";
+import { TransferStatus } from "../models/TransferStatus";
+import { createWriteStream } from "./streamSaver/streamSaver";
 
 const configuration = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
-enum TransferStatus {
-  Pending,
-  InProgress,
-  Completed,
-  Error,
-}
-
-interface FileMetadata {
-  name: string;
-  size: number;
-  type: string;
-  lastModified: number;
-  status: TransferStatus;
-}
 export class WebRtcPeer {
   private _peerConnection: RTCPeerConnection;
   private _signalRConnection: signalR.HubConnection;
@@ -28,8 +17,8 @@ export class WebRtcPeer {
   public fileTransferChannel?: RTCDataChannel;
   private _file?: File;
   private _fileData?: FileMetadata;
-  private _fileDataBuffer: Array<ArrayBuffer> = [];
   private _receivedSize = 0;
+  private _writer?: WritableStreamDefaultWriter<Uint8Array>;
   private _closeCallback?: () => void;
 
   constructor(
@@ -188,19 +177,17 @@ export class WebRtcPeer {
     readSlice(0);
   }
 
-  private onFileDataReceived(event: MessageEvent) {
-    const data = event.data as ArrayBuffer;
-    this._receivedSize += data.byteLength;
-    this._fileDataBuffer.push(data);
-    console.log("Received data", data.byteLength, this._receivedSize);
-    if (this._receivedSize === this._fileData!.size) {
-      console.log("File transfer complete");
-      this._fileData!.status = TransferStatus.Completed;
-      this.metadataChannel?.send(JSON.stringify(this._fileData));
-      const anchor = document.createElement("a");
-      anchor.href = URL.createObjectURL(new Blob(this._fileDataBuffer));
-      anchor.download = this._fileData!.name;
-      anchor.click();
+  private async onFileDataReceived(event: MessageEvent) {
+    if (this._receivedSize === 0) {
+      const fileStream = createWriteStream(this._fileData!);
+      this._writer = fileStream.getWriter();
+    }
+
+    await this._writer!.write(new Uint8Array(event.data));
+    this._receivedSize += event.data.byteLength;
+
+    if (this._receivedSize === this._fileData?.size) {
+      await this._writer!.close();
       this.closeConnections();
     }
   }
@@ -210,5 +197,6 @@ export class WebRtcPeer {
     this.metadataChannel?.close();
     this._peerConnection.close();
     this._closeCallback?.();
+    this._writer = undefined;
   }
 }
