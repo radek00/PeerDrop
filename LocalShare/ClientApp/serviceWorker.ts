@@ -31,6 +31,7 @@ self.addEventListener("fetch", (event) => {
 
 self.onmessage = (event) => {
   if (event.data === "ping") {
+    console.log("Service worker is alive");
     return;
   }
   const { fileTransferMetadata } = event.data;
