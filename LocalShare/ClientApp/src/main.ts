@@ -15,6 +15,10 @@ import { ReceiveIceCandidate } from "./models/messages/ReceiveIceCandidate";
 import { ReceiveAnswer } from "./models/messages/ReceiveAnswer";
 import { ClientSelectedEvent } from "./models/events/ClientSelectedEvent";
 
+setInterval(() => {
+  navigator.serviceWorker.controller?.postMessage("ping")
+},10000);
+
 const registerServiceWorker = async () => {
   if ("serviceWorker" in navigator) {
     try {
