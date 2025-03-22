@@ -40,8 +40,8 @@ self.onmessage = (event: ExtendableMessageEvent) => {
 
     const streamData = {
         fileTransferMetadata,
-        stream: new ReadableStream(new ReadableChunkStream(downloadUrl, new BroadcastChannel(`chunk`))),
-        metadataBroadcast: new BroadcastChannel(`metadata`),
+        stream: new ReadableStream(new ReadableChunkStream(downloadUrl, new BroadcastChannel(`chunk-${fileTransferMetadata.name}`))),
+        metadataBroadcast: new BroadcastChannel(`metadata-${fileTransferMetadata.name}`),
     };
     map.set(downloadUrl, streamData);
     streamData.metadataBroadcast.postMessage({ download: downloadUrl });
