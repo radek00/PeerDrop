@@ -52,10 +52,10 @@ export class WebRtcPeer {
     );
     this.fileTransferChannel =
       this._peerConnection.createDataChannel("file-transfer");
-    
-    this.fileTransferChannel.addEventListener("close" ,() => {
+
+    this.fileTransferChannel.addEventListener("close", () => {
       this.closeConnections();
-    })
+    });
 
     const offer = await this._peerConnection.createOffer();
     await this._peerConnection.setLocalDescription(offer);
