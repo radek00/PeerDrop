@@ -52,6 +52,10 @@ export class WebRtcPeer {
     );
     this.fileTransferChannel =
       this._peerConnection.createDataChannel("file-transfer");
+    
+    this.fileTransferChannel.addEventListener("close" ,() => {
+      this.closeConnections();
+    })
 
     const offer = await this._peerConnection.createOffer();
     await this._peerConnection.setLocalDescription(offer);
@@ -144,7 +148,9 @@ export class WebRtcPeer {
       this.fileTransferChannel.binaryType = "arraybuffer";
       this.fileTransferChannel.onmessage = this.onFileDataReceived;
       // fileTransferDataChannel.addEventListener('open', onChannelStateChange);
-      // fileTransferDataChannel.addEventListener('close', onChannelStateChange);
+      // this.fileTransferChannel.addEventListener('close', () => {
+      //   console.log("File transfer channel closed");
+      // });
       // fileTransferDataChannel.addEventListener('error', onFileTransferChannelError);
     }
   }
