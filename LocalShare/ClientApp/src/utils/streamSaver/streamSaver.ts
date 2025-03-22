@@ -14,8 +14,8 @@ class WritableChunkStream {
     private _isClosed = false;
 
     constructor(fileTransferMetadata: FileMetadata) {
-        this.metadataBroadcast = new BroadcastChannel(`metadata`);
-        this.chunkBroadcast = new BroadcastChannel(`chunk`);
+        this.metadataBroadcast = new BroadcastChannel(`metadata-${fileTransferMetadata.name}`);
+        this.chunkBroadcast = new BroadcastChannel(`chunk-${fileTransferMetadata.name}`);
         this.fileTransferMetadata = fileTransferMetadata;
         this.metadataBroadcast.onmessage = (event) => {
             console.log("metadataBroadcast", event.data);
