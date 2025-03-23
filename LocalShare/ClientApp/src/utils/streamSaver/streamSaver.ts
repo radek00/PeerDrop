@@ -11,7 +11,6 @@ class WritableChunkStream {
   chunkBroadcast: BroadcastChannel;
   downloadUrl: string | null = null;
   bytesWritten = 0;
-  private _isClosed = false;
 
   constructor(fileTransferMetadata: FileMetadata) {
     this.metadataBroadcast = new BroadcastChannel(
@@ -34,11 +33,6 @@ class WritableChunkStream {
   }
 
   write(chunk: Uint8Array) {
-    if (this._isClosed) {
-      console.warn("Write called after stream was closed, ignoring");
-      return;
-    }
-
     if (!(chunk instanceof Uint8Array)) {
       throw new TypeError("Can only write Uint8Arrays");
     }
@@ -62,9 +56,7 @@ class WritableChunkStream {
   }
 
   close() {
-    if (this._isClosed) return;
-    this._isClosed = true;
-    console.log("Closing WritableChunkStream");
+    console.log("Closing WritableChunkStream", this.bytesWritten);
     this.chunkBroadcast.postMessage({ done: true });
   }
 }
