@@ -45,7 +45,8 @@ self.onmessage = (event: ExtendableMessageEvent) => {
     stream: new ReadableStream(
       new ReadableChunkStream(
         downloadUrl,
-        new BroadcastChannel(`chunk-${fileTransferMetadata.name}`)
+        new BroadcastChannel(`chunk-${fileTransferMetadata.name}`),
+        fileTransferMetadata.size
       )
     ),
     metadataBroadcast: new BroadcastChannel(
@@ -61,10 +62,17 @@ class ReadableChunkStream {
   chunkBroadcast: BroadcastChannel;
   private _isClosed = false;
   private _controller: ReadableStreamDefaultController | null = null;
+  private _bytesWritten = 0;
+  private _expectedBytes = 0;
 
-  constructor(downloadUrl: string, chunkBroadcast: BroadcastChannel) {
+  constructor(
+    downloadUrl: string,
+    chunkBroadcast: BroadcastChannel,
+    expectedBytes: number
+  ) {
     this.downloadUrl = downloadUrl;
     this.chunkBroadcast = chunkBroadcast;
+    this._expectedBytes = expectedBytes;
   }
 
   start(controller: ReadableStreamDefaultController) {
@@ -77,7 +85,12 @@ class ReadableChunkStream {
 
       if (event.data.chunkData) {
         try {
+          this._bytesWritten += event.data.chunkData.byteLength;
           controller.enqueue(event.data.chunkData);
+          if (this._bytesWritten === this._expectedBytes) {
+            console.log("All bytes written");
+            this.close();
+          }
         } catch (error) {
           console.error("Error enqueuing chunk:", error);
           this.close();
@@ -85,8 +98,11 @@ class ReadableChunkStream {
       }
 
       if (event.data.done) {
-        console.log("Closing stream");
-        this.close();
+        console.log("Client is done");
+        if (this._bytesWritten === this._expectedBytes) {
+          console.log("All bytes written");
+          this.close();
+        }
       }
     };
   }
@@ -96,9 +112,10 @@ class ReadableChunkStream {
   }
 
   close() {
+    console.log("bytesWritten", this._bytesWritten);
     if (this._isClosed) return;
     this._isClosed = true;
-    console.log("Closing ReadableChunkStream");
+    console.log("Closing ReadableChunkStream", this.downloadUrl);
     try {
       this.chunkBroadcast.close();
       this._controller?.close();
