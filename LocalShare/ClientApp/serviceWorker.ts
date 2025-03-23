@@ -60,7 +60,6 @@ self.onmessage = (event: ExtendableMessageEvent) => {
 class ReadableChunkStream {
   downloadUrl?: string;
   chunkBroadcast: BroadcastChannel;
-  private _isClosed = false;
   private _controller: ReadableStreamDefaultController | null = null;
   private _bytesWritten = 0;
   private _expectedBytes = 0;
@@ -78,11 +77,6 @@ class ReadableChunkStream {
   start(controller: ReadableStreamDefaultController) {
     this._controller = controller;
     this.chunkBroadcast.onmessage = (event) => {
-      if (this._isClosed) {
-        console.warn("Received chunk after stream was closed, ignoring");
-        return;
-      }
-
       if (event.data.chunkData) {
         try {
           this._bytesWritten += event.data.chunkData.byteLength;
@@ -112,10 +106,8 @@ class ReadableChunkStream {
   }
 
   close() {
-    console.log("bytesWritten", this._bytesWritten);
-    if (this._isClosed) return;
-    this._isClosed = true;
     console.log("Closing ReadableChunkStream", this.downloadUrl);
+    console.log("bytesWritten", this._bytesWritten);
     try {
       this.chunkBroadcast.close();
       this._controller?.close();
