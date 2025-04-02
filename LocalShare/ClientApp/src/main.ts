@@ -120,7 +120,7 @@ export class App extends LitElement {
   receiveOffer(payload: ReceiveOffer) {
     const peerConnection = new WebRtcPeer(this.connection, undefined, () => {
       this._connectionMap.delete(payload.senderConnectionId);
-      console.log(this._connectionMap);
+      console.log("connection map", this._connectionMap);
     });
     this._connectionMap.set(payload.senderConnectionId, peerConnection);
     peerConnection.receiveOffer(payload.offer, payload.senderConnectionId);
@@ -144,7 +144,7 @@ export class App extends LitElement {
     console.log("Client selected", event.client, event.file);
     const peerConnection = new WebRtcPeer(this.connection, event.file, () => {
       this._connectionMap.delete(event.client.id);
-      console.log(this._connectionMap);
+      console.log("connection map", this._connectionMap);
     });
     await peerConnection.initConnection(event.client.id);
     this._connectionMap.set(event.client.id, peerConnection);

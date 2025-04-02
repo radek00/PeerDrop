@@ -32,6 +32,7 @@ export class WebRtcPeer {
     this.onFileDataReceived = this.onFileDataReceived.bind(this);
     this._file = file;
     this._closeCallback = closeCallback;
+    //this.closeConnections = this.closeConnections.bind(this);
   }
 
   async initConnection(targetClient: string) {
@@ -156,7 +157,7 @@ export class WebRtcPeer {
   }
 
   private sendFileData() {
-    const chunkSize = 16384;
+    const chunkSize = 5 * 1024;
     const fileReader = new FileReader();
     let offset = 0;
 
@@ -185,17 +186,23 @@ export class WebRtcPeer {
 
   private async onFileDataReceived(event: MessageEvent) {
     if (this._receivedSize === 0) {
-      const fileStream = createWriteStream(this._fileData!);
+      const fileStream = createWriteStream(this._fileData!, () => {
+        this.closeConnections();
+      });
       this._writer = fileStream.getWriter();
     }
 
     await this._writer!.write(new Uint8Array(event.data));
     this._receivedSize += event.data.byteLength;
 
-    if (this._receivedSize === this._fileData?.size) {
-      await this._writer!.close();
-      this.closeConnections();
-    }
+    // if (this._receivedSize === this._fileData?.size) {
+    //   console.log("All chunks send through web rtc");
+    //   //await this._writer!.close();
+    //   this.closeConnections();
+    //   // setTimeout(async () => {
+    //   //
+    //   // }, 2000)
+    // }
   }
 
   private closeConnections() {
@@ -203,6 +210,6 @@ export class WebRtcPeer {
     this.metadataChannel?.close();
     this._peerConnection.close();
     this._closeCallback?.();
-    this._writer = undefined;
+    //this._writer = undefined;
   }
 }
