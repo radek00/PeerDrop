@@ -1,8 +1,8 @@
 import { FileMetadata } from "../../models/FileMetadata";
 
-export function createWriteStream(fileTransferMetadata: FileMetadata) {
+export function createWriteStream(fileTransferMetadata: FileMetadata, closeCallback?: () => void) {
   navigator.serviceWorker.controller?.postMessage({ fileTransferMetadata });
-  return new WritableStream(new WritableChunkStream(fileTransferMetadata));
+  return new WritableStream(new WritableChunkStream(fileTransferMetadata, closeCallback));
 }
 
 class WritableChunkStream {
@@ -11,8 +11,10 @@ class WritableChunkStream {
   chunkBroadcast: BroadcastChannel;
   downloadUrl: string | null = null;
   bytesWritten = 0;
+  closeCallback?: () => void;
 
-  constructor(fileTransferMetadata: FileMetadata) {
+  constructor(fileTransferMetadata: FileMetadata, closeCallback?: () => void) {
+    this.closeCallback = closeCallback;
     this.metadataBroadcast = new BroadcastChannel(
       `metadata-${fileTransferMetadata.name}`
     );
@@ -30,15 +32,24 @@ class WritableChunkStream {
         }
       }
     };
+
+    this.chunkBroadcast.onmessage = (event) => {
+      if (event.data.writeConfirmation) {
+        this.bytesWritten += event.data.writeConfirmation;
+        console.log("bytesWritten confirmation", this.bytesWritten, this.fileTransferMetadata.size);
+        if (this.bytesWritten === this.fileTransferMetadata.size) {
+          this.close();
+        }
+      }
+    }
   }
 
   write(chunk: Uint8Array) {
     if (!(chunk instanceof Uint8Array)) {
       throw new TypeError("Can only write Uint8Arrays");
     }
+    console.log("Writing chunk", chunk);
     this.chunkBroadcast.postMessage({ chunkData: chunk });
-    this.bytesWritten += chunk.length;
-
     if (this.downloadUrl) {
       this.startDownload(this.downloadUrl);
     }
@@ -57,6 +68,6 @@ class WritableChunkStream {
 
   close() {
     console.log("Closing WritableChunkStream", this.bytesWritten);
-    this.chunkBroadcast.postMessage({ done: true });
+    this.closeCallback?.();
   }
 }

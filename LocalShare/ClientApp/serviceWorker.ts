@@ -63,6 +63,7 @@ class ReadableChunkStream {
   private _controller: ReadableStreamDefaultController | null = null;
   private _bytesWritten = 0;
   private _expectedBytes = 0;
+  // private _isDone = false;
 
   constructor(
     downloadUrl: string,
@@ -79,41 +80,64 @@ class ReadableChunkStream {
     this.chunkBroadcast.onmessage = (event) => {
       if (event.data.chunkData) {
         try {
+          controller.enqueue(new Uint8Array(event.data.chunkData));
           this._bytesWritten += event.data.chunkData.byteLength;
-          controller.enqueue(event.data.chunkData);
-          if (this._bytesWritten === this._expectedBytes) {
-            console.log("All bytes written");
+          this.chunkBroadcast.postMessage({
+            writeConfirmation: this._bytesWritten,
+          });
+          console.log(
+            "service worker bytesWritten",
+            this._bytesWritten,
+            "expectedBytes",
+            this._expectedBytes
+          );
+          // Check if we're done AFTER enqueuing the chunk
+          if (this._bytesWritten >= this._expectedBytes) {
+            console.log("All bytes written after done signal");
             this.close();
           }
         } catch (error) {
-          console.error("Error enqueuing chunk:", error);
-          this.close();
+          //console.error("Error enqueuing chunk:", error);
+          //this.close();
         }
       }
 
-      if (event.data.done) {
-        console.log("Client is done");
-        if (this._bytesWritten === this._expectedBytes) {
-          console.log("All bytes written");
-          this.close();
-        }
-      }
+      // if (event.data.done) {
+      //   console.log("Client is done");
+
+      //   // Only close if we've already received all expected bytes
+      //   if (this._bytesWritten === this._expectedBytes) {
+      //     console.log("All bytes written when done received");
+      //     this.close();
+      //   }
+      // }
     };
   }
 
   cancel() {
-    this.close();
+    //this.close();
   }
 
   close() {
     console.log("Closing ReadableChunkStream", this.downloadUrl);
-    console.log("bytesWritten", this._bytesWritten);
+    console.log(
+      "bytesWritten",
+      this._bytesWritten,
+      "expectedBytes",
+      this._expectedBytes
+    );
+
     try {
+      // First close the controller, then close the broadcast channel
+      if (this._controller) {
+        this._controller.close();
+        this._controller = null;
+      }
+      // Give some time for any in-flight messages to be processed
       this.chunkBroadcast.close();
-      this._controller?.close();
+      map.delete(this.downloadUrl);
     } catch (e) {
-      console.error("Error closing chunkBroadcast:", e);
+      console.error("Error closing ReadableChunkStream:", e);
     }
-    map.delete(this.downloadUrl);
   }
 }
