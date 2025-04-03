@@ -185,15 +185,21 @@ export class WebRtcPeer {
   }
 
   private async onFileDataReceived(event: MessageEvent) {
-    if (this._receivedSize === 0) {
-      const fileStream = createWriteStream(this._fileData!, () => {
-        this.closeConnections();
-      });
-      this._writer = fileStream.getWriter();
+    try {
+      if (this._receivedSize === 0) {
+        const fileStream = createWriteStream(this._fileData!, () => {
+          this.closeConnections();
+        });
+        this._writer = fileStream.getWriter();
+      }
+  
+      await this._writer!.write(new Uint8Array(event.data));
+      this._receivedSize += event.data.byteLength;
+    } catch (error) {
+      console.error("Error writing file data:", error);
+      this._writer?.close();
+      this.closeConnections();
     }
-
-    await this._writer!.write(new Uint8Array(event.data));
-    this._receivedSize += event.data.byteLength;
 
     // if (this._receivedSize === this._fileData?.size) {
     //   console.log("All chunks send through web rtc");

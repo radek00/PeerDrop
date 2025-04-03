@@ -12,7 +12,6 @@ export function createWriteStream(
 
 class WritableChunkStream {
   fileTransferMetadata: FileMetadata;
-  metadataBroadcast: BroadcastChannel;
   chunkBroadcast: BroadcastChannel;
   downloadUrl: string | null = null;
   bytesWritten = 0;
@@ -20,23 +19,10 @@ class WritableChunkStream {
 
   constructor(fileTransferMetadata: FileMetadata, closeCallback?: () => void) {
     this.closeCallback = closeCallback;
-    this.metadataBroadcast = new BroadcastChannel(
-      `metadata-${fileTransferMetadata.name}`
-    );
     this.chunkBroadcast = new BroadcastChannel(
       `chunk-${fileTransferMetadata.name}`
     );
     this.fileTransferMetadata = fileTransferMetadata;
-    this.metadataBroadcast.onmessage = (event) => {
-      console.log("metadataBroadcast", event.data);
-      if (event.data.download) {
-        if (this.bytesWritten) {
-          this.startDownload(event.data.download);
-        } else {
-          this.downloadUrl = event.data.download;
-        }
-      }
-    };
 
     this.chunkBroadcast.onmessage = (event) => {
       console.log("chunkBroadcast", event.data);
@@ -49,6 +35,13 @@ class WritableChunkStream {
         );
         if (this.bytesWritten === this.fileTransferMetadata.size) {
           this.close();
+        }
+      } else if (event.data.download) {
+        console.log("metadataBroadcast", event.data);
+        if (this.bytesWritten) {
+          this.startDownload(event.data.download);
+        } else {
+          this.downloadUrl = event.data.download;
         }
       }
     };

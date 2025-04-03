@@ -31,7 +31,7 @@ self.addEventListener("fetch", (event) => {
 
 self.onmessage = (event: ExtendableMessageEvent) => {
   if (event.data === "ping") {
-    console.log("Service worker is alive");
+    console.log("Service worker is alive", map);
     return;
   }
   const { fileTransferMetadata } = event.data as {
@@ -49,12 +49,8 @@ self.onmessage = (event: ExtendableMessageEvent) => {
         fileTransferMetadata.size
       )
     ),
-    metadataBroadcast: new BroadcastChannel(
-      `metadata-${fileTransferMetadata.name}`
-    ),
   };
   map.set(downloadUrl, streamData);
-  streamData.metadataBroadcast.postMessage({ download: downloadUrl });
 };
 
 class ReadableChunkStream {
@@ -63,7 +59,6 @@ class ReadableChunkStream {
   private _controller: ReadableStreamDefaultController | null = null;
   private _bytesWritten = 0;
   private _expectedBytes = 0;
-  // private _isDone = false;
 
   constructor(
     downloadUrl: string,
@@ -73,6 +68,7 @@ class ReadableChunkStream {
     this.downloadUrl = downloadUrl;
     this.chunkBroadcast = chunkBroadcast;
     this._expectedBytes = expectedBytes;
+    this.chunkBroadcast.postMessage({ download: downloadUrl })
   }
 
   start(controller: ReadableStreamDefaultController) {
@@ -91,31 +87,20 @@ class ReadableChunkStream {
             "expectedBytes",
             this._expectedBytes
           );
-          // Check if we're done AFTER enqueuing the chunk
           if (this._bytesWritten >= this._expectedBytes) {
             console.log("All bytes written after done signal");
             this.close();
           }
         } catch (error) {
-          //console.error("Error enqueuing chunk:", error);
-          //this.close();
+          console.error("Error enqueuing chunk:", error);
+          this.close();
         }
       }
-
-      // if (event.data.done) {
-      //   console.log("Client is done");
-
-      //   // Only close if we've already received all expected bytes
-      //   if (this._bytesWritten === this._expectedBytes) {
-      //     console.log("All bytes written when done received");
-      //     this.close();
-      //   }
-      // }
     };
   }
 
   cancel() {
-    //this.close();
+    this.close();
   }
 
   close() {
@@ -133,7 +118,6 @@ class ReadableChunkStream {
         this._controller.close();
         this._controller = null;
       }
-      // Give some time for any in-flight messages to be processed
       this.chunkBroadcast.close();
       map.delete(this.downloadUrl);
     } catch (e) {
