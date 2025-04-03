@@ -83,7 +83,7 @@ class ReadableChunkStream {
           controller.enqueue(new Uint8Array(event.data.chunkData));
           this._bytesWritten += event.data.chunkData.byteLength;
           this.chunkBroadcast.postMessage({
-            writeConfirmation: this._bytesWritten,
+            confirmedWriteSize: this._bytesWritten,
           });
           console.log(
             "service worker bytesWritten",

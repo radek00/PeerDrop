@@ -1,8 +1,13 @@
 import { FileMetadata } from "../../models/FileMetadata";
 
-export function createWriteStream(fileTransferMetadata: FileMetadata, closeCallback?: () => void) {
+export function createWriteStream(
+  fileTransferMetadata: FileMetadata,
+  closeCallback?: () => void
+) {
   navigator.serviceWorker.controller?.postMessage({ fileTransferMetadata });
-  return new WritableStream(new WritableChunkStream(fileTransferMetadata, closeCallback));
+  return new WritableStream(
+    new WritableChunkStream(fileTransferMetadata, closeCallback)
+  );
 }
 
 class WritableChunkStream {
@@ -34,14 +39,19 @@ class WritableChunkStream {
     };
 
     this.chunkBroadcast.onmessage = (event) => {
-      if (event.data.writeConfirmation) {
-        this.bytesWritten += event.data.writeConfirmation;
-        console.log("bytesWritten confirmation", this.bytesWritten, this.fileTransferMetadata.size);
+      console.log("chunkBroadcast", event.data);
+      if (event.data.confirmedWriteSize) {
+        this.bytesWritten = event.data.confirmedWriteSize;
+        console.log(
+          "bytesWritten confirmation",
+          this.bytesWritten,
+          this.fileTransferMetadata.size
+        );
         if (this.bytesWritten === this.fileTransferMetadata.size) {
           this.close();
         }
       }
-    }
+    };
   }
 
   write(chunk: Uint8Array) {
