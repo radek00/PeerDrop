@@ -192,7 +192,7 @@ export class WebRtcPeer {
         });
         this._writer = fileStream.getWriter();
       }
-  
+
       await this._writer!.write(new Uint8Array(event.data));
       this._receivedSize += event.data.byteLength;
     } catch (error) {

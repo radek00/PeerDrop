@@ -68,7 +68,7 @@ class ReadableChunkStream {
     this.downloadUrl = downloadUrl;
     this.chunkBroadcast = chunkBroadcast;
     this._expectedBytes = expectedBytes;
-    this.chunkBroadcast.postMessage({ download: downloadUrl })
+    this.chunkBroadcast.postMessage({ download: downloadUrl });
   }
 
   start(controller: ReadableStreamDefaultController) {
@@ -113,13 +113,12 @@ class ReadableChunkStream {
     );
 
     try {
-      // First close the controller, then close the broadcast channel
+      this.chunkBroadcast.close();
+      map.delete(this.downloadUrl);
       if (this._controller) {
         this._controller.close();
         this._controller = null;
       }
-      this.chunkBroadcast.close();
-      map.delete(this.downloadUrl);
     } catch (e) {
       console.error("Error closing ReadableChunkStream:", e);
     }
