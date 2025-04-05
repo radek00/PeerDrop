@@ -43,6 +43,9 @@ class WritableChunkStream {
         } else {
           this.downloadUrl = event.data.download;
         }
+      } else if (event.data.close) {
+        console.log("Closing WritableChunkStream", this.bytesWritten);
+        this.closeCallback?.();
       }
     };
   }
@@ -51,7 +54,7 @@ class WritableChunkStream {
     if (!(chunk instanceof Uint8Array)) {
       throw new TypeError("Can only write Uint8Arrays");
     }
-    console.log("Writing chunk", chunk);
+    //console.log("Writing chunk", chunk);
     this.chunkBroadcast.postMessage({ chunkData: chunk });
     if (this.downloadUrl) {
       this.startDownload(this.downloadUrl);

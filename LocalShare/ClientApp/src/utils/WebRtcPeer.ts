@@ -168,12 +168,19 @@ export class WebRtcPeer {
       console.log("File reading aborted:", event)
     );
     fileReader.addEventListener("load", (e) => {
-      if (!e.target?.result) return;
-      const result = e.target.result as ArrayBuffer;
-      this.fileTransferChannel!.send(result);
-      offset += result.byteLength;
-      if (offset < this._file!.size) {
-        readSlice(offset);
+      try {
+        if (!e.target?.result) return;
+        const result = e.target.result as ArrayBuffer;
+        this.fileTransferChannel!.send(result);
+        offset += result.byteLength;
+        if (offset < this._file!.size) {
+          readSlice(offset);
+        }
+      } catch (error) {
+        console.error(
+          "Error sending file data. Download might have been cancelled:",
+          error
+        );
       }
     });
 
