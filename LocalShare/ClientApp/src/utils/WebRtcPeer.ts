@@ -173,6 +173,7 @@ export class WebRtcPeer {
         const result = e.target.result as ArrayBuffer;
         this.fileTransferChannel!.send(result);
         offset += result.byteLength;
+        console.log("File data sent", offset, this._file!.size);
         if (offset < this._file!.size) {
           readSlice(offset);
         }
@@ -202,6 +203,11 @@ export class WebRtcPeer {
 
       await this._writer!.write(new Uint8Array(event.data));
       this._receivedSize += event.data.byteLength;
+      console.log(
+        "Received file data",
+        this._receivedSize,
+        this._fileData?.size
+      );
     } catch (error) {
       console.error("Error writing file data:", error);
       this._writer?.close();
