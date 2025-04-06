@@ -25,7 +25,6 @@ class WritableChunkStream {
     this.fileTransferMetadata = fileTransferMetadata;
 
     this.chunkBroadcast.onmessage = (event) => {
-      console.log("chunkBroadcast", event.data);
       if (event.data.confirmedWriteSize) {
         this.bytesWritten = event.data.confirmedWriteSize;
         console.log(
@@ -50,12 +49,16 @@ class WritableChunkStream {
     };
   }
 
+  test = 0;
   write(chunk: Uint8Array) {
     if (!(chunk instanceof Uint8Array)) {
       throw new TypeError("Can only write Uint8Arrays");
     }
-    //console.log("Writing chunk", chunk);
-    this.chunkBroadcast.postMessage({ chunkData: chunk });
+    setTimeout(() => {
+      this.chunkBroadcast.postMessage({ chunkData: chunk });
+    });
+    this.test += chunk.byteLength;
+    console.log("Writing chunk", this.test);
     if (this.downloadUrl) {
       this.startDownload(this.downloadUrl);
     }

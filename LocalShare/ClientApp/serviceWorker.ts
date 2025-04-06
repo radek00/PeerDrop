@@ -59,6 +59,8 @@ class ReadableChunkStream {
   private _controller: ReadableStreamDefaultController | null = null;
   private _bytesWritten = 0;
   private _expectedBytes = 0;
+  expectedMessages = 0;
+  receivedMessages = 0;
 
   constructor(
     downloadUrl: string,
@@ -68,6 +70,7 @@ class ReadableChunkStream {
     this.downloadUrl = downloadUrl;
     this.chunkBroadcast = chunkBroadcast;
     this._expectedBytes = expectedBytes;
+    this.expectedMessages = Math.ceil(expectedBytes / 5120);
     this.chunkBroadcast.postMessage({ download: downloadUrl });
   }
 
@@ -75,6 +78,12 @@ class ReadableChunkStream {
     this._controller = controller;
     this.chunkBroadcast.onmessage = (event) => {
       if (event.data.chunkData) {
+        this.receivedMessages++;
+        console.log(
+          "expected messages",
+          this.receivedMessages,
+          this.expectedMessages
+        );
         try {
           controller.enqueue(new Uint8Array(event.data.chunkData));
           this._bytesWritten += event.data.chunkData.byteLength;
