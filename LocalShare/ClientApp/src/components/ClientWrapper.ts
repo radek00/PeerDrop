@@ -40,6 +40,10 @@ export class ClientWrapper extends LitElement {
     this.dispatchEvent(new ClientSelectedEvent(client, file));
   }
 
+  private _onInputClick(event: Event) {
+    (event.target as HTMLInputElement).value = "";
+  }
+
   render() {
     console.log("Rendering with clients:", this.clients);
     return html`
@@ -56,6 +60,7 @@ export class ClientWrapper extends LitElement {
                 ></connected-client>
                 <input
                   @input=${(event: Event) => this._onInputChange(event, client)}
+                  @click=${this._onInputClick}
                   type="file"
                   class="file-input"
                   id="file-input-${client.id}"
