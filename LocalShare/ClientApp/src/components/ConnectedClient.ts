@@ -31,6 +31,7 @@ export class ConnectedClient extends LitElement {
       align-items: center;
       justify-content: center;
       gap: 3px;
+      position: relative;
     }
 
     .client--clickable {
@@ -44,6 +45,10 @@ export class ConnectedClient extends LitElement {
     .client--name {
       color: var(--text-light);
       font-weight: 600;
+    }
+
+    .icon-wrapper {
+      position: relative;
     }
   `;
 
@@ -59,8 +64,11 @@ export class ConnectedClient extends LitElement {
   render() {
     return html`
       <div class="client ${this.clickable ? "client--clickable" : ""}">
-        ${this.iconMap[this.icon]} ${this.renderClient()}
-        <slot></slot>
+        <div class="icon-wrapper">
+          ${this.iconMap[this.icon]} <slot name="icon"></slot>
+        </div>
+        ${this.renderClient()}
+        <slot name="footer"></slot>
       </div>
     `;
   }

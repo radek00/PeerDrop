@@ -27,6 +27,17 @@ export class ClientWrapper extends LitElement {
       position: absolute;
       opacity: 0;
     }
+
+    .progress {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      top: 0;
+      background-color: rgba(14, 75, 108, 0.5);
+      border-radius: 50%;
+      backdrop-filter: blur(5px);
+    }
   `;
 
   @property({ type: Array })
@@ -54,10 +65,12 @@ export class ClientWrapper extends LitElement {
           (client) => html`
             <div class="file-input-wrapper">
               <label>
-                <connected-client
-                  icon="phone"
-                  .client=${client}
-                ></connected-client>
+                <connected-client icon="phone" .client=${client}>
+                  <div slot="icon" class="progress">
+                    <div class="progress--title">30%</div>
+                    <div clasa="progress--wave"></div>
+                  </div>
+                </connected-client>
                 <input
                   @input=${(event: Event) => this._onInputChange(event, client)}
                   @click=${this._onInputClick}
