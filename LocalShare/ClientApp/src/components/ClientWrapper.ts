@@ -49,6 +49,7 @@ export class ClientWrapper extends LitElement {
       height: 200px; */
       left: 50%;
       bottom: -135px;
+      transition: bottom 0.5s ease-in-out;
       /* animation: change 12s infinite linear; */
     }
 
@@ -60,7 +61,7 @@ export class ClientWrapper extends LitElement {
       height: 400px;
       bottom: 0;
       left: 50%;
-      background-color: rgba(0, 0, 255, 0.6);
+      background-color: rgba(5, 105, 159, 0.6);
       border-radius: 48% 47% 43% 46%;
       /* Use a positive vertical translate so that the circle originates from the bottom */
       transform: translate(-50%, 70%) rotate(0);
@@ -70,16 +71,11 @@ export class ClientWrapper extends LitElement {
 
     .wave-change::after {
       border-radius: 47% 42% 46% 44%;
-      background-color: rgba(0, 0, 255, 0.8);
+      background-color: rgba(5, 105, 159, 0.8);
       transform: translate(-50%, 70%) rotate(0);
       animation: rotate 9s linear -4s infinite;
       z-index: 2;
     }
-
-    /* .wave {
-      background-color: rgb(118, 218, 255);
-      border-radius: 50%;
-    } */
 
     @keyframes rotate {
       50% {
@@ -89,15 +85,6 @@ export class ClientWrapper extends LitElement {
         transform: translate(-50%, 70%) rotate(360deg);
       }
     }
-
-    @keyframes change {
-      from {
-        top: 80px;
-      }
-      to {
-        top: -120px;
-      }
-    }
   `;
 
   @property({ type: Array })
@@ -105,7 +92,6 @@ export class ClientWrapper extends LitElement {
 
   constructor() {
     super();
-    this.simulateUploadProgress(); // Start the upload progress simulation
   }
 
   private _onInputChange(event: Event, client: ClientConnectionInfo) {
@@ -128,6 +114,11 @@ export class ClientWrapper extends LitElement {
       return;
     }
 
+    const icon = connectedClient.shadowRoot?.querySelector(
+      ".icon-wrapper"
+    ) as HTMLElement;
+    icon.style.backgroundColor = "black";
+
     // Find the slot inside the connected-client component
     const slot = connectedClient.shadowRoot?.querySelector(
       "slot[name='icon']"
@@ -149,6 +140,9 @@ export class ClientWrapper extends LitElement {
       const position =
         currentPosition + containerHeight * (percentage / 100) + 10; // Calculate the position
       waveChange.style.bottom = `${position}px`; // Update the bottom property
+      if (percentage >= 100) {
+        icon.style.backgroundColor = "var(--color-primary-700)"; // Reset the background color
+      }
     } else {
       console.warn("Container or wave-change not found in slotted content");
     }
@@ -168,12 +162,13 @@ export class ClientWrapper extends LitElement {
       this.updateWavePosition(percentage, initialPosition); // Update the wave position
       percentage += 5; // Increment the percentage
       console.log("Percentage:", percentage);
-    }, 500); // Update every 500ms
+    }, 1000); // Update every 500ms
   }
 
   render() {
     console.log("Rendering with clients:", this.clients);
     return html`
+      <button @click=${this.simulateUploadProgress}>Simulate progress</button>
       <div class="client-wrapper">
         ${repeat(
           this.clients,
