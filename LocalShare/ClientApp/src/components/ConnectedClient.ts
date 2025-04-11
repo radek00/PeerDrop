@@ -49,6 +49,11 @@ export class ConnectedClient extends LitElement {
 
     .icon-wrapper {
       position: relative;
+      width: 88px;
+      height: 94px;
+      border-radius: 50%;
+      background-color: var(--color-primary-700);
+      padding: 5px;
     }
   `;
 
