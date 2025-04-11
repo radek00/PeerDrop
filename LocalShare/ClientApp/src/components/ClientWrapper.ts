@@ -30,6 +30,9 @@ export class ClientWrapper extends LitElement {
 
     .container {
       position: absolute;
+
+      /* width: calc(100% - 10px);
+      height: calc(100% - 20px); */
       width: 100%;
       height: 100%;
       top: 50%;
@@ -57,7 +60,7 @@ export class ClientWrapper extends LitElement {
       height: 400px;
       bottom: 0;
       left: 50%;
-      background-color: rgba(255, 255, 255, 0.6);
+      background-color: rgba(0, 0, 255, 0.6);
       border-radius: 48% 47% 43% 46%;
       /* Use a positive vertical translate so that the circle originates from the bottom */
       transform: translate(-50%, 70%) rotate(0);
@@ -67,26 +70,16 @@ export class ClientWrapper extends LitElement {
 
     .wave-change::after {
       border-radius: 47% 42% 46% 44%;
-      background-color: rgba(255, 255, 255, 0.8);
+      background-color: rgba(0, 0, 255, 0.8);
       transform: translate(-50%, 70%) rotate(0);
       animation: rotate 9s linear -4s infinite;
       z-index: 2;
     }
 
-    .wave {
+    /* .wave {
       background-color: rgb(118, 218, 255);
       border-radius: 50%;
-    }
-
-    p {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 36px;
-      color: #000;
-      z-index: 10;
-    }
+    } */
 
     @keyframes rotate {
       50% {
@@ -191,7 +184,7 @@ export class ClientWrapper extends LitElement {
                 <connected-client icon="phone" .client=${client}>
                   <div slot="icon" class="container">
                     <div class="wave-change"></div>
-                    <div class="wave"></div>
+                    <!-- <div class="wave"></div> -->
                   </div>
                   <!-- <div slot="icon" class="progress">
                     <div class="progress--title">30%</div>
