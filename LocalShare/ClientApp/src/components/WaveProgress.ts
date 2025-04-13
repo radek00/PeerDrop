@@ -1,4 +1,4 @@
-import { css, html, LitElement, PropertyValues } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
 import { Events } from "../models/events/Events";
 import { ClientConnectionInfo } from "../models/messages/ClientInfo";
@@ -24,6 +24,7 @@ export class WaveProgress extends LitElement {
     /* Wave container positioned at the bottom */
     .wave-change {
       position: absolute;
+      display:none;
       /* width: 200px;
           height: 200px; */
       left: 50%;
@@ -74,17 +75,19 @@ export class WaveProgress extends LitElement {
 
 constructor() {
   super();
-  window.addEventListener(Events.OnProgressUpdate, (event: ProgressUpdateEvent) => {
-    if (event.clientId === this.client?.id) {
-      this.updateWavePosition(event.progress, -135);
+  window.addEventListener(Events.OnProgressUpdate, (event: Event) => {
+    const progressEvent = event as ProgressUpdateEvent;
+    if (progressEvent.clientId === this.client?.id) {
+      this.updateWavePosition(progressEvent.progress, -135);
     }
-  })
+  });
 }
 
   @property({ type: Object })
   client: ClientConnectionInfo | null = null;
 
     private updateWavePosition(percentage: number, initialPosition: number) {
+      this.waveChange.style.display = "block";
       const containerHeight = this.container.offsetHeight;
       const position =
         initialPosition + containerHeight * (percentage / 100) + 10;

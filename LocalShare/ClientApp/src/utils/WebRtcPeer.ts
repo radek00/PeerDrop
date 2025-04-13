@@ -159,7 +159,7 @@ export class WebRtcPeer {
   }
 
   private sendFileData() {
-    const chunkSize = 5 * 1024;
+    const chunkSize = 5 * 1024 * 1024;
     const fileReader = new FileReader();
     let offset = 0;
 
