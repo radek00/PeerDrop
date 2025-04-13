@@ -17,7 +17,12 @@ export class WaveProgress extends LitElement {
       border-radius: 50%;
       overflow: hidden;
       display: none;
-      background-color: rgba(5, 65, 95, 0.45); /* Darker semi-transparent container */
+      background-color: rgba(
+        5,
+        65,
+        95,
+        0.45
+      ); /* Darker semi-transparent container */
       /* backdrop-filter: blur(2px); */
     }
 
@@ -76,9 +81,9 @@ export class WaveProgress extends LitElement {
     }
   `;
 
-  @query('.wave-container') private container!: HTMLCanvasElement;
-  @query('.wave-change') private waveChange!: HTMLCanvasElement;
-  @query('.wave-percentage') private wavePercentage!: HTMLCanvasElement;
+  @query(".wave-container") private container!: HTMLCanvasElement;
+  @query(".wave-change") private waveChange!: HTMLCanvasElement;
+  @query(".wave-percentage") private wavePercentage!: HTMLCanvasElement;
 
   constructor() {
     super();
@@ -104,7 +109,7 @@ export class WaveProgress extends LitElement {
     this.waveChange.style.bottom = `${position}px`;
     if (percentage >= 100) {
       this.waveChange.style.display = "none";
-      this.waveChange.style.bottom = `${initialPosition}px`; 
+      this.waveChange.style.bottom = `${initialPosition}px`;
 
       //icon.style.backgroundColor = "var(--color-primary-700)"; // Reset the background color
     }

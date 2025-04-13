@@ -149,13 +149,18 @@ export class App extends LitElement {
 
   private _clientSelectedListener = async (event: ClientSelectedEvent) => {
     console.log("Client selected", event.client, event.file);
-    const peerConnection = new WebRtcPeer(this.connection, event.file, () => {
-      this._connectionMap.delete(event.client.id);
-      console.log("connection map", this._connectionMap);
-    }, (progress: number) => {
-      console.log("Progress", progress);
-      this.dispatchEvent(new ProgressUpdateEvent(event.client.id, progress));
-    });
+    const peerConnection = new WebRtcPeer(
+      this.connection,
+      event.file,
+      () => {
+        this._connectionMap.delete(event.client.id);
+        console.log("connection map", this._connectionMap);
+      },
+      (progress: number) => {
+        console.log("Progress", progress);
+        this.dispatchEvent(new ProgressUpdateEvent(event.client.id, progress));
+      }
+    );
     await peerConnection.initConnection(event.client.id);
     this._connectionMap.set(event.client.id, peerConnection);
   };

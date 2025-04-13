@@ -34,7 +34,7 @@ export class WebRtcPeer {
     this.onFileDataReceived = this.onFileDataReceived.bind(this);
     this._file = file;
     this._closeCallback = closeCallback;
-    this._progressCallback = progressCallback; 
+    this._progressCallback = progressCallback;
   }
 
   async initConnection(targetClient: string) {
@@ -180,7 +180,6 @@ export class WebRtcPeer {
         if (offset < this._file!.size) {
           readSlice(offset);
         }
-
       } catch (error) {
         console.error(
           "Error sending file data. Download might have been cancelled:",
