@@ -4,8 +4,8 @@ export enum AnimationState {
 }
 
 export class ClientGrid {
-  private readonly MIN_CIRCLES = 5;
-  private readonly MAX_CIRCLES = 12;
+  private readonly MIN_CIRCLES = 8; // Reduced from 5 for fewer circles
+  private readonly MAX_CIRCLES = 13; // Reduced from 12 for fewer circles
   private readonly canvas: HTMLCanvasElement;
   private readonly ctx: CanvasRenderingContext2D;
   private circleCount = 0;
@@ -14,6 +14,7 @@ export class ClientGrid {
   private circleSpacing = 0;
   private animationFrame: number | null = null;
   private step = 0;
+  private animationSpeed = 0.6; // Slower animation speed (was implicitly 1)
   state = AnimationState.IDLE;
 
   constructor() {
@@ -57,34 +58,35 @@ export class ClientGrid {
       this.MAX_CIRCLES
     );
 
-    this.circleSpacing = this.dimensions.height / (this.circleCount + 1);
+    this.circleSpacing = (this.dimensions.height / (this.circleCount + 1)) * 1.5;
   }
 
   private drawCircle(radius: number): void {
     this.ctx.beginPath();
+    
     const intensity = Math.round(
-      197 *
+      160 *
         (1 - radius / Math.max(this.dimensions.width, this.dimensions.height))
     );
 
     this.ctx.strokeStyle =
       this.state === AnimationState.IDLE
-        ? `rgba(${intensity},${intensity},${intensity},0.2)`
-        : `rgba(45,${intensity},191,0.3)`;
+        ? `rgba(${intensity},${intensity},${intensity},0.15)`
+        : `rgba(45,${intensity},191,0.2)`;
 
-    this.ctx.lineWidth = 2;
+    this.ctx.lineWidth = 1;
     this.ctx.arc(this.center.x, this.center.y, radius, 0, 2 * Math.PI);
     this.ctx.stroke();
   }
 
   private render = (): void => {
     this.ctx.clearRect(0, 0, this.dimensions.width, this.dimensions.height);
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < this.circleCount; i++) {
       this.drawCircle(
         this.circleSpacing * i + (this.step % this.circleSpacing)
       );
     }
-    this.step++;
+    this.step += this.animationSpeed;
     this.animationFrame = requestAnimationFrame(this.render);
   };
 
