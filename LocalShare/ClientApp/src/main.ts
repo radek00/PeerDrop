@@ -14,6 +14,7 @@ import { ReceiveOffer } from "./models/messages/ReceiveOffer";
 import { ReceiveIceCandidate } from "./models/messages/ReceiveIceCandidate";
 import { ReceiveAnswer } from "./models/messages/ReceiveAnswer";
 import { ClientSelectedEvent } from "./models/events/ClientSelectedEvent";
+import { ProgressUpdateEvent } from "./models/events/ProgressUpdateEvent";
 
 setInterval(() => {
   navigator.serviceWorker.controller?.postMessage("ping");
@@ -65,6 +66,12 @@ export class App extends LitElement {
   private _currentClient: ClientConnectionInfo | null = null;
 
   private _connectionMap: Map<string, WebRtcPeer> = new Map();
+
+  // @state({hasChanged: (value, oldValue) => {
+  //   console.log("hasChanged:", value, oldValue);
+  //   return true;
+  // }})
+  // private _progressMap: Map<string, number> = new Map();
 
   connection: HubConnection = createSignalRConnection("signalr/signalling");
   constructor() {
@@ -145,6 +152,9 @@ export class App extends LitElement {
     const peerConnection = new WebRtcPeer(this.connection, event.file, () => {
       this._connectionMap.delete(event.client.id);
       console.log("connection map", this._connectionMap);
+    }, (progress: number) => {
+      console.log("Progress", progress);
+      this.dispatchEvent(new ProgressUpdateEvent(event.client.id, progress));
     });
     await peerConnection.initConnection(event.client.id);
     this._connectionMap.set(event.client.id, peerConnection);
