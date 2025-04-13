@@ -20,11 +20,13 @@ export class WebRtcPeer {
   private _receivedSize = 0;
   private _writer?: WritableStreamDefaultWriter<Uint8Array>;
   private _closeCallback?: () => void;
+  private _progressCallback?: (progress: number) => void;
 
   constructor(
     signalRConnection: signalR.HubConnection,
     file?: File,
-    closeCallback?: () => void
+    closeCallback?: () => void,
+    progressCallback?: (progress: number) => void
   ) {
     this._signalRConnection = signalRConnection;
     this._peerConnection = new RTCPeerConnection(configuration);
@@ -32,7 +34,7 @@ export class WebRtcPeer {
     this.onFileDataReceived = this.onFileDataReceived.bind(this);
     this._file = file;
     this._closeCallback = closeCallback;
-    //this.closeConnections = this.closeConnections.bind(this);
+    this._progressCallback = progressCallback; 
   }
 
   async initConnection(targetClient: string) {
@@ -174,9 +176,11 @@ export class WebRtcPeer {
         this.fileTransferChannel!.send(result);
         offset += result.byteLength;
         console.log("File data sent", offset, this._file!.size);
+        this._progressCallback?.(Math.round((offset / this._file!.size) * 100));
         if (offset < this._file!.size) {
           readSlice(offset);
         }
+
       } catch (error) {
         console.error(
           "Error sending file data. Download might have been cancelled:",
