@@ -38,7 +38,7 @@ export class ClientWrapper extends LitElement {
   // updated(changedProperties: PropertyValues): void {
   //   if (changedProperties.has("progressMap")) {{
   //     console.log("Progress map updated:", this.progressMap);
-  //   }}  
+  //   }}
   // }
 
   private _onInputChange(event: Event, client: ClientConnectionInfo) {
