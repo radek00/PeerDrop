@@ -55,6 +55,15 @@ export class ConnectedClient extends LitElement {
       background-color: var(--color-primary-700);
       padding: 5px;
     }
+
+    .client--clickable .icon-wrapper {
+      transition: background-color 0.3s ease;
+      cursor: pointer;
+    }
+
+    .client--clickable .icon-wrapper:hover {
+      background-color: var(--color-primary-600);
+    }
   `;
 
   renderClient() {
