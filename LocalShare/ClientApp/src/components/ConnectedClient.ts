@@ -52,7 +52,16 @@ export class ConnectedClient extends LitElement {
       width: 88px;
       height: 94px;
       border-radius: 50%;
-      background-color: var(--color-primary-700);
+      background: linear-gradient(
+        145deg,
+        var(--color-primary-600),
+        var(--color-primary-800)
+      );
+      box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.2),
+        0 4px 8px rgba(0, 0, 0, 0.1),
+        inset 0 -2px 3px rgba(0, 0, 0, 0.2),
+        inset 0 2px 3px rgba(255, 255, 255, 0.2);
       padding: 5px;
     }
 

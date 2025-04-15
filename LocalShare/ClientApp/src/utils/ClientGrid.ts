@@ -58,12 +58,13 @@ export class ClientGrid {
       this.MAX_CIRCLES
     );
 
-    this.circleSpacing = (this.dimensions.height / (this.circleCount + 1)) * 1.5;
+    this.circleSpacing =
+      (this.dimensions.height / (this.circleCount + 1)) * 1.5;
   }
 
   private drawCircle(radius: number): void {
     this.ctx.beginPath();
-    
+
     const intensity = Math.round(
       160 *
         (1 - radius / Math.max(this.dimensions.width, this.dimensions.height))
