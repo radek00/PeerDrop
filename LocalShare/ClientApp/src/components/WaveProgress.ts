@@ -82,11 +82,11 @@ export class WaveProgress extends LitElement {
       top: 50%;
       left: 50%;
       /* Start scaled down and invisible */
-      transform: scale(0);
+      transform: translate(-50%, -50%) scale(0);
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background-color: rgba(39, 174, 96, 0.9); /* Green background */
+      background-color: rgba(39, 174, 96, 0.9);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -98,7 +98,7 @@ export class WaveProgress extends LitElement {
     }
 
     .checkmark.visible {
-      transform: scale(1);
+      transform: translate(-50%, -50%) scale(1);
       opacity: 1;
     }
 
