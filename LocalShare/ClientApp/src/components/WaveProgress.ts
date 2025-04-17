@@ -85,7 +85,6 @@ export class WaveProgress extends LitElement {
       position: absolute;
       top: 50%;
       left: 50%;
-      /* Start scaled down and invisible */
       transform: translate(-50%, -50%) scale(0);
       width: 40px;
       height: 40px;
@@ -134,16 +133,23 @@ export class WaveProgress extends LitElement {
 
   constructor() {
     super();
-    window.addEventListener(Events.OnProgressUpdate, (event: Event) => {
-      const progressEvent = event as ProgressUpdateEvent;
-      if (progressEvent.clientId === this.client?.id) {
-        this.updateWavePosition(progressEvent.progressTuple, -135);
-      }
-    });
+    window.addEventListener(Events.OnProgressUpdate, this.progressListener);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    window.removeEventListener(Events.OnProgressUpdate, this.progressListener);
   }
 
   @property({ type: Object })
   client: ClientConnectionInfo | null = null;
+
+  private progressListener = (event: Event) => {
+    const progressEvent = event as ProgressUpdateEvent;
+    if (progressEvent.clientId === this.client?.id) {
+      this.updateWavePosition(progressEvent.progressTuple, -135);
+    }
+  };
 
   private updateWavePosition(
     progresTuple: ProgressTuple,
