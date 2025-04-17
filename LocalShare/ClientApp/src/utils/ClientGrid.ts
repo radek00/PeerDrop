@@ -4,8 +4,8 @@ export enum AnimationState {
 }
 
 export class ClientGrid {
-  private readonly MIN_CIRCLES = 8; // Reduced from 5 for fewer circles
-  private readonly MAX_CIRCLES = 13; // Reduced from 12 for fewer circles
+  private readonly MIN_CIRCLES = 8;
+  private readonly MAX_CIRCLES = 13;
   private readonly canvas: HTMLCanvasElement;
   private readonly ctx: CanvasRenderingContext2D;
   private circleCount = 0;
@@ -14,7 +14,7 @@ export class ClientGrid {
   private circleSpacing = 0;
   private animationFrame: number | null = null;
   private step = 0;
-  private animationSpeed = 0.6; // Slower animation speed (was implicitly 1)
+  private animationSpeed = 0.6;
   state = AnimationState.IDLE;
 
   constructor() {
