@@ -5,6 +5,7 @@ import { SendIceCandidate } from "../models/messages/SendIceCandidate";
 import { SendOffer } from "../models/messages/SendOffer";
 import { TransferStatus } from "../models/TransferStatus";
 import { createWriteStream } from "./streamSaver/streamSaver";
+import { UploadStatus } from "../models/UploadStatus";
 
 const configuration = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
@@ -20,13 +21,13 @@ export class WebRtcPeer {
   private _receivedSize = 0;
   private _writer?: WritableStreamDefaultWriter<Uint8Array>;
   private _closeCallback?: () => void;
-  private _progressCallback?: (progress: number) => void;
+  private _progressCallback?: (progress: number, status: UploadStatus) => void;
 
   constructor(
     signalRConnection: signalR.HubConnection,
     file?: File,
     closeCallback?: () => void,
-    progressCallback?: (progress: number) => void
+    progressCallback?: (progress: number, status: UploadStatus) => void
   ) {
     this._signalRConnection = signalRConnection;
     this._peerConnection = new RTCPeerConnection(configuration);
@@ -169,6 +170,7 @@ export class WebRtcPeer {
     fileReader.addEventListener("abort", (event) =>
       console.log("File reading aborted:", event)
     );
+    this._progressCallback?.(0, UploadStatus.STARTING);
     fileReader.addEventListener("load", (e) => {
       try {
         if (!e.target?.result) return;
@@ -176,11 +178,19 @@ export class WebRtcPeer {
         this.fileTransferChannel!.send(result);
         offset += result.byteLength;
         console.log("File data sent", offset, this._file!.size);
-        this._progressCallback?.(Math.round((offset / this._file!.size) * 100));
+        const progress = Math.round((offset / this._file!.size) * 100);
+        this._progressCallback?.(
+          progress,
+          progress !== 100 ? UploadStatus.UPLOADING : UploadStatus.COMPLETED
+        );
         if (offset < this._file!.size) {
           readSlice(offset);
         }
       } catch (error) {
+        this._progressCallback?.(
+          Math.round((offset / this._file!.size) * 100),
+          UploadStatus.ERROR
+        );
         console.error(
           "Error sending file data. Download might have been cancelled:",
           error
