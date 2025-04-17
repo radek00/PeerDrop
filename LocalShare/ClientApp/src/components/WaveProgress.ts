@@ -171,7 +171,7 @@ export class WaveProgress extends LitElement {
       this.waveChange.style.bottom = `${initialPosition}px`;
     } else if (progresTuple[1] === UploadStatus.COMPLETED) {
       this.wavePercentage.classList.add("hidden");
-
+      this.waveChange.style.display = "none";
       setTimeout(() => {
         if (this.checkmark) {
           this.checkmark.classList.add("visible");
