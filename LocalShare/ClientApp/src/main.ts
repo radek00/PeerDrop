@@ -166,7 +166,9 @@ export class App extends LitElement {
           requestedClient!.uploadStatus = UploadStatus.COMPLETED;
           this._clients = [...this._clients];
         }
-        this.dispatchEvent(new ProgressUpdateEvent(event.client.id, progress));
+        this.dispatchEvent(
+          new ProgressUpdateEvent(event.client.id, [progress, status])
+        );
       }
     );
     await peerConnection.initConnection(event.client.id);

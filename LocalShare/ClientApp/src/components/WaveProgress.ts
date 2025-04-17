@@ -2,7 +2,11 @@ import { css, html, LitElement } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
 import { Events } from "../models/events/Events";
 import { ClientConnectionInfo } from "../models/messages/ClientInfo";
-import { ProgressUpdateEvent } from "../models/events/ProgressUpdateEvent";
+import {
+  ProgressTuple,
+  ProgressUpdateEvent,
+} from "../models/events/ProgressUpdateEvent";
+import { UploadStatus } from "../models/UploadStatus";
 
 @customElement("wave-progress")
 export class WaveProgress extends LitElement {
@@ -133,7 +137,7 @@ export class WaveProgress extends LitElement {
     window.addEventListener(Events.OnProgressUpdate, (event: Event) => {
       const progressEvent = event as ProgressUpdateEvent;
       if (progressEvent.clientId === this.client?.id) {
-        this.updateWavePosition(progressEvent.progress, -135);
+        this.updateWavePosition(progressEvent.progressTuple, -135);
       }
     });
   }
@@ -141,21 +145,25 @@ export class WaveProgress extends LitElement {
   @property({ type: Object })
   client: ClientConnectionInfo | null = null;
 
-  private updateWavePosition(percentage: number, initialPosition: number) {
+  private updateWavePosition(
+    progresTuple: ProgressTuple,
+    initialPosition: number
+  ) {
     this.container.style.display = "block";
 
-    if (percentage < 100) {
+    if (progresTuple[1] === UploadStatus.UPLOADING) {
+      this.wavePercentage.textContent = `${progresTuple[0]}%`;
+      const containerHeight = this.container.offsetHeight;
+      const position =
+        initialPosition + containerHeight * (progresTuple[0] / 100) + 10;
+      this.waveChange.style.bottom = `${position}px`;
+    } else if (progresTuple[1] === UploadStatus.STARTING) {
       this.waveChange.style.display = "block";
       this.wavePercentage.style.display = "block";
       this.wavePercentage.classList.remove("hidden");
       this.checkmark.classList.remove("visible");
-
-      this.wavePercentage.textContent = `${percentage}%`;
-      const containerHeight = this.container.offsetHeight;
-      const position =
-        initialPosition + containerHeight * (percentage / 100) + 10;
-      this.waveChange.style.bottom = `${position}px`;
-    } else if (percentage >= 100) {
+      this.waveChange.style.bottom = `${initialPosition}px`;
+    } else if (progresTuple[1] >= UploadStatus.COMPLETED) {
       this.waveChange.style.display = "none";
       this.wavePercentage.classList.add("hidden");
 
@@ -174,7 +182,6 @@ export class WaveProgress extends LitElement {
         <div class="wave-percentage"></div>
         <div class="checkmark">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            {/* Use a path suitable for stroke animation */}
             <path class="check-path" d="M5 13l4 4L19 7" />
           </svg>
         </div>
