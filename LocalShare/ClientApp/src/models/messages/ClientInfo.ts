@@ -1,6 +1,9 @@
+import { UploadStatus } from "../UploadStatus";
+
 export interface ClientConnectionInfo {
   id: string;
   userAgent: UserAgent;
+  uploadStatus: UploadStatus;
 }
 
 export interface AllClientsConnectionInfo {

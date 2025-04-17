@@ -15,6 +15,7 @@ import { ReceiveIceCandidate } from "./models/messages/ReceiveIceCandidate";
 import { ReceiveAnswer } from "./models/messages/ReceiveAnswer";
 import { ClientSelectedEvent } from "./models/events/ClientSelectedEvent";
 import { ProgressUpdateEvent } from "./models/events/ProgressUpdateEvent";
+import { UploadStatus } from "./models/UploadStatus";
 
 setInterval(() => {
   navigator.serviceWorker.controller?.postMessage("ping");
@@ -66,12 +67,6 @@ export class App extends LitElement {
   private _currentClient: ClientConnectionInfo | null = null;
 
   private _connectionMap: Map<string, WebRtcPeer> = new Map();
-
-  // @state({hasChanged: (value, oldValue) => {
-  //   console.log("hasChanged:", value, oldValue);
-  //   return true;
-  // }})
-  // private _progressMap: Map<string, number> = new Map();
 
   connection: HubConnection = createSignalRConnection("signalr/signalling");
   constructor() {
@@ -156,8 +151,21 @@ export class App extends LitElement {
         this._connectionMap.delete(event.client.id);
         console.log("connection map", this._connectionMap);
       },
-      (progress: number) => {
+      (progress: number, status: UploadStatus) => {
         console.log("Progress", progress);
+        if (status === UploadStatus.STARTING) {
+          const requestedClient = this._clients.find(
+            (client) => client.id === event.client.id
+          );
+          requestedClient!.uploadStatus = UploadStatus.STARTING;
+          this._clients = [...this._clients];
+        } else if (status === UploadStatus.COMPLETED) {
+          const requestedClient = this._clients.find(
+            (client) => client.id === event.client.id
+          );
+          requestedClient!.uploadStatus = UploadStatus.COMPLETED;
+          this._clients = [...this._clients];
+        }
         this.dispatchEvent(new ProgressUpdateEvent(event.client.id, progress));
       }
     );

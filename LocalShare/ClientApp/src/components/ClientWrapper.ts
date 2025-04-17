@@ -5,6 +5,8 @@ import "./ConnectedClient";
 import { ClientConnectionInfo } from "../models/messages/ClientInfo";
 import { ClientSelectedEvent } from "../models/events/ClientSelectedEvent";
 import "./WaveProgress";
+import { UploadStatus } from "../models/UploadStatus";
+import { classMap } from "lit/directives/class-map.js";
 @customElement("client-wrapper")
 export class ClientWrapper extends LitElement {
   static styles = css`
@@ -27,19 +29,14 @@ export class ClientWrapper extends LitElement {
       position: absolute;
       opacity: 0;
     }
+
+    .file-input-wrapper label.disabled {
+      pointer-events: none;
+    }
   `;
 
   @property({ type: Array })
   private clients: ClientConnectionInfo[] = [];
-
-  // @property({ type: Object, hasChanged: () => true })
-  // private progressMap: Map<string, number> = new Map();
-
-  // updated(changedProperties: PropertyValues): void {
-  //   if (changedProperties.has("progressMap")) {{
-  //     console.log("Progress map updated:", this.progressMap);
-  //   }}
-  // }
 
   private _onInputChange(event: Event, client: ClientConnectionInfo) {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -59,23 +56,35 @@ export class ClientWrapper extends LitElement {
       <div class="client-wrapper">
         ${repeat(
           this.clients,
-          (client) => client,
-          (client) => html`
-            <div class="file-input-wrapper">
-              <label>
-                <connected-client icon="phone" .client=${client}>
-                  <wave-progress .client=${client} slot="icon"></wave-progress>
-                </connected-client>
-                <input
-                  @input=${(event: Event) => this._onInputChange(event, client)}
-                  @click=${this._onInputClick}
-                  type="file"
-                  class="file-input"
-                  id="file-input-${client.id}"
-                />
-              </label>
-            </div>
-          `
+          (client) => client.id,
+          (client) => {
+            return html`
+              <div class="file-input-wrapper">
+                <label
+                  class="${classMap({
+                    disabled: client.uploadStatus === UploadStatus.STARTING,
+                  })}"
+                  for="file-input-${client.id}"
+                >
+                  <connected-client icon="phone" .client=${client}>
+                    <wave-progress
+                      .client=${client}
+                      slot="icon"
+                    ></wave-progress>
+                  </connected-client>
+                  <input
+                    @input=${(event: Event) =>
+                      this._onInputChange(event, client)}
+                    @click=${this._onInputClick}
+                    type="file"
+                    class="file-input"
+                    id="file-input-${client.id}"
+                    ?disabled=${client.uploadStatus === UploadStatus.STARTING}
+                  />
+                </label>
+              </div>
+            `;
+          }
         )}
       </div>
     `;
