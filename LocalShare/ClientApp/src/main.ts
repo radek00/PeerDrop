@@ -63,7 +63,7 @@ export class App extends LitElement {
       font-weight: 400;
     }
     .client-main signal-icon {
-      color: var(--color-primary-500);
+      color: var(--color-primary-600);
       width: 60px;
       height: 60px;
     }
