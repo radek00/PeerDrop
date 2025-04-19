@@ -25,6 +25,17 @@ export class ConnectedClient extends LitElement {
   icon: IconType = "phone";
 
   static styles = css`
+    @keyframes scaleUp {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
     .client {
       display: flex;
       flex-direction: column;
@@ -32,6 +43,7 @@ export class ConnectedClient extends LitElement {
       justify-content: center;
       gap: 3px;
       position: relative;
+      animation: scaleUp 0.5s ease-out forwards;
     }
 
     .client--clickable {
