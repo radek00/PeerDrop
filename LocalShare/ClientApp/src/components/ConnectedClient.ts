@@ -43,7 +43,7 @@ export class ConnectedClient extends LitElement {
     }
 
     .client--name {
-      color: var(--text-light);
+      color: var(--text-primary);
       font-weight: 600;
     }
 
@@ -54,8 +54,8 @@ export class ConnectedClient extends LitElement {
       border-radius: 50%;
       background: linear-gradient(
         145deg,
-        var(--color-primary-600),
-        var(--color-primary-800)
+        var(--gradient-start),
+        var(--gradient-end)
       );
       box-shadow:
         0 8px 20px rgba(0, 0, 0, 0.2),
@@ -68,10 +68,6 @@ export class ConnectedClient extends LitElement {
     .client--clickable .icon-wrapper {
       transition: background-color 0.3s ease;
       cursor: pointer;
-    }
-
-    .client--clickable .icon-wrapper:hover {
-      background-color: var(--color-primary-600);
     }
   `;
 

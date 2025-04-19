@@ -21,7 +21,7 @@ export class WaveProgress extends LitElement {
       border-radius: 50%;
       overflow: hidden;
       display: none; /* Initially hidden */
-      background-color: rgba(5, 65, 95, 0.45);
+      background-color: var(--wave-bg);
     }
 
     .wave-change {
@@ -39,7 +39,7 @@ export class WaveProgress extends LitElement {
       height: 400px;
       bottom: 0;
       left: 50%;
-      background-color: rgba(0, 133, 184, 0.75);
+      background-color: var(--wave-color-1);
       border-radius: 48% 47% 43% 46%;
       transform: translate(-50%, 70%) rotate(0);
       animation: rotate 7s linear infinite;
@@ -48,7 +48,7 @@ export class WaveProgress extends LitElement {
 
     .wave-change::after {
       border-radius: 47% 42% 46% 44%;
-      background-color: rgba(37, 139, 184, 0.55);
+      background-color: var(--wave-color-2);
       transform: translate(-50%, 70%) rotate(0);
       animation: rotate 9s linear -4s infinite;
       z-index: 2;
@@ -89,7 +89,7 @@ export class WaveProgress extends LitElement {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background-color: rgba(39, 174, 96, 0.9);
+      background-color: var(--checkmark-bg);
       display: flex;
       justify-content: center;
       align-items: center;
