@@ -7,3 +7,16 @@ export const clientIconStyles = css`
     border-radius: 50%;
   }
 `;
+
+export const scaleUpAnimation = css`
+  @keyframes scaleUp {
+    from {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+`;
