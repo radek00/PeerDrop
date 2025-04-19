@@ -33,6 +33,25 @@ export class ClientWrapper extends LitElement {
     .file-input-wrapper label.disabled {
       pointer-events: none;
     }
+
+    .no-clients-message {
+      color: var(--secondary-text-color);
+      font-size: 1.2rem;
+      font-style: italic;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 0.7;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0.7;
+      }
+    }
   `;
 
   @property({ type: Array })
@@ -54,7 +73,7 @@ export class ClientWrapper extends LitElement {
     console.log("Rendering with clients:", this.clients);
     return html`
       <div class="client-wrapper">
-        ${repeat(
+        ${this.clients.length > 0 ? repeat(
           this.clients,
           (client) => client.id,
           (client) => {
@@ -85,7 +104,7 @@ export class ClientWrapper extends LitElement {
               </div>
             `;
           }
-        )}
+        ) : html`<div class="no-clients-message">No clients connected. Waiting for connections...</div>`}
       </div>
     `;
   }
