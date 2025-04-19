@@ -188,7 +188,9 @@ export class App extends LitElement {
     if (this._currentClient) {
       return html`
         <signal-icon></signal-icon>
-        <span class="client--name">You're known as ${this._currentClient.userAgent.browser}</span>
+        <span class="client--name"
+          >You're known as ${this._currentClient.userAgent.browser}</span
+        >
       `;
     }
     return html``;
