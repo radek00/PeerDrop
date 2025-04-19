@@ -50,13 +50,22 @@ export class App extends LitElement {
   static styles = css`
     .client-main {
       position: absolute;
-      bottom: -3%;
+      bottom: 0;
       left: 50%;
       transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-direction: column;
     }
     .client--name {
       color: var(--text-primary);
       font-weight: 400;
+    }
+    .client-main signal-icon {
+      color: var(--color-primary-500);
+      width: 60px;
+      height: 60px;
     }
   `;
 
@@ -177,15 +186,12 @@ export class App extends LitElement {
 
   getCurrentClient() {
     if (this._currentClient) {
-      // return html`<connected-client .clickable=${false} icon="signal">
-      //   <span class="client--name" slot="footer"
-      //     >You're known as ${this._currentClient.userAgent.browser}</span
-      //   >
-      // </connected-client>`;
       return html`
-        <signal-icon ></signal-icon>
-      `
+        <signal-icon></signal-icon>
+        <span class="client--name">You're known as ${this._currentClient.userAgent.browser}</span>
+      `;
     }
+    return html``;
   }
   render() {
     console.log("Rendering app");
