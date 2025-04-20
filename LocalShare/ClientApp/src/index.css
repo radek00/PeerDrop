@@ -42,6 +42,13 @@
 
 body {
   margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body app-component {
+  flex-grow: 1;
 }
 
 header {
