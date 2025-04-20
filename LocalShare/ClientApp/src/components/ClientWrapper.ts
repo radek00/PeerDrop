@@ -7,15 +7,16 @@ import { ClientSelectedEvent } from "../models/events/ClientSelectedEvent";
 import "./WaveProgress";
 import { UploadStatus } from "../models/UploadStatus";
 import { classMap } from "lit/directives/class-map.js";
+import { scaleUpAnimation } from "../styles/sharedStyle";
 @customElement("client-wrapper")
 export class ClientWrapper extends LitElement {
-  static styles = css`
+  static styles = [scaleUpAnimation,css`
     .client-wrapper {
       display: flex;
-      height: 100vh;
       justify-content: center;
       align-items: center;
       gap: 2.5rem;
+      height: 100%;
     }
 
     .file-input-wrapper {
@@ -53,18 +54,7 @@ export class ClientWrapper extends LitElement {
         opacity: 0.7;
       }
     }
-
-    @keyframes scaleUp {
-      from {
-        transform: scale(0.8);
-        opacity: 0;
-      }
-      to {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-  `;
+  `];
 
   @property({ type: Array })
   private clients: ClientConnectionInfo[] = [];
@@ -85,43 +75,38 @@ export class ClientWrapper extends LitElement {
     console.log("Rendering with clients:", this.clients);
     return html`
       <div class="client-wrapper">
-        ${this.clients.length > 0
-          ? repeat(
-              this.clients,
-              (client) => client.id,
-              (client) => {
-                return html`
-                  <div class="file-input-wrapper">
-                    <label
-                      class="${classMap({
-                        disabled: client.uploadStatus === UploadStatus.STARTING,
-                      })}"
-                      for="file-input-${client.id}"
-                    >
-                      <connected-client icon="phone" .client=${client}>
-                        <wave-progress
-                          .client=${client}
-                          slot="icon"
-                        ></wave-progress>
-                      </connected-client>
-                      <input
-                        @input=${(event: Event) =>
-                          this._onInputChange(event, client)}
-                        @click=${this._onInputClick}
-                        type="file"
-                        class="file-input"
-                        id="file-input-${client.id}"
-                        ?disabled=${client.uploadStatus ===
-                        UploadStatus.STARTING}
-                      />
-                    </label>
-                  </div>
-                `;
-              }
-            )
-          : html`<div class="no-clients-message">
-              No clients connected. Waiting for connections...
-            </div>`}
+        ${this.clients.length > 0 ? repeat(
+          this.clients,
+          (client) => client.id,
+          (client) => {
+            return html`
+              <div class="file-input-wrapper">
+                <label
+                  class="${classMap({
+                    disabled: client.uploadStatus === UploadStatus.STARTING,
+                  })}"
+                  for="file-input-${client.id}"
+                >
+                  <connected-client icon="phone" .client=${client}>
+                    <wave-progress
+                      .client=${client}
+                      slot="icon"
+                    ></wave-progress>
+                  </connected-client>
+                  <input
+                    @input=${(event: Event) =>
+                      this._onInputChange(event, client)}
+                    @click=${this._onInputClick}
+                    type="file"
+                    class="file-input"
+                    id="file-input-${client.id}"
+                    ?disabled=${client.uploadStatus === UploadStatus.STARTING}
+                  />
+                </label>
+              </div>
+            `;
+          }
+        ) : html`<div class="no-clients-message">No clients connected. Waiting for connections...</div>`}
       </div>
     `;
   }
