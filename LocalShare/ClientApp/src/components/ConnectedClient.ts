@@ -35,7 +35,7 @@ export class ConnectedClient extends LitElement {
         justify-content: center;
         gap: 3px;
         position: relative;
-        animation: scaleUp 0.5s ease-out forwards;
+        animation: scaleUp 0.5s ease-out backwards;
       }
 
       .client--clickable {
