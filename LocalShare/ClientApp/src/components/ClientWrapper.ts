@@ -39,8 +39,7 @@ export class ClientWrapper extends LitElement {
       color: var(--secondary-text-color);
       font-size: 1.2rem;
       font-style: italic;
-      animation: pulse 2s infinite ease-in-out;
-      animation: scaleUp 0.5s ease-out forwards;
+      animation: scaleUp 0.5s ease-out forwards, pulse 2s infinite ease-in-out;
     }
 
     @keyframes pulse {

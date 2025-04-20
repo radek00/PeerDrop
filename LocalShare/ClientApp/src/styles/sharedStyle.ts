@@ -11,7 +11,7 @@ export const clientIconStyles = css`
 export const scaleUpAnimation = css`
   @keyframes scaleUp {
     from {
-      transform: scale(0.8);
+      transform: scale(0.5);
       opacity: 0;
     }
     to {
