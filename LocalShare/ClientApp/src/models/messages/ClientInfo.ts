@@ -1,3 +1,4 @@
+import { IconType } from "../enums/IconType";
 import { UploadStatus } from "../UploadStatus";
 
 export interface ClientConnectionInfo {
@@ -17,4 +18,5 @@ export interface UserAgent {
   browserVersion: string;
   osName: string;
   osVersion: string;
+  icon: IconType;
 }
