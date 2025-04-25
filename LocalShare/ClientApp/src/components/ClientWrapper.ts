@@ -8,6 +8,7 @@ import "./WaveProgress";
 import { UploadStatus } from "../models/UploadStatus";
 import { classMap } from "lit/directives/class-map.js";
 import { scaleUpAnimation } from "../styles/sharedStyle";
+
 @customElement("client-wrapper")
 export class ClientWrapper extends LitElement {
   static styles = [
@@ -26,15 +27,15 @@ export class ClientWrapper extends LitElement {
         flex-direction: column;
         align-items: center;
         justify-content: center;
-      }
 
-      .file-input-wrapper input {
-        position: absolute;
-        opacity: 0;
-      }
+        input {
+          position: absolute;
+          opacity: 0;
+        }
 
-      .file-input-wrapper label.disabled {
-        pointer-events: none;
+        label.disabled {
+          pointer-events: none;
+        }
       }
 
       .no-clients-message {

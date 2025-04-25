@@ -29,29 +29,29 @@ export class WaveProgress extends LitElement {
       left: 50%;
       bottom: -135px; /* Start position */
       transition: bottom 0.5s ease-in-out;
-    }
 
-    .wave-change::before,
-    .wave-change::after {
-      content: "";
-      position: absolute;
-      width: 400px;
-      height: 400px;
-      bottom: 0;
-      left: 50%;
-      background-color: var(--wave-color-1);
-      border-radius: 48% 47% 43% 46%;
-      transform: translate(-50%, 70%) rotate(0);
-      animation: rotate 7s linear infinite;
-      z-index: 1;
-    }
+      &::before,
+      &::after {
+        content: "";
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        bottom: 0;
+        left: 50%;
+        background-color: var(--wave-color-1);
+        border-radius: 48% 47% 43% 46%;
+        transform: translate(-50%, 70%) rotate(0);
+        animation: rotate 7s linear infinite;
+        z-index: 1;
+      }
 
-    .wave-change::after {
-      border-radius: 47% 42% 46% 44%;
-      background-color: var(--wave-color-2);
-      transform: translate(-50%, 70%) rotate(0);
-      animation: rotate 9s linear -4s infinite;
-      z-index: 2;
+      &::after {
+        border-radius: 47% 42% 46% 44%;
+        background-color: var(--wave-color-2);
+        transform: translate(-50%, 70%) rotate(0);
+        animation: rotate 9s linear -4s infinite;
+        z-index: 2;
+      }
     }
 
     .wave-percentage {
@@ -66,10 +66,10 @@ export class WaveProgress extends LitElement {
       z-index: 10;
       opacity: 1;
       transition: opacity 0.3s ease-out;
-    }
 
-    .wave-percentage.hidden {
-      opacity: 0;
+      &.hidden {
+        opacity: 0;
+      }
     }
 
     @keyframes rotate {
@@ -98,31 +98,31 @@ export class WaveProgress extends LitElement {
       transition:
         transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
         opacity 0.3s ease-in-out;
-    }
 
-    .checkmark.visible {
-      transform: translate(-50%, -50%) scale(1);
-      opacity: 1;
-    }
+      &.visible {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
 
-    .checkmark svg {
-      width: 24px;
-      height: 24px;
-      fill: none;
-      stroke: white;
-      stroke-width: 2.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
+        .check-path {
+          stroke-dashoffset: 0;
+        }
+      }
 
-    .check-path {
-      stroke-dasharray: 30;
-      stroke-dashoffset: 30;
-      transition: stroke-dashoffset 0.5s ease-in-out 0.2s;
-    }
+      svg {
+        width: 24px;
+        height: 24px;
+        fill: none;
+        stroke: white;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
 
-    .checkmark.visible .check-path {
-      stroke-dashoffset: 0;
+      .check-path {
+        stroke-dasharray: 30;
+        stroke-dashoffset: 30;
+        transition: stroke-dashoffset 0.5s ease-in-out 0.2s;
+      }
     }
   `;
 

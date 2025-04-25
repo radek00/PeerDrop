@@ -57,20 +57,22 @@ export class App extends LitElement {
       align-items: center;
       gap: 8px;
       flex-direction: column;
-    }
-    .client--name {
-      color: var(--text-primary);
-      font-weight: 400;
-      span {
-        font-style: italic;
-        color: var(--color-primary-600);
-        font-weight: bold;
+
+      .client--name {
+        color: var(--text-primary);
+        font-weight: 400;
+        span {
+          font-style: italic;
+          color: var(--color-primary-600);
+          font-weight: bold;
+        }
       }
-    }
-    .client-main signal-icon {
-      color: var(--color-primary-600);
-      width: 60px;
-      height: 60px;
+
+      signal-icon {
+        color: var(--color-primary-600);
+        width: 60px;
+        height: 60px;
+      }
     }
   `;
 
