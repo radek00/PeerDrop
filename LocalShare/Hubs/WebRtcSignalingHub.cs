@@ -19,22 +19,21 @@ public class WebRtcSignallingHub() : Hub
     
     public override async Task OnConnectedAsync()
     {
-        var context = Context.GetHttpContext();
-        var userAgent = context?.Request.Headers["User-Agent"].ToString();
         await Join();
     }
     private async Task Join()
     {
         var httpContext = Context.GetHttpContext();
         var userAgent = Utils.Utils.ParseUserAgent(httpContext?.Request.Headers["User-Agent"].ToString() ?? "");
-        Connections.TryAdd(Context.ConnectionId, new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent });
-        await Clients.Client(Context.ConnectionId).SendAsync(SignallingEvents.UpdateSelf, new AllClientsConnectionInfo() {Self = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent }
+        var joinedClient = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent, Name = NameGenerator.GenerateName() };
+        Connections.TryAdd(Context.ConnectionId, joinedClient);
+        await Clients.Client(Context.ConnectionId).SendAsync(SignallingEvents.UpdateSelf, new AllClientsConnectionInfo() {Self = joinedClient 
         , OtherClients = Connections
         .Where(x => x.Key != Context.ConnectionId)
-        .Select(x => new ClientConnectionInfo { Id = x.Key, UserAgent = x.Value.UserAgent })
+        .Select(x => new ClientConnectionInfo { Id = x.Key, UserAgent = x.Value.UserAgent, Name = NameGenerator.GenerateName() })
         .ToArray()
         });
-        await Clients.Others.SendAsync(SignallingEvents.AddConnectedClient, new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent});
+        await Clients.Others.SendAsync(SignallingEvents.AddConnectedClient, joinedClient);
     }
 
     public async Task SendOffer(SendOffer payload)
