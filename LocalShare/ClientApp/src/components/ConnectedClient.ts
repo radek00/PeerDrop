@@ -36,7 +36,7 @@ export class ConnectedClient extends LitElement {
         animation: scaleUp 0.5s ease-out backwards;
 
         /* Use standard class selector for the modifier */
-        &.client--clickable {
+        &.client-clickable {
           transition: transform 0.3s ease;
 
           &:hover {
@@ -50,7 +50,7 @@ export class ConnectedClient extends LitElement {
         }
 
         /* Nest standard class selectors */
-        .client--name {
+        .client-name {
           color: var(--text-primary);
           font-weight: 600;
         }
@@ -83,7 +83,7 @@ export class ConnectedClient extends LitElement {
   renderClient() {
     if (this.client) {
       return html`
-        <div class="client--name">${this.client.name}</div>
+        <div class="client-name">${this.client.name}</div>
         <div class="client-os">
           ${this.client.userAgent.osName}, ${this.client.userAgent.browserName}
         </div>
@@ -93,7 +93,7 @@ export class ConnectedClient extends LitElement {
 
   render() {
     return html`
-      <div class="client ${this.clickable ? "client--clickable" : ""}">
+      <div class="client ${this.clickable ? "client-clickable" : ""}">
         <div class="icon-wrapper">
           ${this.iconMap[this.icon]} <slot name="icon"></slot>
         </div>
