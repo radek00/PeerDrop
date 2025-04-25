@@ -17,8 +17,6 @@ export class ConnectedClient extends LitElement {
 
   iconMap: Record<IconType, TemplateResult> = {
     phone: html`<phone-icon></phone-icon>`,
-    // computer: html`<computer-icon></computer-icon>`,
-    // tablet: html`<tablet-icon></tablet-icon>`,
     signal: html`<signal-icon></signal-icon>`,
   };
 
@@ -36,23 +34,30 @@ export class ConnectedClient extends LitElement {
         gap: 3px;
         position: relative;
         animation: scaleUp 0.5s ease-out backwards;
-      }
 
-      .client--clickable {
-        transition: transform 0.3s ease;
-      }
+        /* Use standard class selector for the modifier */
+        &.client--clickable {
+          transition: transform 0.3s ease;
 
-      .client--clickable:hover {
-        transform: scale(1.1);
-      }
+          &:hover {
+            transform: scale(1.1);
+          }
 
-      .client--name {
-        color: var(--text-primary);
-        font-weight: 600;
-      }
-      .client-os {
-        font-size: small;
-        font-style: italic;
+          .icon-wrapper {
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+          }
+        }
+
+        /* Nest standard class selectors */
+        .client--name {
+          color: var(--text-primary);
+          font-weight: 600;
+        }
+        .client-os {
+          font-size: small;
+          font-style: italic;
+        }
       }
 
       .icon-wrapper {
@@ -71,11 +76,6 @@ export class ConnectedClient extends LitElement {
           inset 0 -2px 3px rgba(0, 0, 0, 0.2),
           inset 0 2px 3px rgba(255, 255, 255, 0.2);
         padding: 5px;
-      }
-
-      .client--clickable .icon-wrapper {
-        transition: background-color 0.3s ease;
-        cursor: pointer;
       }
     `,
   ];
