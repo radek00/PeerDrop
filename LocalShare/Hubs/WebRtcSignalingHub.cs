@@ -30,7 +30,7 @@ public class WebRtcSignallingHub() : Hub
         await Clients.Client(Context.ConnectionId).SendAsync(SignallingEvents.UpdateSelf, new AllClientsConnectionInfo() {Self = joinedClient 
         , OtherClients = Connections
         .Where(x => x.Key != Context.ConnectionId)
-        .Select(x => new ClientConnectionInfo { Id = x.Key, UserAgent = x.Value.UserAgent, Name = NameGenerator.GenerateName() })
+        .Select(x => new ClientConnectionInfo { Id = x.Key, UserAgent = x.Value.UserAgent, Name = x.Value.Name })
         .ToArray()
         });
         await Clients.Others.SendAsync(SignallingEvents.AddConnectedClient, joinedClient);

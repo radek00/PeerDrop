@@ -13,6 +13,9 @@ export interface AllClientsConnectionInfo {
 }
 
 export interface UserAgent {
-  browser: string;
-  os: string;
+  browserName: string
+  browserVersion: string
+  osName: string
+  osVersion: string
 }
+

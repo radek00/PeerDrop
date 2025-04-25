@@ -13,10 +13,26 @@ namespace LocalShare.Utils
             var browserMatch = browserRegex.Match(userAgent);
             var osMatch = osRegex.Match(userAgent);
 
-            var browser = browserMatch.Success ? $"{browserMatch.Groups[1].Value} {TrimVersion(browserMatch.Groups[2].Value)}" : "Unknown Browser";
-            var os = osMatch.Success ? $"{osMatch.Groups[1].Value} {TrimVersion(osMatch.Groups[2].Value)}" : "Unknown OS";
+            var browserName = browserMatch.Success ? browserMatch.Groups[1].Value : "Unknown";
+            var browserVersion = browserMatch.Success ? TrimVersion(browserMatch.Groups[2].Value) : "";
 
-            return new UserAgent() { Browser = browser, OS = os };
+            var osName = osMatch.Success ? osMatch.Groups[1].Value : "Unknown";
+            var osVersion = osMatch.Success ? TrimVersion(osMatch.Groups[2].Value.Replace('_', '.')) : "";
+
+            osName = osName switch
+            {
+                "Windows NT" => "Windows",
+                "iPhone OS" => "iOS",
+                "Mac OS X" => "macOS",
+                _ => osName
+            };
+
+            return new UserAgent() { 
+                BrowserName = browserName, 
+                BrowserVersion = browserVersion, 
+                OSName = osName, 
+                OSVersion = osVersion 
+            };
         }
 
         private static string TrimVersion(string version)

@@ -61,6 +61,11 @@ export class App extends LitElement {
     .client--name {
       color: var(--text-primary);
       font-weight: 400;
+      span {
+        font-style: italic;
+        color: var(--color-primary-600);
+        font-weight: bold;
+      }
     }
     .client-main signal-icon {
       color: var(--color-primary-600);
@@ -189,7 +194,7 @@ export class App extends LitElement {
       return html`
         <signal-icon></signal-icon>
         <span class="client--name"
-          >You're known as ${this._currentClient.name}</span
+          >You're known as <span>${this._currentClient.name}</span></span
         >
       `;
     }

@@ -50,6 +50,10 @@ export class ConnectedClient extends LitElement {
         color: var(--text-primary);
         font-weight: 600;
       }
+      .client-os {
+          font-size: small;
+          font-style: italic;
+      }
 
       .icon-wrapper {
         position: relative;
@@ -80,7 +84,7 @@ export class ConnectedClient extends LitElement {
     if (this.client) {
       return html`
         <div class="client--name">${this.client.name}</div>
-        <div>${this.client.userAgent.browser}</div>
+        <div class="client-os">${this.client.userAgent.osName}, ${this.client.userAgent.browserName}</div>
       `;
     }
   }
