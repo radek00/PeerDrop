@@ -79,8 +79,8 @@ export class ConnectedClient extends LitElement {
   renderClient() {
     if (this.client) {
       return html`
-        <div class="client--name">${this.client.userAgent.browser}</div>
-        <div>${this.client.userAgent.os}</div>
+        <div class="client--name">${this.client.name}</div>
+        <div>${this.client.userAgent.browser}</div>
       `;
     }
   }

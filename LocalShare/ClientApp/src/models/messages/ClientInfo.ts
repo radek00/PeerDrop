@@ -4,6 +4,7 @@ export interface ClientConnectionInfo {
   id: string;
   userAgent: UserAgent;
   uploadStatus: UploadStatus;
+  name: string;
 }
 
 export interface AllClientsConnectionInfo {
