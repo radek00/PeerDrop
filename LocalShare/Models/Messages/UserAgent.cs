@@ -2,6 +2,8 @@
 
 public class UserAgent
 {
-    public required string Browser { get; set; }
-    public required string OS { get; set; }
+        public required string BrowserName { get; set; }
+        public required string BrowserVersion { get; set; }
+        public required string OSName { get; set; }
+        public required string OSVersion { get; set; }
 }
