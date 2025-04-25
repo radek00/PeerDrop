@@ -58,7 +58,7 @@ export class App extends LitElement {
       gap: 8px;
       flex-direction: column;
 
-      .client--name {
+      .client-name {
         color: var(--text-primary);
         font-weight: 400;
         span {
@@ -195,7 +195,7 @@ export class App extends LitElement {
     if (this._currentClient) {
       return html`
         <signal-icon></signal-icon>
-        <span class="client--name"
+        <span class="client-name"
           >You're known as <span>${this._currentClient.name}</span></span
         >
       `;
