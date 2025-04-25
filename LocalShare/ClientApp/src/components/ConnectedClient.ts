@@ -2,26 +2,25 @@ import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "../icons/PhoneIcon";
 import "../icons/SignalIcon";
+import "../icons/DesktopIcon";
+import "../icons/TabletIcon";
 import { ClientConnectionInfo } from "../models/messages/ClientInfo";
 import { scaleUpAnimation } from "../styles/sharedStyle";
-
-type IconType = "phone" | "signal";
+import { IconType } from "../models/enums/IconType";
 
 @customElement("connected-client")
 export class ConnectedClient extends LitElement {
   @property({ type: Object })
-  client?: ClientConnectionInfo;
+  client!: ClientConnectionInfo;
 
   @property({ type: Boolean })
   clickable = true;
 
   iconMap: Record<IconType, TemplateResult> = {
-    phone: html`<phone-icon></phone-icon>`,
-    signal: html`<signal-icon></signal-icon>`,
+    [IconType.Phone]: html`<phone-icon></phone-icon>`,
+    [IconType.Desktop]: html`<tablet-icon></tablet-icon>`,
+    [IconType.Tablet]: html`<tablet-icon></tablet-icon>`,
   };
-
-  @property({ type: String })
-  icon: IconType = "phone";
 
   static styles = [
     scaleUpAnimation,
@@ -92,10 +91,15 @@ export class ConnectedClient extends LitElement {
   }
 
   render() {
+    console.log(
+      "Rendering client:",
+      this.client.userAgent.icon,
+      this.iconMap[this.client.userAgent.icon]
+    );
     return html`
       <div class="client ${this.clickable ? "client-clickable" : ""}">
         <div class="icon-wrapper">
-          ${this.iconMap[this.icon]} <slot name="icon"></slot>
+          ${this.iconMap[this.client.userAgent.icon]} <slot name="icon"></slot>
         </div>
         ${this.renderClient()}
         <slot name="footer"></slot>
