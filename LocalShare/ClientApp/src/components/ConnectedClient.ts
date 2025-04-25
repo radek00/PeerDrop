@@ -51,8 +51,8 @@ export class ConnectedClient extends LitElement {
         font-weight: 600;
       }
       .client-os {
-          font-size: small;
-          font-style: italic;
+        font-size: small;
+        font-style: italic;
       }
 
       .icon-wrapper {
@@ -84,7 +84,9 @@ export class ConnectedClient extends LitElement {
     if (this.client) {
       return html`
         <div class="client--name">${this.client.name}</div>
-        <div class="client-os">${this.client.userAgent.osName}, ${this.client.userAgent.browserName}</div>
+        <div class="client-os">
+          ${this.client.userAgent.osName}, ${this.client.userAgent.browserName}
+        </div>
       `;
     }
   }
