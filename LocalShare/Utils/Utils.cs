@@ -16,22 +16,27 @@ namespace LocalShare.Utils
             var browserName = browserMatch.Success ? browserMatch.Groups[1].Value : "Unknown";
             var browserVersion = browserMatch.Success ? TrimVersion(browserMatch.Groups[2].Value) : "";
 
-            var osName = osMatch.Success ? osMatch.Groups[1].Value : "Unknown";
+            var osAndIcon = (osMatch.Success ? osMatch.Groups[1].Value : "Unknown", IconType.Desktop);
             var osVersion = osMatch.Success ? TrimVersion(osMatch.Groups[2].Value.Replace('_', '.')) : "";
 
-            osName = osName switch
+            osAndIcon = osAndIcon.Item1 switch
             {
-                "Windows NT" => "Windows",
-                "iPhone OS" => "iOS",
-                "Mac OS X" => "macOS",
-                _ => osName
+                "Windows NT" => ("Windows", IconType.Desktop),
+                "iPhone OS" => ("iOS", IconType.Phone),
+                "Mac OS X" => ("macOS", IconType.Desktop),
+                "iPad OS" => ("iOS", IconType.Tablet),
+                "Android" => ("Android", IconType.Phone),
+                _ => osAndIcon
             };
 
-            return new UserAgent() { 
-                BrowserName = browserName, 
-                BrowserVersion = browserVersion, 
-                OSName = osName, 
-                OSVersion = osVersion 
+            return new UserAgent()
+            {
+                BrowserName = browserName,
+                BrowserVersion = browserVersion,
+                OSName = osAndIcon.Item1,
+                OSVersion = osVersion,
+                Icon = osAndIcon.Item2
+                
             };
         }
 
