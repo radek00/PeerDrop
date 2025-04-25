@@ -1,6 +1,6 @@
 public class NameGenerator
 {
-    private static readonly Random Random = new Random();
+    private static readonly Random Random = Random.Shared;
 
     // Use string arrays instead of List<string>
     private static readonly string[] Adjectives = {
