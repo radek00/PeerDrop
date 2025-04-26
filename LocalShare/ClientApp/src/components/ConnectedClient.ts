@@ -18,7 +18,7 @@ export class ConnectedClient extends LitElement {
 
   iconMap: Record<IconType, TemplateResult> = {
     [IconType.Phone]: html`<phone-icon></phone-icon>`,
-    [IconType.Desktop]: html`<tablet-icon></tablet-icon>`,
+    [IconType.Desktop]: html`<desktop-icon></desktop-icon>`,
     [IconType.Tablet]: html`<tablet-icon></tablet-icon>`,
   };
 
