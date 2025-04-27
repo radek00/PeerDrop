@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-// Ensure IconType enum is accessible
 
 namespace LocalShare.Utils.UserAgentParser
 {
@@ -12,17 +11,13 @@ namespace LocalShare.Utils.UserAgentParser
             userAgent = userAgent.Trim();
 
 
-            HttpUserAgentPlatformInformation? platform = GetPlatform(userAgent);
+            var platform = GetPlatform(userAgent);
+            var browser = GetBrowser(userAgent);
 
-            if (TryGetBrowser(userAgent, out (string Name, string? Version)? browser))
-            {
-                return HttpUserAgentInformation.CreateForBrowser(userAgent, platform, browser?.Name, browser?.Version);
-            }
-
-            return HttpUserAgentInformation.CreateForUnknown(userAgent, platform);
+            return HttpUserAgentInformation.CreateForBrowser(userAgent, platform, browser.Name, browser.Version);
         }
 
-        public static HttpUserAgentPlatformInformation? GetPlatform(string userAgent)
+        public static HttpUserAgentPlatformInformation GetPlatform(string userAgent)
         {
             foreach (HttpUserAgentPlatformInformation item in HttpUserAgentStatics.Platforms)
             {
@@ -32,7 +27,7 @@ namespace LocalShare.Utils.UserAgentParser
                 }
             }
 
-            return null;
+            return new();
         }
 
         public static bool TryGetPlatform(string userAgent, [NotNullWhen(true)] out HttpUserAgentPlatformInformation? platform)
@@ -41,7 +36,7 @@ namespace LocalShare.Utils.UserAgentParser
             return platform is not null;
         }
 
-        public static (string Name, string? Version)? GetBrowser(string userAgent)
+        public static (string Name, string Version) GetBrowser(string userAgent)
         {
             foreach ((Regex key, string? value) in HttpUserAgentStatics.Browsers)
             {
@@ -52,13 +47,7 @@ namespace LocalShare.Utils.UserAgentParser
                 }
             }
 
-            return null;
-        }
-
-        public static bool TryGetBrowser(string userAgent, [NotNullWhen(true)] out (string Name, string? Version)? browser)
-        {
-            browser = GetBrowser(userAgent);
-            return browser is not null;
+            return ("Unknown", "Unknown");
         }
     }
 }

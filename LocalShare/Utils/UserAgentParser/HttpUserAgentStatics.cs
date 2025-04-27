@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-// Ensure IconType enum is accessible
 
 namespace LocalShare.Utils.UserAgentParser
 {
@@ -11,6 +10,15 @@ namespace LocalShare.Utils.UserAgentParser
 
         public static readonly HashSet<HttpUserAgentPlatformInformation> Platforms =
         [
+            new(CreateDefaultPlatformRegex("windows nt 10.0"), "Windows 10", HttpUserAgentPlatformType.Windows, IconType.Desktop),
+            new(CreateDefaultPlatformRegex("windows nt 6.3"), "Windows 8.1", HttpUserAgentPlatformType.Windows, IconType.Desktop),
+            new(CreateDefaultPlatformRegex("windows nt 6.2"), "Windows 8", HttpUserAgentPlatformType.Windows, IconType.Desktop),
+            new(CreateDefaultPlatformRegex("windows nt 6.1"), "Windows 7", HttpUserAgentPlatformType.Windows, IconType.Desktop),
+            new(CreateDefaultPlatformRegex("windows nt 6.0"), "Windows Vista", HttpUserAgentPlatformType.Windows, IconType.Desktop),
+            new(CreateDefaultPlatformRegex("windows nt 5.2"), "Windows 2003", HttpUserAgentPlatformType.Windows, IconType.Desktop),
+            new(CreateDefaultPlatformRegex("windows nt 5.1"), "Windows XP", HttpUserAgentPlatformType.Windows, IconType.Desktop),
+            new(CreateDefaultPlatformRegex("windows nt 5.0"), "Windows 2000", HttpUserAgentPlatformType.Windows, IconType.Desktop),
+            new(CreateDefaultPlatformRegex("windows nt 4.0"), "Windows NT 4.0", HttpUserAgentPlatformType.Windows, IconType.Desktop),
             new(CreateDefaultPlatformRegex("winnt4.0"), "Windows NT 4.0", HttpUserAgentPlatformType.Windows, IconType.Desktop),
             new(CreateDefaultPlatformRegex("winnt 4.0"), "Windows NT", HttpUserAgentPlatformType.Windows, IconType.Desktop),
             new(CreateDefaultPlatformRegex("winnt"), "Windows NT", HttpUserAgentPlatformType.Windows, IconType.Desktop),
@@ -27,7 +35,7 @@ namespace LocalShare.Utils.UserAgentParser
             new(CreateDefaultPlatformRegex("debian"), "Debian", HttpUserAgentPlatformType.Linux, IconType.Desktop),
             new(CreateDefaultPlatformRegex("openbsd"), "OpenBSD", HttpUserAgentPlatformType.Unix, IconType.Desktop),
             new(CreateDefaultPlatformRegex("gnu"), "GNU/Linux", HttpUserAgentPlatformType.Linux, IconType.Desktop),
-            new(CreateDefaultPlatformRegex("unix"), "Unknown Unix OS", HttpUserAgentPlatformType.Unix, IconType.Desktop),
+            new(CreateDefaultPlatformRegex("unix"), "Unknown Unix OS", HttpUserAgentPlatformType.Unix, IconType.Desktop)
     ];
 
         private const RegexOptions DefaultBrowserRegexFlags = RegexOptions.IgnoreCase | RegexOptions.Compiled;

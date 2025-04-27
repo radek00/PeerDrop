@@ -1,6 +1,4 @@
-﻿// Ensure IconType enum is accessible
-
-namespace LocalShare.Utils.UserAgentParser
+﻿namespace LocalShare.Utils.UserAgentParser
 {
     public enum HttpUserAgentPlatformType : byte
     {
