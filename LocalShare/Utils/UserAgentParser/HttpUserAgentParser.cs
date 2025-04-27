@@ -30,12 +30,6 @@ namespace LocalShare.Utils.UserAgentParser
             return new();
         }
 
-        public static bool TryGetPlatform(string userAgent, [NotNullWhen(true)] out HttpUserAgentPlatformInformation? platform)
-        {
-            platform = GetPlatform(userAgent);
-            return platform is not null;
-        }
-
         public static (string Name, string Version) GetBrowser(string userAgent)
         {
             foreach ((Regex key, string? value) in HttpUserAgentStatics.Browsers)
