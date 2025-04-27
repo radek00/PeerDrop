@@ -96,6 +96,9 @@ export class WebRtcPeer {
       } else if (data.status === TransferStatus.Completed) {
         console.log("File transfer complete");
         this.closeConnections();
+      } else if (data.status === TransferStatus.Rejected) {
+        alert("File transfer rejected");
+        this.closeConnections();
       }
     };
   }
@@ -142,10 +145,17 @@ export class WebRtcPeer {
       this.metadataChannel.onmessage = (event) => {
         //confirm that metadata was received
         const data = JSON.parse(event.data) as FileMetadata;
-        data.status = TransferStatus.InProgress;
-        console.log("Metadata channel message", event.data);
-        this._fileData = data;
-        this.metadataChannel?.send(JSON.stringify(data));
+        if (window.confirm("File transfer started. Do you want to accept?")) {
+          data.status = TransferStatus.InProgress;
+          console.log("Metadata channel message", event.data);
+          this._fileData = data;
+          this.metadataChannel?.send(JSON.stringify(data));
+        } else {
+          data.status = TransferStatus.Rejected;
+          this.metadataChannel?.send(JSON.stringify(data));
+          // this.closeConnections();
+          // console.log("File transfer rejected");
+        }
       };
     } else if (channel.label === "file-transfer") {
       this.fileTransferChannel = channel;

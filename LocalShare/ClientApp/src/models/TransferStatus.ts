@@ -3,4 +3,5 @@ export enum TransferStatus {
   InProgress,
   Completed,
   Error,
+  Rejected,
 }
