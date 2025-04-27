@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using LocalShare.Models;
 using LocalShare.Models.Messages;
+using LocalShare.Utils.UserAgentParser;
 
 namespace LocalShare.Hubs;
 
@@ -24,7 +25,7 @@ public class WebRtcSignallingHub() : Hub
     private async Task Join()
     {
         var httpContext = Context.GetHttpContext();
-        var userAgent = Utils.Utils.ParseUserAgent(httpContext?.Request.Headers["User-Agent"].ToString() ?? "");
+        var userAgent = HttpUserAgentParser.Parse(httpContext?.Request.Headers["User-Agent"].ToString() ?? "").MapToUserAgent();
         var joinedClient = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent, Name = NameGenerator.GenerateName() };
         Connections.TryAdd(Context.ConnectionId, joinedClient);
         await Clients.Client(Context.ConnectionId).SendAsync(SignallingEvents.UpdateSelf, new AllClientsConnectionInfo() {Self = joinedClient 
