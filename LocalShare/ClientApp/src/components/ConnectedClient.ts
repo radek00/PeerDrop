@@ -91,11 +91,6 @@ export class ConnectedClient extends LitElement {
   }
 
   render() {
-    console.log(
-      "Rendering client:",
-      this.client.userAgent.icon,
-      this.iconMap[this.client.userAgent.icon]
-    );
     return html`
       <div class="client ${this.clickable ? "client-clickable" : ""}">
         <div class="icon-wrapper">
