@@ -22,6 +22,7 @@ export class WebRtcPeer {
   private _writer?: WritableStreamDefaultWriter<Uint8Array>;
   private _closeCallback?: () => void;
   private _progressCallback?: (progress: number, status: UploadStatus) => void;
+  private _targetClientId?: string;
 
   constructor(
     signalRConnection: signalR.HubConnection,
@@ -31,100 +32,44 @@ export class WebRtcPeer {
   ) {
     this._signalRConnection = signalRConnection;
     this._peerConnection = new RTCPeerConnection(configuration);
-    this.handleDataChannel = this.handleDataChannel.bind(this);
-    this.onFileDataReceived = this.onFileDataReceived.bind(this);
     this._file = file;
     this._closeCallback = closeCallback;
     this._progressCallback = progressCallback;
+
+    this._handleIceCandidate = this._handleIceCandidate.bind(this);
+    this.handleDataChannel = this.handleDataChannel.bind(this);
+    this._handleMetadataMessage = this._handleMetadataMessage.bind(this);
+    this.onFileDataReceived = this.onFileDataReceived.bind(this);
   }
 
-  async initConnection(targetClient: string) {
-    this._peerConnection.addEventListener("icecandidate", (event) => {
-      if (event.candidate) {
-        const payload: SendIceCandidate = {
-          targetConnectionId: targetClient,
-          candidate: event.candidate,
-        };
-        this._signalRConnection.invoke(
-          SignallingEvents.SendIceCandidate,
-          payload
-        );
-      }
-    });
-    this.metadataChannel = this._peerConnection.createDataChannel(
-      "file-metadata-channel"
-    );
-    this.fileTransferChannel =
-      this._peerConnection.createDataChannel("file-transfer");
+  // --- Public Methods ---
 
-    this.fileTransferChannel.addEventListener("close", () => {
-      this.closeConnections();
-    });
+  async initConnection(targetClient: string) {
+    this._targetClientId = targetClient;
+    this._setupPeerConnectionListeners();
+    this._setupDataChannels();
 
     const offer = await this._peerConnection.createOffer();
     await this._peerConnection.setLocalDescription(offer);
-    const payload: SendOffer = {
-      targetConnectionId: targetClient,
-      offer: offer,
-    };
+
+    const payload: SendOffer = { targetConnectionId: targetClient, offer };
     this._signalRConnection.invoke(SignallingEvents.SendOffer, payload);
-    this.metadataChannel.onopen = () => {
-      //send file metadata
-      this._fileData = {
-        name: this._file!.name,
-        size: this._file!.size,
-        type: this._file!.type,
-        lastModified: this._file!.lastModified,
-        status: TransferStatus.Pending,
-      };
-      this.metadataChannel?.send(JSON.stringify(this._fileData));
-    };
-    this.metadataChannel.onmessage = (event) => {
-      const data = JSON.parse(event.data) as FileMetadata;
-      this._fileData = data;
-      console.log(data);
-      if (data.status === TransferStatus.InProgress) {
-        //send file data
-        if (this.fileTransferChannel?.readyState === "open") {
-          console.log("Sending file data");
-          this.sendFileData();
-        } else {
-          this.fileTransferChannel?.addEventListener("open", () => {
-            this.sendFileData();
-          });
-        }
-      } else if (data.status === TransferStatus.Completed) {
-        console.log("File transfer complete");
-        this.closeConnections();
-      } else if (data.status === TransferStatus.Rejected) {
-        alert("File transfer rejected");
-        this.closeConnections();
-      }
-    };
   }
 
   async receiveOffer(
     offer: RTCSessionDescriptionInit,
     senderConnectionId: string
   ) {
-    this._peerConnection.setRemoteDescription(offer);
-    this._peerConnection.addEventListener("icecandidate", (event) => {
-      if (event.candidate) {
-        const payload: SendIceCandidate = {
-          targetConnectionId: senderConnectionId,
-          candidate: event.candidate,
-        };
-        this._signalRConnection.invoke(
-          SignallingEvents.SendIceCandidate,
-          payload
-        );
-      }
-    });
+    this._targetClientId = senderConnectionId;
+    this._setupPeerConnectionListeners();
     this._peerConnection.ondatachannel = this.handleDataChannel;
+
+    await this._peerConnection.setRemoteDescription(offer);
     const answer = await this._peerConnection.createAnswer();
     await this._peerConnection.setLocalDescription(answer);
+
     const payload: SendAnswer = {
-      answer: answer,
+      answer,
       targetConnectionId: senderConnectionId,
     };
     this._signalRConnection.invoke(SignallingEvents.SendAnswer, payload);
@@ -138,36 +83,124 @@ export class WebRtcPeer {
     await this._peerConnection.addIceCandidate(candidate);
   }
 
-  private handleDataChannel(event: RTCDataChannelEvent) {
+  // --- Private Setup Methods ---
+
+  private _setupPeerConnectionListeners() {
+    this._peerConnection.addEventListener(
+      "icecandidate",
+      this._handleIceCandidate
+    );
+  }
+
+  private _setupDataChannels() {
+    this.metadataChannel = this._peerConnection.createDataChannel(
+      "file-metadata-channel"
+    );
+    this.fileTransferChannel =
+      this._peerConnection.createDataChannel("file-transfer");
+
+    this.metadataChannel.onopen = this._handleMetadataChannelOpen.bind(this);
+    this.metadataChannel.onmessage = this._handleMetadataMessage;
+
+    this.fileTransferChannel.binaryType = "arraybuffer";
+    this.fileTransferChannel.addEventListener(
+      "close",
+      this.closeConnections.bind(this)
+    );
+  }
+
+  // --- Event Handlers ---
+
+  private _handleIceCandidate(event: RTCPeerConnectionIceEvent) {
+    if (event.candidate && this._targetClientId) {
+      const payload: SendIceCandidate = {
+        targetConnectionId: this._targetClientId,
+        candidate: event.candidate,
+      };
+      this._signalRConnection.invoke(
+        SignallingEvents.SendIceCandidate,
+        payload
+      );
+    }
+  }
+
+  private _handleMetadataChannelOpen() {
+    this._fileData = {
+      name: this._file!.name,
+      size: this._file!.size,
+      type: this._file!.type,
+      lastModified: this._file!.lastModified,
+      status: TransferStatus.Pending,
+    };
+    this.metadataChannel?.send(JSON.stringify(this._fileData));
+  }
+
+  private _handleMetadataMessage(event: MessageEvent) {
+    const data = JSON.parse(event.data) as FileMetadata;
+    this._fileData = data;
+
+    switch (data.status) {
+      case TransferStatus.Pending:
+        this._handlePendingTransfer();
+        break;
+      case TransferStatus.InProgress:
+        this._startSendingFileData();
+        break;
+      case TransferStatus.Completed:
+        console.log("File transfer complete signal received via metadata.");
+        this.closeConnections();
+        break;
+      case TransferStatus.Rejected:
+        alert("File transfer rejected by the recipient.");
+        this.closeConnections();
+        break;
+    }
+  }
+
+  private _handlePendingTransfer() {
+    if (window.confirm(`Accept file "${this._fileData?.name}"?`)) {
+      this._updateMetadataStatus(TransferStatus.InProgress);
+    } else {
+      this._updateMetadataStatus(TransferStatus.Rejected);
+    }
+  }
+
+  private _updateMetadataStatus(status: TransferStatus) {
+    if (this.metadataChannel && this._fileData) {
+      this._fileData.status = status;
+      this.metadataChannel.send(JSON.stringify(this._fileData));
+    }
+  }
+
+  private _startSendingFileData() {
+    if (this.fileTransferChannel?.readyState === "open") {
+      this.sendFileData();
+    } else {
+      // Wait for the channel to open if it's not ready yet
+      this.fileTransferChannel?.addEventListener("open", () => {
+        this.sendFileData();
+      });
+    }
+  }
+
+  // Handler for the datachannel event on the receiving peer
+  public handleDataChannel(event: RTCDataChannelEvent) {
     const { channel } = event;
     if (channel.label === "file-metadata-channel") {
       this.metadataChannel = channel;
-      this.metadataChannel.onmessage = (event) => {
-        //confirm that metadata was received
-        const data = JSON.parse(event.data) as FileMetadata;
-        if (window.confirm("File transfer started. Do you want to accept?")) {
-          data.status = TransferStatus.InProgress;
-          console.log("Metadata channel message", event.data);
-          this._fileData = data;
-          this.metadataChannel?.send(JSON.stringify(data));
-        } else {
-          data.status = TransferStatus.Rejected;
-          this.metadataChannel?.send(JSON.stringify(data));
-          // this.closeConnections();
-          // console.log("File transfer rejected");
-        }
-      };
+      this.metadataChannel.onmessage = this._handleMetadataMessage;
     } else if (channel.label === "file-transfer") {
       this.fileTransferChannel = channel;
       this.fileTransferChannel.binaryType = "arraybuffer";
       this.fileTransferChannel.onmessage = this.onFileDataReceived;
-      // fileTransferDataChannel.addEventListener('open', onChannelStateChange);
-      // this.fileTransferChannel.addEventListener('close', () => {
-      //   console.log("File transfer channel closed");
-      // });
-      // fileTransferDataChannel.addEventListener('error', onFileTransferChannelError);
+      this.fileTransferChannel.addEventListener(
+        "close",
+        this.closeConnections.bind(this)
+      );
     }
   }
+
+  // --- File Transfer Logic ---
 
   private sendFileData() {
     const chunkSize = 5 * 1024;
@@ -236,22 +269,15 @@ export class WebRtcPeer {
       this._writer?.close();
       this.closeConnections();
     }
-
-    // if (this._receivedSize === this._fileData?.size) {
-    //   console.log("All chunks send through web rtc");
-    //   //await this._writer!.close();
-    //   this.closeConnections();
-    //   // setTimeout(async () => {
-    //   //
-    //   // }, 2000)
-    // }
   }
 
-  private closeConnections() {
+  // --- Cleanup ---
+
+  public closeConnections() {
+    console.log("Closing WebRTC Peer Connections and Channels.");
     this.fileTransferChannel?.close();
     this.metadataChannel?.close();
     this._peerConnection.close();
     this._closeCallback?.();
-    //this._writer = undefined;
   }
 }
