@@ -40,12 +40,14 @@ export class ConfirmDialogController<CancelData, ConfirmData> {
   confirm(data?: ConfirmData): void {
     if (!this.isRevealed || !this._resolvePromise) return;
     this.isRevealed = false;
+    this.host.requestUpdate();
     this._resolvePromise({ data, isCanceled: false });
   }
 
   cancel(data?: CancelData): void {
     if (!this.isRevealed || !this._resolvePromise) return;
     this.isRevealed = false;
+    this.host.requestUpdate();
     this._resolvePromise?.({ data, isCanceled: true });
   }
 }
