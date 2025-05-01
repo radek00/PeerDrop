@@ -16,6 +16,8 @@ import { ReceiveAnswer } from "./models/messages/ReceiveAnswer";
 import { ClientSelectedEvent } from "./models/events/ClientSelectedEvent";
 import { ProgressUpdateEvent } from "./models/events/ProgressUpdateEvent";
 import { UploadStatus } from "./models/UploadStatus";
+import { ConfirmDialogController } from "./utils/controllers/ConfirmDialogController";
+import "./components/ConfirmDialog";
 
 setInterval(() => {
   navigator.serviceWorker.controller?.postMessage("ping");
@@ -85,6 +87,8 @@ export class App extends LitElement {
   private _connectionMap: Map<string, WebRtcPeer> = new Map();
 
   connection: HubConnection = createSignalRConnection("signalr/signalling");
+
+  dialogController = new ConfirmDialogController(this);
   constructor() {
     super();
     this.grid.start();
@@ -136,10 +140,19 @@ export class App extends LitElement {
   }
 
   receiveOffer(payload: ReceiveOffer) {
-    const peerConnection = new WebRtcPeer(this.connection, undefined, () => {
-      this._connectionMap.delete(payload.senderConnectionId);
-      console.log("connection map", this._connectionMap);
-    });
+    const peerConnection = new WebRtcPeer(
+      this.connection,
+      undefined,
+      () => {
+        this._connectionMap.delete(payload.senderConnectionId);
+        console.log("connection map", this._connectionMap);
+      },
+      undefined,
+      async () => {
+        const result = await this.dialogController.reveal();
+        return result.isCanceled === false;
+      }
+    );
     this._connectionMap.set(payload.senderConnectionId, peerConnection);
     peerConnection.receiveOffer(payload.offer, payload.senderConnectionId);
   }
@@ -202,12 +215,28 @@ export class App extends LitElement {
     }
     return html``;
   }
+
+  dialogTest() {
+    if (this.dialogController.isRevealed) {
+      return html`<div>Dialog is revealed</div>`;
+    } else {
+      return html`<div>Dialog is not revealed</div>`;
+    }
+  }
+
   render() {
     console.log("Rendering app");
     return html`<client-wrapper
         @onClientSelected=${this._clientSelectedListener}
         .clients=${this._clients}
       ></client-wrapper>
-      <div class="client-main">${this.getCurrentClient()}</div> `;
+      <div class="client-main">${this.getCurrentClient()}</div>
+      ${true
+        ? html`<confirm-dialog
+            @confirm=${() => this.dialogController.confirm()}
+            @cancel=${() => this.dialogController.cancel()}
+          ></confirm-dialog>`
+        : ""}
+      ${this.dialogTest()} `;
   }
 }
