@@ -20,6 +20,7 @@ import { ConfirmDialogController } from "./utils/controllers/ConfirmDialogContro
 import "./components/ConfirmDialog";
 import { FileMetadata } from "./models/FileMetadata";
 import { buttons } from "./styles/sharedStyle";
+import { fileSize } from "./utils/utils";
 
 setInterval(() => {
   navigator.serviceWorker.controller?.postMessage("ping");
@@ -158,7 +159,7 @@ export class App extends LitElement {
       confirmationCallback: async (file: FileMetadata) => {
         const result = await this.dialogController.reveal({
           title: "Accept file transfer?",
-          message: `Would you like to accept a file transfer of ${file.name}(${file.size})?`,
+          message: `Would you like to accept a file transfer of ${file.name}(${fileSize(file.size)})?`,
         });
         return result.isCanceled === false;
       },
