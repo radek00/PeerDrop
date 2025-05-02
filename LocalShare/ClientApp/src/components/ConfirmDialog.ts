@@ -4,65 +4,68 @@ import { buttons } from "../styles/sharedStyle";
 
 @customElement("confirm-dialog")
 export class ConfirmDialog extends LitElement {
-  static styles = [buttons,css`
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.6);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      backdrop-filter: blur(3px);
-    }
+  static styles = [
+    buttons,
+    css`
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(3px);
+      }
 
-    .dialog {
-      background-color: var(--bg-light);
-      color: var(--text-primary);
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-      max-width: 400px;
-      width: 90%;
-      text-align: center;
-    }
-
-    @media (prefers-color-scheme: dark) {
       .dialog {
-        background-color: #051924;
+        background-color: var(--bg-light);
+        color: var(--text-primary);
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
       }
-    }
 
-    .title {
-      margin-top: 0;
-      margin-bottom: 1rem;
-      font-size: 1.4rem;
-      font-weight: 600;
-      color: var(--color-primary-600);
-    }
+      @media (prefers-color-scheme: dark) {
+        .dialog {
+          background-color: #051924;
+        }
+      }
 
-    @media (prefers-color-scheme: dark) {
       .title {
-        color: var(--color-primary-400);
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--color-primary-600);
       }
-    }
 
-    .message {
-      margin-top: 0;
-      margin-bottom: 1.5rem;
-      line-height: 1.6;
-    }
+      @media (prefers-color-scheme: dark) {
+        .title {
+          color: var(--color-primary-400);
+        }
+      }
 
-    .buttons {
-      display: flex;
-      justify-content: space-around;
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-  `];
+      .message {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+      }
+
+      .buttons {
+        display: flex;
+        justify-content: space-around;
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+    `,
+  ];
 
   private _handleConfirm() {
     this.dispatchEvent(
@@ -89,10 +92,10 @@ export class ConfirmDialog extends LitElement {
           <slot name="buttons">
             <div class="buttons">
               <button class="btn secondary" @click=${this._handleCancel}>
-                <slot name="cancel-text">No</slot>
+                No
               </button>
               <button class="btn primary" @click=${this._handleConfirm}>
-                <slot name="confirm-text">Yes</slot>
+                Yes
               </button>
             </div>
           </slot>

@@ -231,14 +231,6 @@ export class App extends LitElement {
     return html``;
   }
 
-  dialogTest() {
-    if (this.dialogController.isRevealed) {
-      return html`<div>Dialog is revealed</div>`;
-    } else {
-      return html`<div>Dialog is not revealed</div>`;
-    }
-  }
-
   render() {
     console.log("Rendering app");
     return html`<client-wrapper
@@ -264,7 +256,6 @@ export class App extends LitElement {
                 </div>`
               : ""}
           </confirm-dialog>`
-        : ""}
-      ${this.dialogTest()} `;
+        : ""}`;
   }
 }
