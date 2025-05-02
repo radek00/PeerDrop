@@ -1,9 +1,10 @@
 import { css, html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
+import { buttons } from "../styles/sharedStyle";
 
 @customElement("confirm-dialog")
 export class ConfirmDialog extends LitElement {
-  static styles = css`
+  static styles = [buttons,css`
     .overlay {
       position: fixed;
       top: 0;
@@ -61,58 +62,7 @@ export class ConfirmDialog extends LitElement {
       gap: 1rem;
       margin-top: 1.5rem;
     }
-
-    button {
-      padding: 0.6rem 1.2rem;
-      border: none;
-      border-radius: 5px;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition:
-        background-color 0.2s ease,
-        transform 0.1s ease;
-      min-width: 80px;
-    }
-
-    button:active {
-      transform: scale(0.95);
-    }
-
-    .confirm-button {
-      background-color: var(--color-primary-600);
-      color: white;
-    }
-
-    .confirm-button:hover {
-      background-color: var(--color-primary-700);
-    }
-
-    .cancel-button {
-      background-color: #e0e0e0;
-      color: var(--text-dark);
-    }
-
-    .cancel-button:hover {
-      background-color: #bdbdbd;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .confirm-button {
-        background-color: var(--color-primary-500);
-      }
-      .confirm-button:hover {
-        background-color: var(--color-primary-400);
-      }
-      .cancel-button {
-        background-color: #424242;
-        color: var(--text-light);
-      }
-      .cancel-button:hover {
-        background-color: #616161;
-      }
-    }
-  `;
+  `];
 
   private _handleConfirm() {
     this.dispatchEvent(
@@ -136,14 +86,16 @@ export class ConfirmDialog extends LitElement {
           <div class="message">
             <slot name="message">Are you sure you want to proceed?</slot>
           </div>
-          <div class="buttons">
-            <button class="cancel-button" @click=${this._handleCancel}>
-              <slot name="cancel-text">No</slot>
-            </button>
-            <button class="confirm-button" @click=${this._handleConfirm}>
-              <slot name="confirm-text">Yes</slot>
-            </button>
-          </div>
+          <slot name="buttons">
+            <div class="buttons">
+              <button class="btn secondary" @click=${this._handleCancel}>
+                <slot name="cancel-text">No</slot>
+              </button>
+              <button class="btn primary" @click=${this._handleConfirm}>
+                <slot name="confirm-text">Yes</slot>
+              </button>
+            </div>
+          </slot>
         </div>
       </div>
     `;

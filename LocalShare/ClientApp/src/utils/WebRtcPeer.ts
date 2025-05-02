@@ -16,7 +16,8 @@ export interface WebRtcPeerOptions {
   file?: File;
   closeCallback?: () => void;
   progressCallback?: (progress: number, status: UploadStatus) => void;
-  confirmationCallback?: () => Promise<boolean>;
+  confirmationCallback?: (file: FileMetadata) => Promise<boolean>;
+  rejectionCallback?: () => void;
 }
 
 export class WebRtcPeer {
@@ -31,7 +32,8 @@ export class WebRtcPeer {
   private _closeCallback?: () => void;
   private _progressCallback?: (progress: number, status: UploadStatus) => void;
   private _targetClientId?: string;
-  private _confirmationCallback: () => Promise<boolean>;
+  private _confirmationCallback: (file: FileMetadata) => Promise<boolean>;
+  private _rejectionCallback?: () => void;
 
   constructor(options: WebRtcPeerOptions) {
     this._signalRConnection = options.signalRConnection;
@@ -42,6 +44,7 @@ export class WebRtcPeer {
     this._confirmationCallback = options.confirmationCallback
       ? options.confirmationCallback
       : () => Promise.resolve(true);
+    this._rejectionCallback = options.rejectionCallback;
 
     this._handleIceCandidate = this._handleIceCandidate.bind(this);
     this.handleDataChannel = this.handleDataChannel.bind(this);
@@ -158,14 +161,14 @@ export class WebRtcPeer {
         this.closeConnections();
         break;
       case TransferStatus.Rejected:
-        alert("File transfer rejected by the recipient.");
+        this._rejectionCallback?.();
         this.closeConnections();
         break;
     }
   }
 
   private async _handlePendingTransfer() {
-    if (await this._confirmationCallback()) {
+    if (await this._confirmationCallback(this._fileData!)) {
       this._updateMetadataStatus(TransferStatus.InProgress);
     } else {
       this._updateMetadataStatus(TransferStatus.Rejected);

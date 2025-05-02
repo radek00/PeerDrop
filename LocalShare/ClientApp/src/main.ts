@@ -18,6 +18,8 @@ import { ProgressUpdateEvent } from "./models/events/ProgressUpdateEvent";
 import { UploadStatus } from "./models/UploadStatus";
 import { ConfirmDialogController } from "./utils/controllers/ConfirmDialogController";
 import "./components/ConfirmDialog";
+import { FileMetadata } from "./models/FileMetadata";
+import { buttons } from "./styles/sharedStyle";
 
 setInterval(() => {
   navigator.serviceWorker.controller?.postMessage("ping");
@@ -49,34 +51,37 @@ registerServiceWorker();
 
 @customElement("app-component")
 export class App extends LitElement {
-  static styles = css`
-    .client-main {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-direction: column;
+  static styles = [
+    buttons,
+    css`
+      .client-main {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-direction: column;
 
-      .client-name {
-        color: var(--text-primary);
-        font-weight: 400;
-        span {
-          font-style: italic;
+        .client-name {
+          color: var(--text-primary);
+          font-weight: 400;
+          span {
+            font-style: italic;
+            color: var(--color-primary-600);
+            font-weight: bold;
+          }
+        }
+
+        signal-icon {
           color: var(--color-primary-600);
-          font-weight: bold;
+          width: 60px;
+          height: 60px;
         }
       }
-
-      signal-icon {
-        color: var(--color-primary-600);
-        width: 60px;
-        height: 60px;
-      }
-    }
-  `;
+    `,
+  ];
 
   grid = new ClientGrid();
   @state()
@@ -146,8 +151,11 @@ export class App extends LitElement {
         this._connectionMap.delete(payload.senderConnectionId);
         console.log("connection map", this._connectionMap);
       },
-      confirmationCallback: async () => {
-        const result = await this.dialogController.reveal();
+      confirmationCallback: async (file: FileMetadata) => {
+        const result = await this.dialogController.reveal({
+          title: "Accept file transfer?",
+          message: `Would you like to accept a file transfer of ${file.name}(${file.size})?`,
+        });
         return result.isCanceled === false;
       },
     };
@@ -198,6 +206,13 @@ export class App extends LitElement {
           new ProgressUpdateEvent(event.client.id, [progress, status])
         );
       },
+      rejectionCallback: () => {
+        this.dialogController.reveal({
+          message: "Transfer rejection",
+          title: "File transfer rejected by the recipient.",
+          confirmButtonText: "OK",
+        });
+      },
     };
     const peerConnection = new WebRtcPeer(peerOptions);
     await peerConnection.initConnection(event.client.id);
@@ -235,8 +250,20 @@ export class App extends LitElement {
         ? html`<confirm-dialog
             @confirm=${() => this.dialogController.confirm()}
             @cancel=${() => this.dialogController.cancel()}
-            ><div name="title">hello</div></confirm-dialog
-          >`
+            ><div slot="title">
+              ${this.dialogController.dialogContent?.title}
+            </div>
+            <div slot="message">
+              ${this.dialogController.dialogContent?.message}
+            </div>
+            ${this.dialogController.dialogContent?.confirmButtonText
+              ? html` <div slot="buttons" class="buttons">
+                  <button class="btn primary">
+                    <span class="confirm-text">OK</span>
+                  </button>
+                </div>`
+              : ""}
+          </confirm-dialog>`
         : ""}
       ${this.dialogTest()} `;
   }

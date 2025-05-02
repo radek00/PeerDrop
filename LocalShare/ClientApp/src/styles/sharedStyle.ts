@@ -19,3 +19,60 @@ export const scaleUpAnimation = css`
     }
   }
 `;
+
+export const buttons = css`
+  .btn {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      transform 0.1s ease;
+    min-width: 80px;
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    &.primary {
+      background-color: var(--color-primary-600);
+      color: white;
+
+      &:hover {
+        background-color: var(--color-primary-700);
+      }
+    }
+
+    &.secondary {
+      background-color: #e0e0e0;
+      color: var(--text-dark);
+
+      &:hover {
+        background-color: #bdbdbd;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      &.primary {
+        background-color: var(--color-primary-500);
+        color: white;
+
+        &:hover {
+          background-color: var(--color-primary-400);
+        }
+      }
+
+      &.secondary {
+        background-color: #424242;
+        color: var(--text-light);
+
+        &:hover {
+          background-color: #616161;
+        }
+      }
+    }
+  }
+`;
