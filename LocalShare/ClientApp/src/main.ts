@@ -9,7 +9,7 @@ import {
   AllClientsConnectionInfo,
   ClientConnectionInfo,
 } from "./models/messages/ClientInfo";
-import { WebRtcPeer } from "./utils/WebRtcPeer";
+import { WebRtcPeer, WebRtcPeerOptions } from "./utils/WebRtcPeer";
 import { ReceiveOffer } from "./models/messages/ReceiveOffer";
 import { ReceiveIceCandidate } from "./models/messages/ReceiveIceCandidate";
 import { ReceiveAnswer } from "./models/messages/ReceiveAnswer";
@@ -140,19 +140,18 @@ export class App extends LitElement {
   }
 
   receiveOffer(payload: ReceiveOffer) {
-    const peerConnection = new WebRtcPeer(
-      this.connection,
-      undefined,
-      () => {
+    const peerOptions: WebRtcPeerOptions = {
+      signalRConnection: this.connection,
+      closeCallback: () => {
         this._connectionMap.delete(payload.senderConnectionId);
         console.log("connection map", this._connectionMap);
       },
-      undefined,
-      async () => {
+      confirmationCallback: async () => {
         const result = await this.dialogController.reveal();
         return result.isCanceled === false;
-      }
-    );
+      },
+    };
+    const peerConnection = new WebRtcPeer(peerOptions);
     this._connectionMap.set(payload.senderConnectionId, peerConnection);
     peerConnection.receiveOffer(payload.offer, payload.senderConnectionId);
   }
@@ -173,14 +172,14 @@ export class App extends LitElement {
 
   private _clientSelectedListener = async (event: ClientSelectedEvent) => {
     console.log("Client selected", event.client, event.file);
-    const peerConnection = new WebRtcPeer(
-      this.connection,
-      event.file,
-      () => {
+    const peerOptions: WebRtcPeerOptions = {
+      signalRConnection: this.connection,
+      file: event.file,
+      closeCallback: () => {
         this._connectionMap.delete(event.client.id);
         console.log("connection map", this._connectionMap);
       },
-      (progress: number, status: UploadStatus) => {
+      progressCallback: (progress: number, status: UploadStatus) => {
         console.log("Progress", progress);
         if (status === UploadStatus.STARTING) {
           const requestedClient = this._clients.find(
@@ -198,8 +197,9 @@ export class App extends LitElement {
         this.dispatchEvent(
           new ProgressUpdateEvent(event.client.id, [progress, status])
         );
-      }
-    );
+      },
+    };
+    const peerConnection = new WebRtcPeer(peerOptions);
     await peerConnection.initConnection(event.client.id);
     this._connectionMap.set(event.client.id, peerConnection);
   };
@@ -231,11 +231,12 @@ export class App extends LitElement {
         .clients=${this._clients}
       ></client-wrapper>
       <div class="client-main">${this.getCurrentClient()}</div>
-      ${true
+      ${this.dialogController.isRevealed
         ? html`<confirm-dialog
             @confirm=${() => this.dialogController.confirm()}
             @cancel=${() => this.dialogController.cancel()}
-          ></confirm-dialog>`
+            ><div name="title">hello</div></confirm-dialog
+          >`
         : ""}
       ${this.dialogTest()} `;
   }

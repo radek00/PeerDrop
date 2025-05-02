@@ -11,6 +11,14 @@ const configuration = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
+export interface WebRtcPeerOptions {
+  signalRConnection: signalR.HubConnection;
+  file?: File;
+  closeCallback?: () => void;
+  progressCallback?: (progress: number, status: UploadStatus) => void;
+  confirmationCallback?: () => Promise<boolean>;
+}
+
 export class WebRtcPeer {
   private _peerConnection: RTCPeerConnection;
   private _signalRConnection: signalR.HubConnection;
@@ -25,20 +33,14 @@ export class WebRtcPeer {
   private _targetClientId?: string;
   private _confirmationCallback: () => Promise<boolean>;
 
-  constructor(
-    signalRConnection: signalR.HubConnection,
-    file?: File,
-    closeCallback?: () => void,
-    progressCallback?: (progress: number, status: UploadStatus) => void,
-    confirmationCallback?: () => Promise<boolean>
-  ) {
-    this._signalRConnection = signalRConnection;
+  constructor(options: WebRtcPeerOptions) {
+    this._signalRConnection = options.signalRConnection;
     this._peerConnection = new RTCPeerConnection(configuration);
-    this._file = file;
-    this._closeCallback = closeCallback;
-    this._progressCallback = progressCallback;
-    this._confirmationCallback = confirmationCallback
-      ? confirmationCallback
+    this._file = options.file;
+    this._closeCallback = options.closeCallback;
+    this._progressCallback = options.progressCallback;
+    this._confirmationCallback = options.confirmationCallback
+      ? options.confirmationCallback
       : () => Promise.resolve(true);
 
     this._handleIceCandidate = this._handleIceCandidate.bind(this);
