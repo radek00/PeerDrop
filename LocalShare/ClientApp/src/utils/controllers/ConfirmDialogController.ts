@@ -17,11 +17,17 @@ export interface DialogContent {
   cancelButtonText?: string;
 }
 
+export enum DialogType {
+  CONFIRM,
+  ALERT,
+}
+
 export class ConfirmDialogController<CancelData, ConfirmData> {
   host: ReactiveControllerHost;
 
   isRevealed = false;
   dialogContent?: DialogContent;
+  dialogType?: DialogType;
 
   private _resolvePromise?: (
     result: ConfirmDialogRevealResult<any, any>
@@ -32,10 +38,12 @@ export class ConfirmDialogController<CancelData, ConfirmData> {
   }
 
   reveal(
-    dialogContent?: DialogContent
+    dialogContent?: DialogContent,
+    dialogType?: DialogType
   ): Promise<ConfirmDialogRevealResult<ConfirmData, CancelData>> {
     console.log("Revealing dialog...");
     this.dialogContent = dialogContent;
+    this.dialogType = dialogType;
     this.isRevealed = true;
     this.host.requestUpdate();
 
@@ -52,6 +60,7 @@ export class ConfirmDialogController<CancelData, ConfirmData> {
     if (!this.isRevealed || !this._resolvePromise) return;
     this.isRevealed = false;
     this.dialogContent = undefined;
+    this.dialogType = undefined;
     this.host.requestUpdate();
     this._resolvePromise({ data, isCanceled: false });
   }
@@ -60,6 +69,7 @@ export class ConfirmDialogController<CancelData, ConfirmData> {
     if (!this.isRevealed || !this._resolvePromise) return;
     this.isRevealed = false;
     this.dialogContent = undefined;
+    this.dialogType = undefined;
     this.host.requestUpdate();
     this._resolvePromise?.({ data, isCanceled: true });
   }
