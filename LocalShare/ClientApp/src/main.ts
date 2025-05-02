@@ -16,7 +16,10 @@ import { ReceiveAnswer } from "./models/messages/ReceiveAnswer";
 import { ClientSelectedEvent } from "./models/events/ClientSelectedEvent";
 import { ProgressUpdateEvent } from "./models/events/ProgressUpdateEvent";
 import { UploadStatus } from "./models/UploadStatus";
-import { ConfirmDialogController } from "./utils/controllers/ConfirmDialogController";
+import {
+  ConfirmDialogController,
+  DialogType,
+} from "./utils/controllers/ConfirmDialogController";
 import "./components/ConfirmDialog";
 import { FileMetadata } from "./models/FileMetadata";
 import { buttons } from "./styles/sharedStyle";
@@ -157,10 +160,13 @@ export class App extends LitElement {
         console.log("connection map", this._connectionMap);
       },
       confirmationCallback: async (file: FileMetadata) => {
-        const result = await this.dialogController.reveal({
-          title: "Accept file transfer?",
-          message: `Would you like to accept a file transfer of ${file.name}(${fileSize(file.size)})?`,
-        });
+        const result = await this.dialogController.reveal(
+          {
+            title: "Accept file transfer?",
+            message: `Would you like to accept a file transfer of ${file.name}(${fileSize(file.size)})?`,
+          },
+          DialogType.CONFIRM
+        );
         return result.isCanceled === false;
       },
     };
@@ -213,11 +219,14 @@ export class App extends LitElement {
         );
       },
       rejectionCallback: () => {
-        this.dialogController.reveal({
-          message: "Transfer rejection",
-          title: "File transfer rejected by the recipient.",
-          confirmButtonText: "OK",
-        });
+        this.dialogController.reveal(
+          {
+            title: "Transfer rejection",
+            message: "File transfer rejected by the recipient.",
+            confirmButtonText: "OK",
+          },
+          DialogType.ALERT
+        );
       },
     };
     const peerConnection = new WebRtcPeer(peerOptions);
@@ -259,10 +268,13 @@ export class App extends LitElement {
             <div slot="message">
               ${this.dialogController.dialogContent?.message}
             </div>
-            ${this.dialogController.dialogContent?.confirmButtonText
+            ${this.dialogController.dialogType === DialogType.ALERT
               ? html` <div slot="buttons" class="buttons">
-                  <button class="btn primary">
-                    <span class="confirm-text">OK</span>
+                  <button
+                    @click=${() => this.dialogController.confirm()}
+                    class="btn primary"
+                  >
+                    <span>OK</span>
                   </button>
                 </div>`
               : ""}
