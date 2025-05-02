@@ -1,10 +1,8 @@
 import { IconType } from "../enums/IconType";
-import { UploadStatus } from "../UploadStatus";
 
 export interface ClientConnectionInfo {
   id: string;
   userAgent: UserAgent;
-  uploadStatus: UploadStatus;
   name: string;
 }
 

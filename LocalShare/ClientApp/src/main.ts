@@ -91,6 +91,10 @@ export class App extends LitElement {
 
   private _connectionMap: Map<string, WebRtcPeer> = new Map();
 
+  @state()
+  private _clientsInProgress: Array<[clientId: string, status: UploadStatus]> =
+    [];
+
   connection: HubConnection = createSignalRConnection("signalr/signalling");
 
   dialogController = new ConfirmDialogController(this);
@@ -185,22 +189,23 @@ export class App extends LitElement {
       file: event.file,
       closeCallback: () => {
         this._connectionMap.delete(event.client.id);
+        this._clientsInProgress = this._clientsInProgress.filter(
+          (client) => client[0] !== event.client.id
+        );
+
         console.log("connection map", this._connectionMap);
       },
       progressCallback: (progress: number, status: UploadStatus) => {
         console.log("Progress", progress);
-        if (status === UploadStatus.STARTING) {
-          const requestedClient = this._clients.find(
-            (client) => client.id === event.client.id
+        if (
+          status === UploadStatus.STARTING ||
+          status === UploadStatus.COMPLETED
+        ) {
+          const requestedClient = this._clientsInProgress.find(
+            (client) => client[0] === event.client.id
           );
-          requestedClient!.uploadStatus = UploadStatus.STARTING;
-          this._clients = [...this._clients];
-        } else if (status === UploadStatus.COMPLETED) {
-          const requestedClient = this._clients.find(
-            (client) => client.id === event.client.id
-          );
-          requestedClient!.uploadStatus = UploadStatus.COMPLETED;
-          this._clients = [...this._clients];
+          requestedClient![1] = status;
+          this._clientsInProgress = [...this._clientsInProgress];
         }
         this.dispatchEvent(
           new ProgressUpdateEvent(event.client.id, [progress, status])
@@ -217,6 +222,10 @@ export class App extends LitElement {
     const peerConnection = new WebRtcPeer(peerOptions);
     await peerConnection.initConnection(event.client.id);
     this._connectionMap.set(event.client.id, peerConnection);
+    this._clientsInProgress = [
+      ...this._clientsInProgress,
+      [event.client.id, UploadStatus.STARTING],
+    ];
   };
 
   getCurrentClient() {
@@ -236,6 +245,7 @@ export class App extends LitElement {
     return html`<client-wrapper
         @onClientSelected=${this._clientSelectedListener}
         .clients=${this._clients}
+        .clientsInProgress=${this._clientsInProgress}
       ></client-wrapper>
       <div class="client-main">${this.getCurrentClient()}</div>
       ${this.dialogController.isRevealed

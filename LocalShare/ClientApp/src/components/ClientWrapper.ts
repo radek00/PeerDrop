@@ -64,6 +64,10 @@ export class ClientWrapper extends LitElement {
   @property({ type: Array })
   private clients: ClientConnectionInfo[] = [];
 
+  @property({ type: Array })
+  private clientsInProgress: Array<[clientId: string, status: UploadStatus]> =
+    [];
+
   private _onInputChange(event: Event, client: ClientConnectionInfo) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) {
@@ -85,11 +89,14 @@ export class ClientWrapper extends LitElement {
               this.clients,
               (client) => client.id,
               (client) => {
+                const clientStatus = this.clientsInProgress.find(
+                  (el) => el[0] === client.id
+                )?.[1];
                 return html`
                   <div class="file-input-wrapper">
                     <label
                       class="${classMap({
-                        disabled: client.uploadStatus === UploadStatus.STARTING,
+                        disabled: clientStatus === UploadStatus.STARTING,
                       })}"
                       for="file-input-${client.id}"
                     >
@@ -106,8 +113,7 @@ export class ClientWrapper extends LitElement {
                         type="file"
                         class="file-input"
                         id="file-input-${client.id}"
-                        ?disabled=${client.uploadStatus ===
-                        UploadStatus.STARTING}
+                        ?disabled=${clientStatus === UploadStatus.STARTING}
                       />
                     </label>
                   </div>
