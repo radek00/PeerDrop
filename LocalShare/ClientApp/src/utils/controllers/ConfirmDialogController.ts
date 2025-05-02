@@ -51,6 +51,7 @@ export class ConfirmDialogController<CancelData, ConfirmData> {
   confirm(data?: ConfirmData): void {
     if (!this.isRevealed || !this._resolvePromise) return;
     this.isRevealed = false;
+    this.dialogContent = undefined;
     this.host.requestUpdate();
     this._resolvePromise({ data, isCanceled: false });
   }
@@ -58,6 +59,7 @@ export class ConfirmDialogController<CancelData, ConfirmData> {
   cancel(data?: CancelData): void {
     if (!this.isRevealed || !this._resolvePromise) return;
     this.isRevealed = false;
+    this.dialogContent = undefined;
     this.host.requestUpdate();
     this._resolvePromise?.({ data, isCanceled: true });
   }
