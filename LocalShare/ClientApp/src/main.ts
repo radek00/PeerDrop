@@ -162,7 +162,7 @@ export class App extends LitElement {
       confirmationCallback: async (file: FileMetadata) => {
         const result = await this.dialogController.reveal(
           {
-            title: "Accept file transfer?",
+            title: "Transfer confirmation",
             message: `Would you like to accept a file transfer of ${file.name}(${fileSize(file.size)})?`,
           },
           DialogType.CONFIRM
