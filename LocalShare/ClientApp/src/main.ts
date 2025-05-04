@@ -67,6 +67,7 @@ export class App extends LitElement {
         align-items: center;
         gap: 8px;
         flex-direction: column;
+        width: 100%;
 
         .client-name {
           color: var(--text-primary);
