@@ -53,12 +53,14 @@ export class ConnectedClient extends LitElement {
           font-weight: 600;
           width: 100%;
           white-space: nowrap;
+          text-align: center;
         }
         .client-os {
           font-size: small;
           font-style: italic;
           width: 100%;
           white-space: nowrap;
+          text-align: center;
         }
       }
 
