@@ -48,14 +48,17 @@ export class ConnectedClient extends LitElement {
           }
         }
 
-        /* Nest standard class selectors */
         .client-name {
           color: var(--text-primary);
           font-weight: 600;
+          width: 100%;
+          white-space: nowrap;
         }
         .client-os {
           font-size: small;
           font-style: italic;
+          width: 100%;
+          white-space: nowrap;
         }
       }
 
