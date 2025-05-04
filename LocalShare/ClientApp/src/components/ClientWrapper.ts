@@ -16,10 +16,24 @@ export class ClientWrapper extends LitElement {
     css`
       .client-wrapper {
         display: flex;
-        justify-content: center;
+        justify-content: space-around;
         align-items: center;
         gap: 2.5rem;
         height: 100%;
+        width: 100vw;
+        overflow-x: scroll;
+
+        @media (min-width: 729px) {
+          justify-content: center;
+        }
+      }
+
+      .client-wrapper .file-input-wrapper:first-child {
+        margin-left: 1rem;
+      }
+
+      .client-wrapper .file-input-wrapper:last-child {
+        margin-right: 1rem;
       }
 
       .file-input-wrapper {
@@ -29,8 +43,8 @@ export class ClientWrapper extends LitElement {
         justify-content: center;
 
         input {
-          position: absolute;
           opacity: 0;
+          width: 0;
         }
 
         label.disabled {
