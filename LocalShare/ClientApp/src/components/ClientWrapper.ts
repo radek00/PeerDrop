@@ -16,14 +16,20 @@ export class ClientWrapper extends LitElement {
     css`
       .client-wrapper {
         display: flex;
-        justify-content: space-around;
         align-items: center;
         gap: 2.5rem;
         height: 100%;
         width: 100vw;
         overflow-x: scroll;
+        justify-content: space-around;
+      }
 
-        @media (min-width: 729px) {
+      .client-wrapper.force-center-justify {
+        justify-content: center;
+      }
+
+      @media (min-width: 729px) {
+        .client-wrapper:not(.force-center-justify) {
           justify-content: center;
         }
       }
@@ -97,7 +103,11 @@ export class ClientWrapper extends LitElement {
   render() {
     console.log("Rendering with clients:", this.clients);
     return html`
-      <div class="client-wrapper">
+      <div
+        class="client-wrapper ${classMap({
+          "force-center-justify": this.clients.length < 3,
+        })}"
+      >
         ${this.clients.length > 0
           ? repeat(
               this.clients,
