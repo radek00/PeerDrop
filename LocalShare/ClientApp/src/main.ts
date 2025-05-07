@@ -22,7 +22,7 @@ import {
 } from "./utils/controllers/ConfirmDialogController";
 import "./components/ConfirmDialog";
 import { FileMetadata } from "./models/FileMetadata";
-import { buttons } from "./styles/sharedStyle";
+import { buttons, scaleUpAnimation } from "./styles/sharedStyle";
 import { fileSize } from "./utils/utils";
 import "./icons/PeerIcon";
 
@@ -58,17 +58,20 @@ registerServiceWorker();
 export class App extends LitElement {
   static styles = [
     buttons,
+    scaleUpAnimation,
     css`
       .client-main {
         position: absolute;
-        bottom: 0;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        bottom: 5%;
+        /* left: 50%; */
+        /* transform: translate(-50%, -50%); */
         display: flex;
         align-items: center;
         gap: 8px;
         flex-direction: column;
         width: 100%;
+        animation: scaleUp 0.5s ease-out backwards;
+        animation-delay: 0.2s;
 
         .client-name {
           color: var(--text-primary);
