@@ -117,7 +117,7 @@ export class PeerIcon extends LitElement {
           attributeName="stroke-dashoffset"
           from="1"
           to="0"
-          dur="1s"
+          dur="0.5s"
           begin="0.5s"
           fill="freeze"
         />
@@ -140,7 +140,7 @@ export class PeerIcon extends LitElement {
           attributeName="opacity"
           to="1"
           dur="0.01s"
-          begin="1.5s"
+          begin="1s"
           fill="freeze"
         />
         <animate
@@ -148,7 +148,7 @@ export class PeerIcon extends LitElement {
           from="1"
           to="0"
           dur="1s"
-          begin="1.5s"
+          begin="1s"
           fill="freeze"
         />
       </path>
