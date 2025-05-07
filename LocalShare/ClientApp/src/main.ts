@@ -24,6 +24,7 @@ import "./components/ConfirmDialog";
 import { FileMetadata } from "./models/FileMetadata";
 import { buttons } from "./styles/sharedStyle";
 import { fileSize } from "./utils/utils";
+import "./icons/PeerIcon";
 
 setInterval(() => {
   navigator.serviceWorker.controller?.postMessage("ping");
