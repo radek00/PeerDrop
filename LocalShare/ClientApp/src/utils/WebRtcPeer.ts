@@ -7,7 +7,7 @@ import { TransferStatus } from "../models/TransferStatus";
 import { createWriteStream } from "./streamSaver/streamSaver";
 import { UploadStatus } from "../models/UploadStatus";
 
-const configuration = {
+const configuration: RTCConfiguration = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
@@ -108,6 +108,7 @@ export class WebRtcPeer {
     );
     this.fileTransferChannel =
       this._peerConnection.createDataChannel("file-transfer");
+    this.fileTransferChannel.bufferedAmountLowThreshold = 1024 * 1024 * 10;
 
     this.metadataChannel.onopen = this._handleMetadataChannelOpen.bind(this);
     this.metadataChannel.onmessage = this._handleMetadataMessage;
@@ -201,6 +202,7 @@ export class WebRtcPeer {
       this.metadataChannel.onmessage = this._handleMetadataMessage;
     } else if (channel.label === "file-transfer") {
       this.fileTransferChannel = channel;
+      this.fileTransferChannel.bufferedAmountLowThreshold = 1024 * 1024 * 10;
       this.fileTransferChannel.binaryType = "arraybuffer";
       this.fileTransferChannel.onmessage = this.onFileDataReceived;
       this.fileTransferChannel.addEventListener(
@@ -213,7 +215,7 @@ export class WebRtcPeer {
   // --- File Transfer Logic ---
 
   private sendFileData() {
-    const chunkSize = 5 * 1024;
+    const chunkSize = 65536; // 64KB
     const fileReader = new FileReader();
     let offset = 0;
 
@@ -252,6 +254,23 @@ export class WebRtcPeer {
     });
 
     const readSlice = (o: number) => {
+      if (
+        this.fileTransferChannel!.bufferedAmount >
+        this.fileTransferChannel!.bufferedAmountLowThreshold
+      ) {
+        console.warn(
+          "Buffered amount is high, waiting for it to go low.",
+          this.fileTransferChannel!.bufferedAmount,
+          this.fileTransferChannel!.bufferedAmountLowThreshold
+        );
+        this.fileTransferChannel!.onbufferedamountlow = () => {
+          console.log("Buffered amount is low, resuming file transfer.");
+          this.fileTransferChannel!.onbufferedamountlow = null;
+          const slice = this._file!.slice(offset, o + chunkSize);
+          fileReader.readAsArrayBuffer(slice);
+        };
+        return;
+      }
       const slice = this._file!.slice(offset, o + chunkSize);
       fileReader.readAsArrayBuffer(slice);
     };
