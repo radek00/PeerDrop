@@ -63,8 +63,6 @@ export class App extends LitElement {
       .client-main {
         position: absolute;
         bottom: 5%;
-        /* left: 50%; */
-        /* transform: translate(-50%, -50%); */
         display: flex;
         align-items: center;
         gap: 8px;
