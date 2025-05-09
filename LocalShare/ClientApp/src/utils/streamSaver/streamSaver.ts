@@ -56,7 +56,7 @@ class WritableChunkStream {
     }
     setTimeout(() => {
       this.chunkBroadcast.postMessage({ chunkData: chunk });
-    });
+    }, 100);
     this.test += chunk.byteLength;
     console.log("Writing chunk", this.test);
     if (this.downloadUrl) {
