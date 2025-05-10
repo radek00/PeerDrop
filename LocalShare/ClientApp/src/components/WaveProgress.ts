@@ -81,15 +81,15 @@ export class WaveProgress extends LitElement {
       }
     }
 
-    .checkmark {
+    .checkmark,
+    .error {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0);
+      top: 30%;
+      left: 30%;
+      transform: scale(0);
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background-color: var(--checkmark-bg);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -100,10 +100,10 @@ export class WaveProgress extends LitElement {
         opacity 0.3s ease-in-out;
 
       &.visible {
-        transform: translate(-50%, -50%) scale(1);
+        transform: scale(1);
         opacity: 1;
 
-        .check-path {
+        path {
           stroke-dashoffset: 0;
         }
       }
@@ -118,11 +118,17 @@ export class WaveProgress extends LitElement {
         stroke-linejoin: round;
       }
 
-      .check-path {
-        stroke-dasharray: 30;
-        stroke-dashoffset: 30;
+      path {
+        stroke-dasharray: 60;
+        stroke-dashoffset: 60;
         transition: stroke-dashoffset 0.5s ease-in-out 0.2s;
       }
+    }
+    .checkmark {
+      background-color: var(--checkmark-bg);
+    }
+    .error {
+      background-color: red;
     }
   `;
 
@@ -130,6 +136,7 @@ export class WaveProgress extends LitElement {
   @query(".wave-change") private waveChange!: HTMLDivElement;
   @query(".wave-percentage") private wavePercentage!: HTMLDivElement;
   @query(".checkmark") private checkmark!: HTMLDivElement;
+  @query(".error") private error!: HTMLDivElement;
 
   constructor() {
     super();
@@ -168,6 +175,7 @@ export class WaveProgress extends LitElement {
       this.wavePercentage.style.display = "block";
       this.wavePercentage.classList.remove("hidden");
       this.checkmark.classList.remove("visible");
+      this.error.classList.remove("visible");
       this.waveChange.style.bottom = `${initialPosition}px`;
     } else if (progresTuple[1] === UploadStatus.COMPLETED) {
       this.wavePercentage.classList.add("hidden");
@@ -175,6 +183,15 @@ export class WaveProgress extends LitElement {
       setTimeout(() => {
         if (this.checkmark) {
           this.checkmark.classList.add("visible");
+        }
+      }, 300);
+    } else if (progresTuple[1] === UploadStatus.ERROR) {
+      console.log("Error");
+      this.wavePercentage.classList.add("hidden");
+      this.waveChange.style.display = "none";
+      setTimeout(() => {
+        if (this.error) {
+          this.error.classList.add("visible");
         }
       }, 300);
     }
@@ -187,7 +204,12 @@ export class WaveProgress extends LitElement {
         <div class="wave-percentage"></div>
         <div class="checkmark">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path class="check-path" d="M5 13l4 4L19 7" />
+            <path class="path" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <div class="error">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M6 6 L18 18 M18 6 L6 18"></path>
           </svg>
         </div>
       </div>
