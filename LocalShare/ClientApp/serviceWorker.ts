@@ -34,18 +34,19 @@ self.onmessage = (event: ExtendableMessageEvent) => {
     console.log("Service worker is alive", map);
     return;
   }
-  const { fileTransferMetadata } = event.data as {
+  const { fileTransferMetadata, channelId } = event.data as {
     fileTransferMetadata: FileMetadata;
+    channelId: string;
   };
   const downloadUrl =
-    self.registration.scope + Math.random() + "/" + fileTransferMetadata.name;
+    self.registration.scope + channelId + "/" + fileTransferMetadata.name;
 
   const streamData = {
     fileTransferMetadata,
     stream: new ReadableStream(
       new ReadableChunkStream(
         downloadUrl,
-        new BroadcastChannel(`chunk-${fileTransferMetadata.name}`),
+        new BroadcastChannel(channelId),
         fileTransferMetadata.size
       )
     ),
