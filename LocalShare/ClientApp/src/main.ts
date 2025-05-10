@@ -182,7 +182,8 @@ export class App extends LitElement {
         console.log("Progress", progress);
         if (
           status === UploadStatus.STARTING ||
-          status === UploadStatus.COMPLETED
+          status === UploadStatus.COMPLETED ||
+          status === UploadStatus.ERROR
         ) {
           const requestedClient = this._clientsInProgress.find(
             (client) => client[0] === event.client.id
