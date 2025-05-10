@@ -119,8 +119,8 @@ export class WaveProgress extends LitElement {
       }
 
       path {
-        stroke-dasharray: 60;
-        stroke-dashoffset: 60;
+        stroke-dasharray: 30;
+        stroke-dashoffset: 30;
         transition: stroke-dashoffset 0.5s ease-in-out 0.2s;
       }
     }
