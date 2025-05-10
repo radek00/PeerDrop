@@ -4,9 +4,10 @@ export function createWriteStream(
   fileTransferMetadata: FileMetadata,
   closeCallback?: () => void
 ) {
-  navigator.serviceWorker.controller?.postMessage({ fileTransferMetadata });
+  const channelId = window.crypto.randomUUID();
+  navigator.serviceWorker.controller?.postMessage({ fileTransferMetadata, channelId });
   return new WritableStream(
-    new WritableChunkStream(fileTransferMetadata, closeCallback)
+    new WritableChunkStream(fileTransferMetadata,channelId, closeCallback)
   );
 }
 
@@ -17,11 +18,9 @@ class WritableChunkStream {
   bytesWritten = 0;
   closeCallback?: () => void;
 
-  constructor(fileTransferMetadata: FileMetadata, closeCallback?: () => void) {
+  constructor(fileTransferMetadata: FileMetadata,channelId: string, closeCallback?: () => void) {
     this.closeCallback = closeCallback;
-    this.chunkBroadcast = new BroadcastChannel(
-      `chunk-${fileTransferMetadata.name}`
-    );
+    this.chunkBroadcast = new BroadcastChannel(channelId);
     this.fileTransferMetadata = fileTransferMetadata;
 
     this.chunkBroadcast.onmessage = (event) => {
