@@ -78,5 +78,6 @@ class WritableChunkStream {
   close() {
     console.log("Closing WritableChunkStream", this.bytesWritten);
     this.closeCallback?.();
+    this.chunkBroadcast.close();
   }
 }
