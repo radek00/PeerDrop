@@ -7,10 +7,6 @@ import { TransferStatus } from "../models/TransferStatus";
 import { createWriteStream } from "./streamSaver/streamSaver";
 import { UploadStatus } from "../models/UploadStatus";
 
-const configuration: RTCConfiguration = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-};
-
 export interface WebRtcPeerOptions {
   signalRConnection: signalR.HubConnection;
   file?: File;
@@ -37,7 +33,7 @@ export class WebRtcPeer {
 
   constructor(options: WebRtcPeerOptions) {
     this._signalRConnection = options.signalRConnection;
-    this._peerConnection = new RTCPeerConnection(configuration);
+    this._peerConnection = new RTCPeerConnection();
     this._file = options.file;
     this._closeCallback = options.closeCallback;
     this._progressCallback = options.progressCallback;

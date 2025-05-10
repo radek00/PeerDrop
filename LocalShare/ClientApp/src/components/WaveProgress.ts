@@ -186,7 +186,6 @@ export class WaveProgress extends LitElement {
         }
       }, 300);
     } else if (progresTuple[1] === UploadStatus.ERROR) {
-      console.log("Error");
       this.wavePercentage.classList.add("hidden");
       this.waveChange.style.display = "none";
       setTimeout(() => {
