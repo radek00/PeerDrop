@@ -1,0 +1,15 @@
+{
+  "short_name": "Peerdrop",
+  "name": "Peerdrop",
+  "description": "Peerdrop is a local file sharing application that allows you to share files with other devices on the same network.",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f0f9ff"
+}
