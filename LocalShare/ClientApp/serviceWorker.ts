@@ -38,8 +38,7 @@ self.onmessage = (event: ExtendableMessageEvent) => {
     fileTransferMetadata: FileMetadata;
     channelId: string;
   };
-  const downloadUrl =
-    self.registration.scope + channelId + "/" + fileTransferMetadata.name;
+  const downloadUrl = self.registration.scope + channelId;
 
   const streamData = {
     fileTransferMetadata,
