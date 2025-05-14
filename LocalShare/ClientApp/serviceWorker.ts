@@ -2,31 +2,99 @@
 import { FileMetadata } from "./src/models/FileMetadata";
 declare let self: ServiceWorkerGlobalScope;
 
+const CACHE_NAME = "asset-cache-v1";
+const ASSET_DESTINATIONS: RequestDestination[] = [
+  "script",
+  "style",
+  "document",
+  "image",
+  "font",
+  "manifest",
+];
+
 self.addEventListener("install", () => {
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((cacheName) => cacheName !== CACHE_NAME)
+            .map((cacheName) => {
+              console.log("Service Worker: deleting old cache:", cacheName);
+              return caches.delete(cacheName);
+            })
+        );
+      }),
+    ])
+  );
 });
 
 let map = new Map();
 
 self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
-  console.log("download");
-  const streamData = map.get(event.request.url);
-  if (!streamData) {
-    console.warn("No stream data found for URL:", event.request.url);
+  const { request } = event;
+  if (request.method !== "GET") {
     return;
   }
 
-  const headers = {
-    "Content-Type": "application/octet-stream",
-    "Content-Disposition": `attachment; filename="${streamData.fileTransferMetadata.name}"`,
-    "Content-Length": streamData.fileTransferMetadata.size,
-  };
-  event.respondWith(new Response(streamData.stream, { headers }));
+  const url = new URL(request.url);
+  console.log(url);
+  if (url.origin !== self.location.origin) return;
+
+  if (url.pathname.startsWith("/download")) {
+    const streamData = map.get(request.url);
+    if (streamData) {
+      console.log("Service Worker: Handling stream download for:", request.url);
+      const headers = {
+        "Content-Type": "application/octet-stream",
+        "Content-Disposition": `attachment; filename="${streamData.fileTransferMetadata.name}"`,
+        "Content-Length": streamData.fileTransferMetadata.size.toString(),
+      };
+      event.respondWith(new Response(streamData.stream, { headers }));
+    }
+    return;
+  }
+  if (ASSET_DESTINATIONS.includes(request.destination)) {
+    event.respondWith(
+      caches.match(request).then((cachedResponse) => {
+        if (cachedResponse) {
+          console.log("Service Worker: Serving from cache:", request.url);
+          return cachedResponse;
+        }
+
+        console.log(
+          "Service Worker: Not in cache, fetching from network:",
+          request.url
+        );
+        return fetch(request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.ok) {
+              const responseToCache = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(request, responseToCache);
+              });
+            }
+            return networkResponse;
+          })
+          .catch(() => {
+            console.warn(
+              "Service Worker: Network failed and not in cache:",
+              request.url
+            );
+            return new Response(`Network error and not in cache`, {
+              status: 408,
+              headers: { "Content-Type": "text/plain" },
+            });
+          });
+      })
+    );
+    return;
+  }
 });
 
 self.onmessage = (event: ExtendableMessageEvent) => {
@@ -38,7 +106,7 @@ self.onmessage = (event: ExtendableMessageEvent) => {
     fileTransferMetadata: FileMetadata;
     channelId: string;
   };
-  const downloadUrl = self.registration.scope + channelId;
+  const downloadUrl = self.registration.scope + "download/" + channelId;
 
   const streamData = {
     fileTransferMetadata,
