@@ -1,7 +1,15 @@
 using LocalShare.Hubs;
+using Microsoft.AspNetCore.HttpOverrides; // Add this using directive
 using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Forwarded Headers Options
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
 
 builder.Services.AddControllers();
 
@@ -18,6 +26,8 @@ builder.Services.AddSpaStaticFiles(config =>
 });
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 app.UseSpaStaticFiles(new StaticFileOptions()
 {

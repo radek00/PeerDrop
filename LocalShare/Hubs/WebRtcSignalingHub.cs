@@ -26,12 +26,13 @@ public class WebRtcSignallingHub() : Hub
     {
         var httpContext = Context.GetHttpContext();
         var userAgent = HttpUserAgentParser.Parse(httpContext?.Request.Headers["User-Agent"].ToString() ?? "").MapToUserAgent();
-        var joinedClient = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent, Name = NameGenerator.GenerateName() };
+        var ipAddr = (httpContext?.Connection.RemoteIpAddress) ?? throw new Exception("Could not retrive ip address");
+        var joinedClient = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent, Name = NameGenerator.GenerateName(), IpAddress = ipAddr.ToString() };
         Connections.TryAdd(Context.ConnectionId, joinedClient);
         await Clients.Client(Context.ConnectionId).SendAsync(SignallingEvents.UpdateSelf, new AllClientsConnectionInfo() {Self = joinedClient 
         , OtherClients = Connections
-        .Where(x => x.Key != Context.ConnectionId)
-        .Select(x => new ClientConnectionInfo { Id = x.Key, UserAgent = x.Value.UserAgent, Name = x.Value.Name })
+        .Where(x => x.Key != Context.ConnectionId && x.Value.IpAddress == ipAddr.ToString())
+        .Select(x => new ClientConnectionInfo { Id = x.Key, UserAgent = x.Value.UserAgent, Name = x.Value.Name, IpAddress = x.Value.IpAddress })
         .ToArray()
         });
         await Clients.Others.SendAsync(SignallingEvents.AddConnectedClient, joinedClient);
