@@ -3,15 +3,20 @@ using System.Collections.Concurrent;
 using LocalShare.Models;
 using LocalShare.Models.Messages;
 using LocalShare.Utils.UserAgentParser;
-using Microsoft.AspNetCore.Http;
 
 namespace LocalShare.Hubs;
 
-public class WebRtcSignallingHub() : Hub
+public class WebRtcSignallingHub : Hub
 {
     public static readonly string Url = "/signalling";
     private static readonly ConcurrentDictionary<string, ClientConnectionInfo> Connections = new();
     private static readonly ConcurrentDictionary<string, ConcurrentBag<ClientConnectionInfo>> IpBasedGroups = new();
+    private readonly ILogger<WebRtcSignallingHub> _logger;
+
+    public WebRtcSignallingHub(ILogger<WebRtcSignallingHub> logger)
+    {
+        _logger = logger;
+    }
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
@@ -32,6 +37,7 @@ public class WebRtcSignallingHub() : Hub
         var httpContext = Context.GetHttpContext();
         var userAgent = HttpUserAgentParser.Parse(httpContext?.Request.Headers.UserAgent.ToString() ?? "").MapToUserAgent();
         var ipAddr = (httpContext?.Connection.RemoteIpAddress?.ToString()) ?? throw new InvalidOperationException("Could not retrieve IP address.");
+        _logger.LogInformation("Client connected: {ConnectionId} from IP: {IpAddress}", Context.ConnectionId, ipAddr);
         var joinedClient = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent, Name = NameGenerator.GenerateName() };
         Connections.TryAdd(Context.ConnectionId, joinedClient);
         var ipGroup = IpBasedGroups.GetOrAdd(ipAddr, _ => []);
