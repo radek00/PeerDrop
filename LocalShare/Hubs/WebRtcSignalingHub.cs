@@ -3,18 +3,23 @@ using System.Collections.Concurrent;
 using LocalShare.Models;
 using LocalShare.Models.Messages;
 using LocalShare.Utils.UserAgentParser;
+using Microsoft.AspNetCore.Http;
 
 namespace LocalShare.Hubs;
 
 public class WebRtcSignallingHub() : Hub
 {
     public static readonly string Url = "/signalling";
-    private static readonly ConcurrentDictionary<string, ClientConnectionInfo> Connections = new ConcurrentDictionary<string, ClientConnectionInfo>();
+    private static readonly ConcurrentDictionary<string, ClientConnectionInfo> Connections = new();
+    private static readonly ConcurrentDictionary<string, ConcurrentBag<ClientConnectionInfo>> IpBasedGroups = new();
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         Connections.TryRemove(Context.ConnectionId, out _);
         Clients.Others.SendAsync(SignallingEvents.RemoveDisconnectedClient, Context.ConnectionId);
+        var httpContext = Context.GetHttpContext();
+        string ipAddr = (httpContext?.Connection.RemoteIpAddress?.ToString()) ?? throw new Exception("Could not retrive ip address");
+        IpBasedGroups.TryRemove(ipAddr, out _);
         return base.OnDisconnectedAsync(exception);
     }
     
@@ -26,14 +31,13 @@ public class WebRtcSignallingHub() : Hub
     {
         var httpContext = Context.GetHttpContext();
         var userAgent = HttpUserAgentParser.Parse(httpContext?.Request.Headers["User-Agent"].ToString() ?? "").MapToUserAgent();
-        var ipAddr = (httpContext?.Connection.RemoteIpAddress) ?? throw new Exception("Could not retrive ip address");
-        var joinedClient = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent, Name = NameGenerator.GenerateName(), IpAddress = ipAddr.ToString() };
+        var ipAddr = (httpContext?.Connection.RemoteIpAddress?.ToString()) ?? throw new Exception("Could not retrive ip address");
+        var joinedClient = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent, Name = NameGenerator.GenerateName(), IpAddress = ipAddr };
         Connections.TryAdd(Context.ConnectionId, joinedClient);
+        var ipGroup = IpBasedGroups.GetOrAdd(ipAddr, _ => []);
+        ipGroup.Add(joinedClient);
         await Clients.Client(Context.ConnectionId).SendAsync(SignallingEvents.UpdateSelf, new AllClientsConnectionInfo() {Self = joinedClient 
-        , OtherClients = Connections
-        .Where(x => x.Key != Context.ConnectionId && x.Value.IpAddress == ipAddr.ToString())
-        .Select(x => new ClientConnectionInfo { Id = x.Key, UserAgent = x.Value.UserAgent, Name = x.Value.Name, IpAddress = x.Value.IpAddress })
-        .ToArray()
+        , OtherClients = [.. ipGroup.Where(x => x.Id != Context.ConnectionId)]
         });
         await Clients.Others.SendAsync(SignallingEvents.AddConnectedClient, joinedClient);
     }
