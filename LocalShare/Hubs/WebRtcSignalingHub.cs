@@ -18,7 +18,7 @@ public class WebRtcSignallingHub() : Hub
         Connections.TryRemove(Context.ConnectionId, out _);
         Clients.Others.SendAsync(SignallingEvents.RemoveDisconnectedClient, Context.ConnectionId);
         var httpContext = Context.GetHttpContext();
-        string ipAddr = (httpContext?.Connection.RemoteIpAddress?.ToString()) ?? throw new Exception("Could not retrive ip address");
+        string ipAddr = (httpContext?.Connection.RemoteIpAddress?.ToString()) ?? throw new InvalidOperationException("Could not retrieve IP address.");
         IpBasedGroups.TryRemove(ipAddr, out _);
         return base.OnDisconnectedAsync(exception);
     }
@@ -30,9 +30,9 @@ public class WebRtcSignallingHub() : Hub
     private async Task Join()
     {
         var httpContext = Context.GetHttpContext();
-        var userAgent = HttpUserAgentParser.Parse(httpContext?.Request.Headers["User-Agent"].ToString() ?? "").MapToUserAgent();
-        var ipAddr = (httpContext?.Connection.RemoteIpAddress?.ToString()) ?? throw new Exception("Could not retrive ip address");
-        var joinedClient = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent, Name = NameGenerator.GenerateName(), IpAddress = ipAddr };
+        var userAgent = HttpUserAgentParser.Parse(httpContext?.Request.Headers.UserAgent.ToString() ?? "").MapToUserAgent();
+        var ipAddr = (httpContext?.Connection.RemoteIpAddress?.ToString()) ?? throw new InvalidOperationException("Could not retrieve IP address.");
+        var joinedClient = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent, Name = NameGenerator.GenerateName() };
         Connections.TryAdd(Context.ConnectionId, joinedClient);
         var ipGroup = IpBasedGroups.GetOrAdd(ipAddr, _ => []);
         ipGroup.Add(joinedClient);
