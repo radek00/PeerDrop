@@ -31,8 +31,5 @@ WORKDIR /app
 
 EXPOSE 80
 
-# Copy HTTPS certificate
-COPY aspnetapp.pfx /https/aspnetapp.pfx
-
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "LocalShare.dll"]

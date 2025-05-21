@@ -9,6 +9,8 @@ services:
       - ASPNETCORE_URLS=https://+:443;http://+:80
       - ASPNETCORE_Kestrel__Certificates__Default__Password=crypticpassword
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    volumes:
+      - ./aspnetapp.pfx:/https/aspnetapp.pfx:ro
     ports:
       - 8080:80
       - 8443:443
