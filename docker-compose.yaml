@@ -1,0 +1,14 @@
+version: '3.4'
+services:
+  localShare:
+    image: chupacabra500/local_share:latest
+    build:
+      dockerfile: ./Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=crypticpassword
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    ports:
+      - 8080:80
+      - 8443:443
