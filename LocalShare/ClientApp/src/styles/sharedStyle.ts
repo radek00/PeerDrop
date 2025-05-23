@@ -80,7 +80,11 @@ export const buttons = css`
 export const headerIcon = css`
   svg {
     color: var(--header-icon-color);
-    width: 32px;
-    height: 32px;
+    width: 100%;
+    height: 100%;
+  }
+
+  svg:hover {
+    color: var(--color-primary-500);
   }
 `;

@@ -25,7 +25,7 @@ import { FileMetadata } from "./models/FileMetadata";
 import { buttons, scaleUpAnimation } from "./styles/sharedStyle";
 import { fileSize, registerServiceWorker } from "./utils/utils";
 import "./icons/PeerIcon";
-import "./icons/InfoIcon";
+import "./components/HeaderIcons";
 
 registerServiceWorker();
 @customElement("app-component")
