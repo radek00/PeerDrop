@@ -26,6 +26,7 @@
   --wave-color-1: rgba(59, 189, 245, 0.75);
   --wave-color-2: rgba(127, 211, 250, 0.55);
   --checkmark-bg: rgba(46, 204, 113, 0.9);
+  --header-icon-color: #bbccdf;
 
   --color-primary-50: #f0f9ff;
   --color-primary-100: #e0f2fe;
@@ -53,12 +54,25 @@ body app-component {
 
 header {
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 0.4rem;
-  padding-top: 1rem;
-  padding-left: 1rem;
-  font-weight: lighter;
+  justify-content: space-between;
+
+  > div:first-child {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.4rem;
+    padding-top: 1rem;
+    padding-left: 1rem;
+    font-weight: lighter;
+  }
+  > div:last-child {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.4rem;
+    padding-top: 1rem;
+    padding-right: 1rem;
+  }
 }
 
 header h1 {
@@ -96,5 +110,6 @@ header h1 {
     --wave-color-1: rgba(59, 189, 245, 0.75);
     --wave-color-2: rgba(127, 211, 250, 0.55);
     --checkmark-bg: rgba(46, 204, 113, 0.9);
+    --header-icon-color: #5f7287;
   }
 }

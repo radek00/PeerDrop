@@ -76,3 +76,11 @@ export const buttons = css`
     }
   }
 `;
+
+export const headerIcon = css`
+  svg {
+    color: var(--header-icon-color);
+    width: 32px;
+    height: 32px;
+  }
+`;
