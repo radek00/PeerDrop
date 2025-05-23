@@ -10,7 +10,7 @@ public class WebRtcSignallingHub : Hub
 {
     public static readonly string Url = "/signalling";
     private static readonly ConcurrentDictionary<string, ClientConnectionInfo> Connections = new();
-    private static readonly ConcurrentDictionary<string, ConcurrentBag<ClientConnectionInfo>> IpBasedGroups = new();
+    private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ClientConnectionInfo>> IpBasedGroups = new();
     private readonly ILogger<WebRtcSignallingHub> _logger;
 
     public WebRtcSignallingHub(ILogger<WebRtcSignallingHub> logger)
@@ -24,7 +24,8 @@ public class WebRtcSignallingHub : Hub
         Clients.Others.SendAsync(SignallingEvents.RemoveDisconnectedClient, Context.ConnectionId);
         var httpContext = Context.GetHttpContext();
         string ipAddr = (httpContext?.Connection.RemoteIpAddress?.ToString()) ?? throw new InvalidOperationException("Could not retrieve IP address.");
-        IpBasedGroups.TryRemove(ipAddr, out _);
+        IpBasedGroups.TryGetValue(ipAddr, out var clientList);
+        clientList?.TryRemove(Context.ConnectionId, out _);
         return base.OnDisconnectedAsync(exception);
     }
     
@@ -41,9 +42,9 @@ public class WebRtcSignallingHub : Hub
         var joinedClient = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent, Name = NameGenerator.GenerateName() };
         Connections.TryAdd(Context.ConnectionId, joinedClient);
         var ipGroup = IpBasedGroups.GetOrAdd(ipAddr, _ => []);
-        ipGroup.Add(joinedClient);
+        ipGroup.TryAdd(Context.ConnectionId, joinedClient);
         await Clients.Client(Context.ConnectionId).SendAsync(SignallingEvents.UpdateSelf, new AllClientsConnectionInfo() {Self = joinedClient 
-        , OtherClients = [.. ipGroup.Where(x => x.Id != Context.ConnectionId)]
+        , OtherClients = [.. ipGroup.Where(x => x.Key != Context.ConnectionId).Select(x => new ClientConnectionInfo { Id = x.Key, UserAgent = x.Value.UserAgent, Name = x.Value.Name })]
         });
         await Clients.Others.SendAsync(SignallingEvents.AddConnectedClient, joinedClient);
     }
