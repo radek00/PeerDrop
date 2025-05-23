@@ -21,7 +21,5 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
-# Allow .pfx files to be copied into the image
-!aspnetapp.pfx
 LICENSE
 README.md
