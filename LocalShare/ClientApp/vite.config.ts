@@ -5,6 +5,9 @@ import mkcert from "vite-plugin-mkcert";
 
 const baseConfig: UserConfig = {
   plugins: [mkcert()],
+  define: {
+    APP_VERSION: JSON.stringify(process.env.npm_package_version),
+  },
   envDir: "./env",
   base: "/",
   resolve: {
