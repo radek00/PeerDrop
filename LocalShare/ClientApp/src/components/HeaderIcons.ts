@@ -40,9 +40,6 @@ export class HeaderIcons extends LitElement {
       h1 {
         margin-block: 0;
       }
-      confirm-dialog .message {
-        margin-bottom: 0 !important;
-      }
     `,
   ];
 
@@ -58,7 +55,6 @@ export class HeaderIcons extends LitElement {
         <button>
           <info-icon @click=${this._onInfoClick}></info-icon>
         </button>
-        <!-- <peer-icon></peer-icon> -->
       </div>
       ${this.dialogController.isRevealed
         ? html` <confirm-dialog
