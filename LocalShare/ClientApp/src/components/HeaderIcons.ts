@@ -1,12 +1,15 @@
 import { css, html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 import "../icons/InfoIcon";
-import { headerIcon } from "../styles/sharedStyle";
+import "../icons/GithubIcon"; // Added import for GithubIcon
+import { buttons, headerIcon } from "../styles/sharedStyle";
+import { ConfirmDialogController } from "../utils/controllers/ConfirmDialogController";
 
 @customElement("header-icons")
 export class HeaderIcons extends LitElement {
   static styles = [
     headerIcon,
+    buttons, // Ensure buttons is correctly referenced if it's a separate style module
     css`
       .wrapper {
         display: flex;
@@ -18,21 +21,79 @@ export class HeaderIcons extends LitElement {
 
         button {
           all: unset;
-          width: 60px;
-          height: 60px;
+          width: 40px;
+          height: 40px;
         }
+      }
+      .version-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 0.5rem; /* Add some space above the version */
+      }
+      .version-text {
+        font-size: 0.8em;
+        color: var(--secondary-text-color, #6c757d); /* Muted color */
+        margin-top: 0.25rem; /* Space between icon and text */
+      }
+
+      h1 {
+        margin-block: 0;
+      }
+      confirm-dialog .message {
+        margin-bottom: 0 !important;
       }
     `,
   ];
+
+  dialogController = new ConfirmDialogController(this);
+
+  private _onInfoClick() {
+    this.dialogController.reveal();
+  }
 
   render() {
     return html`
       <div class="wrapper">
         <button>
-          <info-icon></info-icon>
+          <info-icon @click=${this._onInfoClick}></info-icon>
         </button>
         <!-- <peer-icon></peer-icon> -->
       </div>
+      ${this.dialogController.isRevealed
+        ? html` <confirm-dialog
+            @confirm=${() => this.dialogController.confirm()}
+            @cancel=${() => this.dialogController.cancel()}
+            ><div slot="title">
+              <h1>Peerdrop</h1>
+            </div>
+            <div slot="message">
+              <p>
+                Peerdrop is an open source application designed for sharing
+                files between devices on the same network. It uses WebRTC for
+                direct peer-to-peer communication and supports large files.
+              </p>
+              <div class="version-info">
+                <a
+                  href="https://github.com/radek00/LocalShare"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <github-icon></github-icon>
+                </a>
+                <p class="version-text">v0.0.0</p>
+              </div>
+            </div>
+            <div slot="buttons">
+              <button
+                @click=${() => this.dialogController.confirm()}
+                class="btn primary"
+              >
+                <span>Close</span>
+              </button>
+            </div>
+          </confirm-dialog>`
+        : ""}
     `;
   }
 }

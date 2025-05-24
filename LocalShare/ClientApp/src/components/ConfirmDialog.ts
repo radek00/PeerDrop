@@ -52,12 +52,6 @@ export class ConfirmDialog extends LitElement {
         }
       }
 
-      .message {
-        margin-top: 0;
-        margin-bottom: 1.5rem;
-        line-height: 1.6;
-      }
-
       .buttons {
         display: flex;
         justify-content: space-around;
@@ -86,7 +80,7 @@ export class ConfirmDialog extends LitElement {
           <div class="title">
             <slot name="title">Confirm Action</slot>
           </div>
-          <div class="message">
+          <div>
             <slot name="message">Are you sure you want to proceed?</slot>
           </div>
           <slot name="buttons">
