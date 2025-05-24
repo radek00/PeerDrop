@@ -39,8 +39,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            chupacabra500/peer_drop
-            ghcr.io/${{ github.repository_owner }}/peer_drop
+            chupacabra500/PeerDrop
+            ghcr.io/${{ github.repository_owner }}/PeerDrop
           tags: |
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
             type=ref,event=branch

@@ -1,7 +1,7 @@
 version: '3.4'
 services:
   localShare:
-    image: chupacabra500/peer_drop:test
+    image: chupacabra500/PeerDrop:test
     build:
       dockerfile: ./Dockerfile
     environment:
