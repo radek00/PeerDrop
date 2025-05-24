@@ -1,7 +1,7 @@
 import { css, html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 import "../icons/InfoIcon";
-import "../icons/GithubIcon"; // Added import for GithubIcon
+import "../icons/GithubIcon";
 import { buttons, headerIcon } from "../styles/sharedStyle";
 import { ConfirmDialogController } from "../utils/controllers/ConfirmDialogController";
 
@@ -81,7 +81,7 @@ export class HeaderIcons extends LitElement {
                 >
                   <github-icon></github-icon>
                 </a>
-                <p class="version-text">v0.0.0</p>
+                <p class="version-text">v${APP_VERSION}</p>
               </div>
             </div>
             <div slot="buttons">
