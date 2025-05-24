@@ -61,6 +61,11 @@ export class App extends LitElement {
           height: 60px;
         }
       }
+      .message {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+      }
     `,
   ];
 
@@ -243,7 +248,7 @@ export class App extends LitElement {
             ><div slot="title">
               ${this.dialogController.dialogContent?.title}
             </div>
-            <div slot="message">
+            <div slot="message" class="message">
               ${this.dialogController.dialogContent?.message}
             </div>
             ${this.dialogController.dialogType === DialogType.ALERT
