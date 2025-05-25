@@ -1,15 +1,15 @@
 using LocalShare.Hubs;
-using Microsoft.AspNetCore.HttpOverrides; // Add this using directive
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Net.Http.Headers;
 using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Forwarded Headers Options
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders =
         ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(IPAddress.Parse("172.18.0.0"), 16)); 
 });
 
 builder.Services.AddControllers();
