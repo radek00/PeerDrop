@@ -38,7 +38,7 @@ public class WebRtcSignallingHub : Hub
         var httpContext = Context.GetHttpContext();
         var userAgent = HttpUserAgentParser.Parse(httpContext?.Request.Headers.UserAgent.ToString() ?? "").MapToUserAgent();
         var ipAddr = (httpContext?.Connection.RemoteIpAddress?.ToString()) ?? throw new InvalidOperationException("Could not retrieve IP address.");
-        _logger.LogInformation("Client connected: {ConnectionId} from IP: {IpAddress}", Context.ConnectionId, ipAddr);
+        _logger.LogInformation("Client connected: {ConnectionId} from IP: {IpAddress}, X-Forwarded-For header: {Forwarded}", Context.ConnectionId, ipAddr, httpContext.Request.Headers["X-Forwarded-For"]);
         var joinedClient = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent, Name = NameGenerator.GenerateName() };
         Connections.TryAdd(Context.ConnectionId, joinedClient);
         var ipGroup = IpBasedGroups.GetOrAdd(ipAddr, _ => []);
