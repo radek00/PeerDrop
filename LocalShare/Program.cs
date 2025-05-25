@@ -10,7 +10,6 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders =
         ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.KnownProxies.Add(IPAddress.Parse("127.0.10.1"));
 });
 
 builder.Services.AddControllers();
@@ -51,6 +50,11 @@ app.UseSpa(config =>
 });
 
 app.MapHub<WebRtcSignallingHub>($"/signalr{WebRtcSignallingHub.Url}");
+
+app.MapGet("/api/test", (HttpContext context) =>
+{
+    return Results.Ok(context.Connection.RemoteIpAddress?.ToString() ?? "No IP address found");
+});
 
 app.UseHttpsRedirection();
 
