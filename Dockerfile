@@ -24,7 +24,7 @@ WORKDIR "/src/LocalShare"
 RUN dotnet build "LocalShare.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "LocalShare.csproj" -v diag --no-restore -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "LocalShare.csproj" --no-restore -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
