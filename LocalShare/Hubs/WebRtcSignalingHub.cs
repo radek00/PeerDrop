@@ -38,15 +38,24 @@ public class WebRtcSignallingHub : Hub
         var httpContext = Context.GetHttpContext();
         var userAgent = HttpUserAgentParser.Parse(httpContext?.Request.Headers.UserAgent.ToString() ?? "").MapToUserAgent();
         var ipAddr = (httpContext?.Connection.RemoteIpAddress?.ToString()) ?? throw new InvalidOperationException("Could not retrieve IP address.");
-        _logger.LogInformation("Client connected: {ConnectionId} from IP: {IpAddress}, X-Forwarded-For header: {Forwarded}", Context.ConnectionId, ipAddr, httpContext.Request.Headers["X-Forwarded-For"]);
+
+        _logger.LogInformation("Client connected: {ConnectionId} from IP: {IpAddress}", Context.ConnectionId, ipAddr);
         var joinedClient = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent, Name = NameGenerator.GenerateName() };
         Connections.TryAdd(Context.ConnectionId, joinedClient);
+
         var ipGroup = IpBasedGroups.GetOrAdd(ipAddr, _ => []);
         ipGroup.TryAdd(Context.ConnectionId, joinedClient);
+
+        var othersInGroup = ipGroup.Where(x => x.Key != Context.ConnectionId).ToArray();
         await Clients.Client(Context.ConnectionId).SendAsync(SignallingEvents.UpdateSelf, new AllClientsConnectionInfo() {Self = joinedClient 
-        , OtherClients = [.. ipGroup.Where(x => x.Key != Context.ConnectionId).Select(x => new ClientConnectionInfo { Id = x.Key, UserAgent = x.Value.UserAgent, Name = x.Value.Name })]
+        , OtherClients = [.. othersInGroup.Select(x => new ClientConnectionInfo { Id = x.Key, UserAgent = x.Value.UserAgent, Name = x.Value.Name })]
         });
-        await Clients.Others.SendAsync(SignallingEvents.AddConnectedClient, joinedClient);
+
+        var otherClientConnectionIds = othersInGroup.Select(client => client.Key).ToArray();
+        if (otherClientConnectionIds.Length != 0)
+        {
+            await Clients.Clients(otherClientConnectionIds).SendAsync(SignallingEvents.AddConnectedClient, joinedClient);
+        }
     }
 
     public async Task SendOffer(SendOffer payload)
