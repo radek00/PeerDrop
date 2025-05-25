@@ -1,6 +1,7 @@
 using LocalShare.Hubs;
 using Microsoft.AspNetCore.HttpOverrides; // Add this using directive
 using Microsoft.Net.Http.Headers;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders =
         ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownProxies.Add(IPAddress.Parse("127.0.10.1"));
 });
 
 builder.Services.AddControllers();
