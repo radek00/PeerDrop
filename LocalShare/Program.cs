@@ -51,11 +51,6 @@ app.UseSpa(config =>
 
 app.MapHub<WebRtcSignallingHub>($"/signalr{WebRtcSignallingHub.Url}");
 
-app.MapGet("/api/test", (HttpContext context) =>
-{
-    return Results.Ok(context.Connection.RemoteIpAddress?.ToString() ?? "No IP address found");
-});
-
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
