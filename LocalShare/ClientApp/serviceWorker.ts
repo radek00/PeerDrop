@@ -45,7 +45,6 @@ self.addEventListener("fetch", (event) => {
   }
 
   const url = new URL(request.url);
-  console.log(url);
   if (url.origin !== self.location.origin) return;
 
   if (url.pathname.startsWith("/download")) {
