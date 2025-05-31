@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 /// <reference types="vite/client" />
 import { FileMetadata } from "./src/models/FileMetadata";
+import { sanitizeFilename } from "./src/utils/utils";
 declare let self: ServiceWorkerGlobalScope;
 
 const CACHE_NAME = "asset-cache-v1";
@@ -53,14 +54,17 @@ self.addEventListener("fetch", (event) => {
       console.log("Service Worker: Handling stream download for:", request.url);
       const headers = {
         "Content-Type": "application/octet-stream",
-        "Content-Disposition": `attachment; filename="${streamData.fileTransferMetadata.name}"`,
+        "Content-Disposition": `attachment; filename="${sanitizeFilename(streamData.fileTransferMetadata.name)}"`,
         "Content-Length": streamData.fileTransferMetadata.size.toString(),
       };
       event.respondWith(new Response(streamData.stream, { headers }));
     }
     return;
   }
-    if (import.meta.env.PROD && ASSET_DESTINATIONS.includes(request.destination)) {
+  if (
+    import.meta.env.PROD &&
+    ASSET_DESTINATIONS.includes(request.destination)
+  ) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
