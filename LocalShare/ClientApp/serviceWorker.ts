@@ -59,7 +59,7 @@ self.addEventListener("fetch", (event) => {
     }
     return;
   }
-  if (ASSET_DESTINATIONS.includes(request.destination)) {
+    if (ASSET_DESTINATIONS.includes(request.destination)) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
@@ -108,15 +108,16 @@ self.onmessage = (event: ExtendableMessageEvent) => {
   };
   const downloadUrl = self.registration.scope + "download/" + channelId;
 
+  const stream = new ReadableStream(
+    new ReadableChunkStream(
+      downloadUrl,
+      new BroadcastChannel(channelId),
+      fileTransferMetadata.size
+    )
+  );
   const streamData = {
     fileTransferMetadata,
-    stream: new ReadableStream(
-      new ReadableChunkStream(
-        downloadUrl,
-        new BroadcastChannel(channelId),
-        fileTransferMetadata.size
-      )
-    ),
+    stream,
   };
   map.set(downloadUrl, streamData);
 };
@@ -127,6 +128,8 @@ class ReadableChunkStream {
   private _controller: ReadableStreamDefaultController | null = null;
   private _bytesWritten = 0;
   private _expectedBytes = 0;
+  private isReadingStarted = false;
+  private clientHasFinishedSending = false;
   expectedMessages = 0;
   receivedMessages = 0;
 
@@ -138,6 +141,8 @@ class ReadableChunkStream {
     this.downloadUrl = downloadUrl;
     this.chunkBroadcast = chunkBroadcast;
     this._expectedBytes = expectedBytes;
+    this.isReadingStarted = false;
+    this.clientHasFinishedSending = false;
     this.expectedMessages = Math.ceil(expectedBytes / 5120);
     this.chunkBroadcast.postMessage({ download: downloadUrl });
   }
@@ -145,35 +150,51 @@ class ReadableChunkStream {
   start(controller: ReadableStreamDefaultController) {
     this._controller = controller;
     this.chunkBroadcast.onmessage = (event) => {
+      if (!this._controller) return;
+
       if (event.data.chunkData) {
-        this.receivedMessages++;
-        console.log(
-          "expected messages",
-          this.receivedMessages,
-          this.expectedMessages
-        );
         try {
-          controller.enqueue(new Uint8Array(event.data.chunkData));
+          this._controller.enqueue(new Uint8Array(event.data.chunkData));
           this._bytesWritten += event.data.chunkData.byteLength;
+
           this.chunkBroadcast.postMessage({
             confirmedWriteSize: this._bytesWritten,
           });
-          console.log(
-            "service worker bytesWritten",
-            this._bytesWritten,
-            "expectedBytes",
-            this._expectedBytes
-          );
-          if (this._bytesWritten >= this._expectedBytes) {
-            console.log("All bytes written after done signal");
-            this.close();
-          }
+
+          this.attemptClose();
         } catch (error) {
           console.error("Error enqueuing chunk:", error);
           this.close();
         }
+      } else if (event.data.readStarted) {
+        this.isReadingStarted = true;
+        console.log(
+          "Service Worker: 'readStarted' signal received from client."
+        );
+        this.attemptClose();
+      } else if (event.data.clientDoneSending) {
+        this.clientHasFinishedSending = true;
+        console.log(
+          "Service Worker: 'clientDoneSending' signal received from client."
+        );
+        this.attemptClose();
       }
     };
+  }
+
+  private attemptClose() {
+    const allBytesWritten = this._bytesWritten >= this._expectedBytes;
+
+    if (
+      allBytesWritten &&
+      this.isReadingStarted &&
+      this.clientHasFinishedSending
+    ) {
+      console.log(
+        "Service Worker: All conditions met (all bytes received, download started, client finished sending). Closing stream."
+      );
+      this.close();
+    }
   }
 
   cancel() {
@@ -182,24 +203,22 @@ class ReadableChunkStream {
   }
 
   close() {
-    console.log("Closing ReadableChunkStream", this.downloadUrl);
+    if (!this._controller) {
+      return;
+    }
+    console.log("Closing ReadableChunkStream for URL:", this.downloadUrl);
     console.log(
-      "bytesWritten",
-      this._bytesWritten,
-      "expectedBytes",
-      this._expectedBytes
+      `Final state: bytesWritten(${this._bytesWritten}/${this._expectedBytes}), isReadingStarted(${this.isReadingStarted}), clientHasFinishedSending(${this.clientHasFinishedSending})`
     );
 
     try {
-      this.chunkBroadcast.postMessage({ close: true });
+      this._controller.close();
+      this._controller = null;
       this.chunkBroadcast.close();
       map.delete(this.downloadUrl);
-      if (this._controller) {
-        this._controller.close();
-        this._controller = null;
-      }
+      this.downloadUrl = undefined;
     } catch (e) {
-      console.error("Error closing ReadableChunkStream:", e);
+      console.error("Error during ReadableChunkStream cleanup:", e);
     }
   }
 }
