@@ -66,6 +66,19 @@ export class App extends LitElement {
         margin-bottom: 1.5rem;
         line-height: 1.6;
       }
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        color: white;
+        font-size: 2em;
+      }
     `,
   ];
 
@@ -235,33 +248,33 @@ export class App extends LitElement {
 
   render() {
     console.log("Rendering app");
-    return html`<client-wrapper
-        @onClientSelected=${this._clientSelectedListener}
-        .clients=${this._clients}
-        .clientsInProgress=${this._clientsInProgress}
-      ></client-wrapper>
-      <div class="client-main">${this.getCurrentClient()}</div>
-      ${this.dialogController.isRevealed
-        ? html`<confirm-dialog
-            @confirm=${() => this.dialogController.confirm()}
-            @cancel=${() => this.dialogController.cancel()}
-            ><div slot="title">
-              ${this.dialogController.dialogContent?.title}
-            </div>
-            <div slot="message" class="message">
-              ${this.dialogController.dialogContent?.message}
-            </div>
-            ${this.dialogController.dialogType === DialogType.ALERT
-              ? html` <div slot="buttons" class="buttons">
-                  <button
-                    @click=${() => this.dialogController.confirm()}
-                    class="btn primary"
-                  >
-                    <span>OK</span>
-                  </button>
-                </div>`
-              : ""}
-          </confirm-dialog>`
-        : ""}`;
+    return html` ${this._currentClient === null
+      ? html`<div class="loading-overlay">Loading...</div>`
+      : html` <client-wrapper
+            @onClientSelected=${this._clientSelectedListener}
+            .clients=${this._clients}
+            .clientsInProgress=${this._clientsInProgress}
+          ></client-wrapper>
+          <div class="client-main">${this.getCurrentClient()}</div>`}
+    ${this.dialogController.isRevealed
+      ? html`<confirm-dialog
+          @confirm=${() => this.dialogController.confirm()}
+          @cancel=${() => this.dialogController.cancel()}
+          ><div slot="title">${this.dialogController.dialogContent?.title}</div>
+          <div slot="message" class="message">
+            ${this.dialogController.dialogContent?.message}
+          </div>
+          ${this.dialogController.dialogType === DialogType.ALERT
+            ? html` <div slot="buttons" class="buttons">
+                <button
+                  @click=${() => this.dialogController.confirm()}
+                  class="btn primary"
+                >
+                  <span>OK</span>
+                </button>
+              </div>`
+            : ""}
+        </confirm-dialog>`
+      : ""}`;
   }
 }
