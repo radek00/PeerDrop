@@ -62,6 +62,7 @@ export class ClientWrapper extends LitElement {
         color: var(--secondary-text-color);
         font-size: 1.2rem;
         font-style: italic;
+        text-align: center;
         animation:
           scaleUp 0.5s ease-out forwards,
           pulse 2s infinite ease-in-out;
@@ -145,7 +146,7 @@ export class ClientWrapper extends LitElement {
               }
             )
           : html`<div class="no-clients-message">
-              No clients connected. Waiting for connections...
+              Open Peerdrop on other devices to share files.
             </div>`}
       </div>
     `;
