@@ -1,4 +1,5 @@
 /// <reference lib="webworker" />
+/// <reference types="vite/client" />
 import { FileMetadata } from "./src/models/FileMetadata";
 declare let self: ServiceWorkerGlobalScope;
 
@@ -59,7 +60,7 @@ self.addEventListener("fetch", (event) => {
     }
     return;
   }
-    if (ASSET_DESTINATIONS.includes(request.destination)) {
+    if (import.meta.env.PROD && ASSET_DESTINATIONS.includes(request.destination)) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
