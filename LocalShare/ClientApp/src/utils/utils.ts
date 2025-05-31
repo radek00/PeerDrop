@@ -12,7 +12,7 @@ export async function registerServiceWorker() {
     try {
       const registration = await navigator.serviceWorker.register(
         `${import.meta.env.BASE_URL}${import.meta.env.VITE_WORKER}`,
-        { scope: "/" }
+        { scope: "/", type: "module" }
       );
       const devMode = import.meta.env.DEV;
       if (devMode) {
