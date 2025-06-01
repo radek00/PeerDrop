@@ -5,7 +5,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 	<SpaRoot>ClientApp\</SpaRoot>
-	<DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
+<GenerateAssemblyInfo>false</GenerateAssemblyInfo>   
+<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+
+    <UserSecretsId>4a823aa8-a81e-4ded-8339-19fe65d723bc</UserSecretsId>
   </PropertyGroup>
 
 	<Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
@@ -32,8 +35,8 @@
 		</ItemGroup>
 	</Target>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="9.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="9.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="9.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="9.0.5" />
   </ItemGroup>
 
   <ItemGroup>
