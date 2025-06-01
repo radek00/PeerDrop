@@ -5,10 +5,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 	<SpaRoot>ClientApp\</SpaRoot>
-<GenerateAssemblyInfo>false</GenerateAssemblyInfo>   
-<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-
-    <UserSecretsId>4a823aa8-a81e-4ded-8339-19fe65d723bc</UserSecretsId>
   </PropertyGroup>
 
 	<Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
