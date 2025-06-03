@@ -4,7 +4,7 @@ import { FileMetadata } from "./src/models/FileMetadata";
 import { sanitizeFilename } from "./src/utils/utils";
 declare let self: ServiceWorkerGlobalScope;
 
-const CACHE_NAME = "asset-cache-v1";
+const CACHE_NAME = "asset-cache-v1-beta.4";
 const ASSET_DESTINATIONS: RequestDestination[] = [
   "script",
   "style",
