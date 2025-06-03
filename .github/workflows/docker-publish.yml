@@ -75,4 +75,4 @@ jobs:
           script: |
             echo "Executing update_containers.sh for Peerdrop container using docker-compose.yaml"
             cd ~/hosting/scripts || exit 1
-            sudo sh ./update_container.sh peerdrop ../docker-compose.yaml ../../.env
+            sudo bash ./update_container.sh peerdrop ../docker-compose.yml ../../.env
