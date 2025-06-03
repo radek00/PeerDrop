@@ -70,6 +70,7 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_KEY_PASSPHRASE }}
           port: 49153
           script: |
             echo "Executing update_containers.sh for Peerdrop container using docker-compose.yaml"
