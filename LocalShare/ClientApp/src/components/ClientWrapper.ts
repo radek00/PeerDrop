@@ -102,7 +102,6 @@ export class ClientWrapper extends LitElement {
   }
 
   render() {
-    console.log("Rendering with clients:", this.clients);
     return html`
       <div
         class="client-wrapper ${classMap({

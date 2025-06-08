@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 /// <reference types="vite/client" />
 import { FileMetadata } from "./src/models/FileMetadata";
-import { sanitizeFilename } from "./src/utils/utils";
+import { sanitizeFilename, debugLog } from "./src/utils/utils";
 declare let self: ServiceWorkerGlobalScope;
 
 const CACHE_NAME = "asset-cache-v1.0.0";
@@ -27,7 +27,7 @@ self.addEventListener("activate", (event) => {
           cacheNames
             .filter((cacheName) => cacheName !== CACHE_NAME)
             .map((cacheName) => {
-              console.log("Service Worker: deleting old cache:", cacheName);
+              debugLog("Service Worker: deleting old cache:", cacheName);
               return caches.delete(cacheName);
             })
         );
@@ -50,7 +50,7 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname.startsWith("/download")) {
     const streamData = map.get(request.url);
     if (streamData) {
-      console.log("Service Worker: Handling stream download for:", request.url);
+      debugLog("Service Worker: Handling stream download for:", request.url);
       const headers = {
         "Content-Type": "application/octet-stream",
         "Content-Disposition": `attachment; filename="${sanitizeFilename(streamData.fileTransferMetadata.name)}"`,
@@ -67,11 +67,11 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
-          console.log("Service Worker: Serving from cache:", request.url);
+          debugLog("Service Worker: Serving from cache:", request.url);
           return cachedResponse;
         }
 
-        console.log(
+        debugLog(
           "Service Worker: Not in cache, fetching from network:",
           request.url
         );
@@ -103,7 +103,7 @@ self.addEventListener("fetch", (event) => {
 
 self.onmessage = (event: ExtendableMessageEvent) => {
   if (event.data === "ping") {
-    console.log("Service worker is alive", map);
+    debugLog("Service worker is alive", map);
     return;
   }
   const { fileTransferMetadata, channelId } = event.data as {
@@ -172,13 +172,11 @@ class ReadableChunkStream {
         }
       } else if (event.data.readStarted) {
         this.isReadingStarted = true;
-        console.log(
-          "Service Worker: 'readStarted' signal received from client."
-        );
+        debugLog("Service Worker: 'readStarted' signal received from client.");
         this.attemptClose();
       } else if (event.data.clientDoneSending) {
         this.clientHasFinishedSending = true;
-        console.log(
+        debugLog(
           "Service Worker: 'clientDoneSending' signal received from client."
         );
         this.attemptClose();
@@ -194,7 +192,7 @@ class ReadableChunkStream {
       this.isReadingStarted &&
       this.clientHasFinishedSending
     ) {
-      console.log(
+      debugLog(
         "Service Worker: All conditions met (all bytes received, download started, client finished sending). Closing stream."
       );
       this.close();
@@ -210,8 +208,8 @@ class ReadableChunkStream {
     if (!this._controller) {
       return;
     }
-    console.log("Closing ReadableChunkStream for URL:", this.downloadUrl);
-    console.log(
+    debugLog("Closing ReadableChunkStream for URL:", this.downloadUrl);
+    debugLog(
       `Final state: bytesWritten(${this._bytesWritten}/${this._expectedBytes}), isReadingStarted(${this.isReadingStarted}), clientHasFinishedSending(${this.clientHasFinishedSending})`
     );
 

@@ -17,11 +17,11 @@ export async function registerServiceWorker() {
       const devMode = import.meta.env.DEV;
       if (devMode) {
         if (registration.installing) {
-          console.log("Service worker installing");
+          debugLog("Service worker installing");
         } else if (registration.waiting) {
-          console.log("Service worker installed");
+          debugLog("Service worker installed");
         } else if (registration.active) {
-          console.log("Service worker active");
+          debugLog("Service worker active");
         }
       }
       setInterval(() => {
@@ -39,4 +39,10 @@ export function sanitizeFilename(filename: string): string {
     .replace(/_{2,}/g, "_")
     .replace(/^\./, "")
     .replace(/\.$/, "");
+}
+
+export function debugLog(...args: any[]) {
+  if (import.meta.env.DEV) {
+    console.log(...args);
+  }
 }

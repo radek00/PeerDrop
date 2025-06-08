@@ -8,7 +8,7 @@ import {
 export const createSignalRConnection = (path: string) => {
   const options: IHttpConnectionOptions = {
     logMessageContent: true,
-    logger: LogLevel.Information,
+    logger: import.meta.env.DEV ? LogLevel.Information : LogLevel.Error,
     skipNegotiation: true,
     transport: HttpTransportType.WebSockets,
   };

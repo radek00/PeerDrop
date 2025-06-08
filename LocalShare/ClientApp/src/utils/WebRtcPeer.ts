@@ -6,6 +6,7 @@ import { SendOffer } from "../models/messages/SendOffer";
 import { TransferStatus } from "../models/TransferStatus";
 import { createWriteStream } from "./streamSaver/streamSaver";
 import { UploadStatus } from "../models/UploadStatus";
+import { debugLog } from "./utils";
 
 export interface WebRtcPeerOptions {
   signalRConnection: signalR.HubConnection;
@@ -154,7 +155,7 @@ export class WebRtcPeer {
         this._startSendingFileData();
         break;
       case TransferStatus.Completed:
-        console.log("File transfer complete signal received via metadata.");
+        debugLog("File transfer complete signal received via metadata.");
         this.closeConnections();
         break;
       case TransferStatus.Rejected:
@@ -216,10 +217,10 @@ export class WebRtcPeer {
     let offset = 0;
 
     fileReader.addEventListener("error", (error) =>
-      console.error("Error reading file:", error)
+      debugLog("Error reading file:", error)
     );
     fileReader.addEventListener("abort", (event) =>
-      console.log("File reading aborted:", event)
+      debugLog("File reading aborted:", event)
     );
     this._progressCallback?.(0, UploadStatus.STARTING);
     fileReader.addEventListener("load", (e) => {
@@ -228,7 +229,7 @@ export class WebRtcPeer {
         const result = e.target.result as ArrayBuffer;
         this.fileTransferChannel!.send(result);
         offset += result.byteLength;
-        console.log("File data sent", offset, this._file!.size);
+        debugLog("File data sent", offset, this._file!.size);
         const progress = Math.round((offset / this._file!.size) * 100);
         this._progressCallback?.(
           progress,
@@ -242,7 +243,7 @@ export class WebRtcPeer {
           Math.round((offset / this._file!.size) * 100),
           UploadStatus.ERROR
         );
-        console.error(
+        debugLog(
           "Error sending file data. Download might have been cancelled:",
           error
         );
@@ -254,13 +255,13 @@ export class WebRtcPeer {
         this.fileTransferChannel!.bufferedAmount >
         this.fileTransferChannel!.bufferedAmountLowThreshold
       ) {
-        console.warn(
+        debugLog(
           "Buffered amount is high, waiting for it to go low.",
           this.fileTransferChannel!.bufferedAmount,
           this.fileTransferChannel!.bufferedAmountLowThreshold
         );
         this.fileTransferChannel!.onbufferedamountlow = () => {
-          console.log("Buffered amount is low, resuming file transfer.");
+          debugLog("Buffered amount is low, resuming file transfer.");
           this.fileTransferChannel!.onbufferedamountlow = null;
           const slice = this._file!.slice(offset, o + chunkSize);
           fileReader.readAsArrayBuffer(slice);
@@ -284,13 +285,9 @@ export class WebRtcPeer {
 
       await this._writer!.write(new Uint8Array(event.data));
       this._receivedSize += event.data.byteLength;
-      console.log(
-        "Received file data",
-        this._receivedSize,
-        this._fileData?.size
-      );
+      debugLog("Received file data", this._receivedSize, this._fileData?.size);
     } catch (error) {
-      console.error("Error writing file data:", error);
+      debugLog("Error writing file data:", error);
       this._writer?.close();
       this.closeConnections();
     }
@@ -299,7 +296,7 @@ export class WebRtcPeer {
   // --- Cleanup ---
 
   public closeConnections() {
-    console.log("Closing WebRTC Peer Connections and Channels.");
+    debugLog("Closing WebRTC Peer Connections and Channels.");
     this.fileTransferChannel?.close();
     this.metadataChannel?.close();
     this._peerConnection.close();

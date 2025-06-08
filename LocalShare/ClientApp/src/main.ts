@@ -124,7 +124,6 @@ export class App extends LitElement {
     this.connection.on(SignallingEvents.ReceiveAnswer, this.receiveAnswer);
   }
   updateSelf(allClientsInfo: AllClientsConnectionInfo) {
-    console.log("Updating self", allClientsInfo);
     this._currentClient = allClientsInfo.self;
     this._clients = allClientsInfo.otherClients;
     if (this._clients.length > 0 && this.grid.state === AnimationState.IDLE)
@@ -132,14 +131,12 @@ export class App extends LitElement {
   }
 
   addConnectedClient(clientInfo: ClientConnectionInfo) {
-    console.log("Client connected: " + clientInfo);
     this._clients = [...this._clients, clientInfo];
     if (this._clients.length > 0 && this.grid.state === AnimationState.IDLE)
       this.grid.toggleState();
   }
 
   removeDisconnectedClient(connectionId: string) {
-    console.log("Client disconnected: " + connectionId);
     this._clients = this._clients.filter(
       (client) => client.id !== connectionId
     );
@@ -152,7 +149,6 @@ export class App extends LitElement {
       signalRConnection: this.connection,
       closeCallback: () => {
         this._connectionMap.delete(payload.senderConnectionId);
-        console.log("connection map", this._connectionMap);
       },
       confirmationCallback: async (file: FileMetadata) => {
         const result = await this.dialogController.reveal(
@@ -185,7 +181,6 @@ export class App extends LitElement {
   }
 
   private _clientSelectedListener = async (event: ClientSelectedEvent) => {
-    console.log("Client selected", event.client, event.file);
     const peerOptions: WebRtcPeerOptions = {
       signalRConnection: this.connection,
       file: event.file,
@@ -194,11 +189,8 @@ export class App extends LitElement {
         this._clientsInProgress = this._clientsInProgress.filter(
           (client) => client[0] !== event.client.id
         );
-
-        console.log("connection map", this._connectionMap);
       },
       progressCallback: (progress: number, status: UploadStatus) => {
-        console.log("Progress", progress);
         if (
           status === UploadStatus.STARTING ||
           status === UploadStatus.COMPLETED ||
@@ -247,7 +239,6 @@ export class App extends LitElement {
   }
 
   render() {
-    console.log("Rendering app");
     return html` ${this._currentClient === null
       ? html`<div class="loading-overlay">Loading...</div>`
       : html` <client-wrapper
