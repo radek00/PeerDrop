@@ -41,7 +41,6 @@ export class ConfirmDialogController<CancelData, ConfirmData> {
     dialogContent?: DialogContent,
     dialogType?: DialogType
   ): Promise<ConfirmDialogRevealResult<ConfirmData, CancelData>> {
-    console.log("Revealing dialog...");
     this.dialogContent = dialogContent;
     this.dialogType = dialogType;
     this.isRevealed = true;

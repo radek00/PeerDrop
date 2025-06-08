@@ -1,4 +1,5 @@
 import { FileMetadata } from "../../models/FileMetadata";
+import { debugLog } from "../utils";
 
 export function createWriteStream(
   fileTransferMetadata: FileMetadata,
@@ -34,7 +35,7 @@ class WritableChunkStream {
     this.chunkBroadcast.onmessage = (event) => {
       if (event.data.confirmedWriteSize) {
         this.bytesWritten = event.data.confirmedWriteSize;
-        console.log(
+        debugLog(
           "Client: bytesWritten confirmation",
           this.bytesWritten,
           this.fileTransferMetadata.size
@@ -64,7 +65,7 @@ class WritableChunkStream {
     if (this.downloadStarted) return;
 
     this.downloadStarted = true;
-    console.log("Client: Starting download for URL:", downloadUrl);
+    debugLog("Client: Starting download for URL:", downloadUrl);
     const anchorElement = document.createElement("a");
     if (navigator.userAgent.toLowerCase().indexOf("firefox") > -1) {
       anchorElement.setAttribute("download", "");
@@ -73,16 +74,16 @@ class WritableChunkStream {
     anchorElement.click();
     anchorElement.remove();
     this.chunkBroadcast.postMessage({ readStarted: true });
-    console.log("Client: 'readStarted' signal sent to service worker.");
+    debugLog("Client: 'readStarted' signal sent to service worker.");
   }
 
   close() {
-    console.log(
+    debugLog(
       "Client: Closing WritableChunkStream. Bytes written:",
       this.bytesWritten
     );
     this.chunkBroadcast.postMessage({ clientDoneSending: true });
-    console.log("Client: 'clientDoneSending' signal sent to service worker.");
+    debugLog("Client: 'clientDoneSending' signal sent to service worker.");
     this.closeCallback?.();
     this.chunkBroadcast.close();
   }
