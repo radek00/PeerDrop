@@ -17,6 +17,7 @@
     "lit": "^3.3.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.53.0",
     "@types/node": "^22.15.29",
     "prettier": "^3.5.3",
     "typescript": "~5.8.3",
