@@ -53,8 +53,8 @@ test.describe('Peer Discovery and Information', () => {
   });
 
   test('clients should correctly see each other with name, OS, and device information', async () => {
-    await page1.goto('https://localhost:4173/');
-    await page2.goto('https://localhost:4173/');
+    await page1.goto('https://localhost:3000/');
+    await page2.goto('https://localhost:3000/');
 
     const client1Name = await getClientName(page1);
     const client2Name = await getClientName(page2);
@@ -65,4 +65,33 @@ test.describe('Peer Discovery and Information', () => {
 
     await verifyRemoteClientDetails(page1, client2Name, expectedOsClient2, expectedDeviceClient2);
   });
+
+  test('Client is removed from connected clients when disconnected', async () => {
+    const page3 = await context1.newPage();
+    await page1.goto('https://localhost:3000/');
+    await page2.goto('https://localhost:3000/');
+    await page3.goto('https://localhost:3000/');
+
+    [page1, page2, page3].forEach(async (page) => {
+      const clients = page.locator("connected-client");
+      await expect(clients).toHaveCount(2);
+    })
+
+    const pages = [page1, page2, page3];
+
+    for (let i = 0; i < pages.length; i++) {
+      const currentPage = pages[i];
+      const clients = currentPage.locator("connected-client");
+      await expect(clients).toHaveCount(2);
+    }
+    const pageToClose = pages.pop();
+    await pageToClose!.close();
+
+    for (let i = 0; i < pages.length; i++) {
+      const currentPage = pages[i];
+      const clients = currentPage.locator("connected-client");
+      await expect(clients).toHaveCount(1);
+    }
+  }
+)
 });
