@@ -10,7 +10,9 @@
     "build-app": "vite build",
     "build-worker": "vite build --mode worker",
     "prettier-format": "prettier --write .",
-    "prettier-check": "prettier . --check --config ./.prettierrc.json"
+    "prettier-check": "prettier . --check --config ./.prettierrc.json",
+    "test-dev": "playwright test --config=playwright.config.dev.ts",
+    "test-prod": "playwright test --config=playwright.config.prod.ts"
   },
   "dependencies": {
     "@microsoft/signalr": "^8.0.7",

@@ -53,8 +53,8 @@ test.describe('Peer Discovery and Information', () => {
   });
 
   test('clients should correctly see each other with name, OS, and device information', async () => {
-    await page1.goto('https://localhost:3000/');
-    await page2.goto('https://localhost:3000/');
+    await page1.goto('/');
+    await page2.goto('/');
 
     const client1Name = await getClientName(page1);
     const client2Name = await getClientName(page2);
@@ -68,9 +68,9 @@ test.describe('Peer Discovery and Information', () => {
 
   test('Client is removed from connected clients when disconnected', async () => {
     const page3 = await context1.newPage();
-    await page1.goto('https://localhost:3000/');
-    await page2.goto('https://localhost:3000/');
-    await page3.goto('https://localhost:3000/');
+    await page1.goto('/');
+    await page2.goto('/');
+    await page3.goto('/');
 
     [page1, page2, page3].forEach(async (page) => {
       const clients = page.locator("connected-client");
