@@ -27,7 +27,22 @@ jobs:
         run: pnpm exec playwright install --with-deps
 
       - name: Install SSL Certificates
-        run: dotnet dev-certs https --trust --check
+        run: |
+          # Clean any old dev certs (allow to fail if no certs to clean)
+          dotnet dev-certs https --clean || true
+          
+          # Ensure the target directory for the certificate exists
+          mkdir -p $HOME/.aspnet/https
+          
+          # Create and export the certificate. Using a placeholder password.
+          dotnet dev-certs https -ep $HOME/.aspnet/https/aspnetcore-dev.pfx -p P@ssw0rd1
+          
+          # Convert PFX to CRT (public certificate)
+          openssl pkcs12 -in $HOME/.aspnet/https/aspnetcore-dev.pfx -clcerts -nokeys -out $HOME/.aspnet/https/aspnetcore-dev.crt -password pass:P@ssw0rd1
+          
+          # Copy the certificate to the system trust store and update
+          sudo cp $HOME/.aspnet/https/aspnetcore-dev.crt /usr/local/share/ca-certificates/aspnetcore-dev.crt
+          sudo update-ca-certificates
 
       - name: Publish .NET app
         working-directory: ./LocalShare
