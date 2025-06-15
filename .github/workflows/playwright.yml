@@ -31,13 +31,13 @@ jobs:
         run: dotnet publish -c Release -o ./bin/Release
       
       - name: Start .NET app
-        working-directory: ./
+        working-directory: ./LocalShare
         run: dotnet ./bin/Release/LocalShare.dll --urls "https://localhost:5001" &
 
       - name: Run Playwright tests
         working-directory: ./LocalShare/ClientApp
         run: pnpm test-prod
-        
+
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
