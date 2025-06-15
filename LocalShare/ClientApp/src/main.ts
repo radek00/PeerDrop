@@ -231,7 +231,10 @@ export class App extends LitElement {
       return html`
         <signal-icon></signal-icon>
         <span class="client-name"
-          >You're known as <span  data-testid="client-name">${this._currentClient.name}</span></span
+          >You're known as
+          <span data-testid="client-name"
+            >${this._currentClient.name}</span
+          ></span
         >
       `;
     }
