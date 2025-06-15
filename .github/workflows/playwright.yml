@@ -26,8 +26,8 @@ jobs:
         working-directory: ./LocalShare/ClientApp
         run: pnpm exec playwright install --with-deps
 
-      - name: Install SSL Certificates
-        run: dotnet dev-certs https --trust
+      # - name: Install SSL Certificates
+      #   run: dotnet dev-certs https --trust
 
       - name: Publish .NET app
         working-directory: ./LocalShare
@@ -35,7 +35,7 @@ jobs:
       
       - name: Start .NET app
         working-directory: ./LocalShare
-        run: dotnet ./bin/Release/LocalShare.dll --urls "https://localhost:5001" &
+        run: dotnet ./bin/Release/LocalShare.dll --urls "http://localhost:5001" &
 
       - name: Run Playwright tests
         working-directory: ./LocalShare/ClientApp
