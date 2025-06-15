@@ -10,13 +10,16 @@
     "build-app": "vite build",
     "build-worker": "vite build --mode worker",
     "prettier-format": "prettier --write .",
-    "prettier-check": "prettier . --check --config ./.prettierrc.json"
+    "prettier-check": "prettier . --check --config ./.prettierrc.json",
+    "test-dev": "playwright test --config=playwright.config.dev.ts",
+    "test-prod": "playwright test --config=playwright.config.prod.ts"
   },
   "dependencies": {
     "@microsoft/signalr": "^8.0.7",
     "lit": "^3.3.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.53.0",
     "@types/node": "^22.15.29",
     "prettier": "^3.5.3",
     "typescript": "~5.8.3",
