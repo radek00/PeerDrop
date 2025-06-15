@@ -22,12 +22,10 @@ async function verifyRemoteClientDetails(
   remoteClientExpectedOs: string,
   remoteClientExpectedDevice: string
 ) {
-  // Wait for the client-wrapper to contain at least one connected-client, indicating discovery has started
-  const connectedClient = page.locator("connected-client").first();
+  const connectedClient = page.locator("connected-client", { hasText: remoteClientName }).first();
   await expect(connectedClient).toBeVisible();
 
-
-    await expect(connectedClient).toContainText(remoteClientName);
+  await expect(connectedClient).toContainText(remoteClientName);
   await expect(connectedClient).toContainText(remoteClientExpectedOs);
   await expect(connectedClient).toContainText(remoteClientExpectedDevice);
 }
@@ -72,25 +70,27 @@ test.describe('Peer Discovery and Information', () => {
     await page2.goto('/');
     await page3.goto('/');
 
-    [page1, page2, page3].forEach(async (page) => {
-      const clients = page.locator("connected-client");
-      await expect(clients).toHaveCount(2);
-    })
+    const client1Name = await getClientName(page1);
+    const client2Name = await getClientName(page2);
+    const client3Name = await getClientName(page3);
 
-    const pages = [page1, page2, page3];
+    const pages  = [{ page: page1, expectedClients: [client2Name, client3Name] }, { page: page2, expectedClients: [client1Name, client3Name] }, { page: page3, expectedClients: [client1Name, client2Name] }];
 
     for (let i = 0; i < pages.length; i++) {
       const currentPage = pages[i];
-      const clients = currentPage.locator("connected-client");
-      await expect(clients).toHaveCount(2);
+      for (let j = 0; j < currentPage.expectedClients.length; j++) {
+      const clientName = currentPage.expectedClients[j];
+      const clients = currentPage.page.locator("connected-client", { hasText: clientName });
+      await expect(clients).toBeVisible();
+      }
     }
     const pageToClose = pages.pop();
-    await pageToClose!.close();
+    await pageToClose!.page.close();
 
     for (let i = 0; i < pages.length; i++) {
       const currentPage = pages[i];
-      const clients = currentPage.locator("connected-client");
-      await expect(clients).toHaveCount(1);
+      const clients = currentPage.page.locator("connected-client", { hasText: client3Name });
+      await expect(clients).toHaveCount(0);
     }
   }
 )
