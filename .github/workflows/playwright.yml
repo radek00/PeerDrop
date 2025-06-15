@@ -4,6 +4,8 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+env:
+  DOTNET_VERSION: '9.x'
 jobs:
   test:
     timeout-minutes: 60
@@ -14,18 +16,28 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           node-version: lts/*
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
       - name: Install dependencies
         working-directory: ./LocalShare/ClientApp
         run: npm install -g pnpm && pnpm install
+
       - name: Install Playwright Browsers
         working-directory: ./LocalShare/ClientApp
         run: pnpm exec playwright install --with-deps
+
       - name: Publish .NET app
         working-directory: ./LocalShare
         run: dotnet publish -c Release -o ./bin/Release
+      
+      - name: Start .NET app
+        working-directory: ./
+        run: dotnet ./bin/Release/LocalShare.dll --urls "https://localhost:5001" &
+
       - name: Run Playwright tests
         working-directory: ./LocalShare/ClientApp
         run: pnpm test-prod
+        
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
