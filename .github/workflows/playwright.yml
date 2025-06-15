@@ -27,7 +27,7 @@ jobs:
         run: pnpm exec playwright install --with-deps
 
       - name: Install SSL Certificates
-        run: dotnet dev-certs https --trust
+        run: dotnet dev-certs https --trust --check
 
       - name: Publish .NET app
         working-directory: ./LocalShare
