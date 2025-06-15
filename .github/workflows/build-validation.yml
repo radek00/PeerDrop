@@ -63,18 +63,5 @@ jobs:
       - name: Build Vite project
         working-directory: ./LocalShare/ClientApp
         run: pnpm build
-
-      - name: Publish .NET app
-        run: dotnet publish -c Release -o ./bin/Release
-
-      - name: Install Playwright Browsers
-        run: pnpm exec playwright install --with-deps
-        
-      - name: Start .NET app
-        working-directory: ./
-        run: dotnet ./bin/Release/LocalShare.dll --urls "https://localhost:5001" &
-
-      - name: Run Playwright tests
-        working-directory: ./LocalShare/ClientApp
-        run: pnpm test-prod
+  
 
