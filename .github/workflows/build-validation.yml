@@ -65,12 +65,11 @@ jobs:
         run: pnpm build
 
       - name: Publish .NET app
-        run: dotnet publish -c Release -o .\\bin\\Release\\
+        run: dotnet publish -c Release -o ./bin/Release
 
       - name: Start .NET app
         working-directory: ./
-        run: dotnet .\\bin\\Release\\LocalShare.dll --urls "https://localhost:5001" &
-        shell: pwsh
+        run: dotnet ./bin/Release/LocalShare.dll --urls "https://localhost:5001" &
 
       - name: Run Playwright tests
         working-directory: ./LocalShare/ClientApp
