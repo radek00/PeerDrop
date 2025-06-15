@@ -18,6 +18,9 @@ jobs:
           node-version: lts/*
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Install SSL tools
+        run: sudo apt-get update && sudo apt-get install -y openssl ca-certificates
+
       - name: Install dependencies
         working-directory: ./LocalShare/ClientApp
         run: npm install -g pnpm && pnpm install
@@ -26,31 +29,72 @@ jobs:
         working-directory: ./LocalShare/ClientApp
         run: pnpm exec playwright install --with-deps
 
-      - name: Install SSL Certificates
+      - name: Install SSL Certificates and Trust
         run: |
-          # Clean any old dev certs (allow to fail if no certs to clean)
+          CERT_DIR="$HOME/.aspnet/https"
+          CERT_PFX_PATH="$CERT_DIR/aspnetcore-dev.pfx"
+          CERT_CRT_PATH="$CERT_DIR/aspnetcore-dev.crt"
+          # Using a fixed password for the CI certificate
+          CERT_PASSWORD="ci-dev-cert-password"
+
+          echo "Cleaning old ASP.NET Core development certificates..."
           dotnet dev-certs https --clean || true
           
-          # Ensure the target directory for the certificate exists
-          mkdir -p $HOME/.aspnet/https
+          echo "Ensuring certificate directory exists: $CERT_DIR"
+          mkdir -p "$CERT_DIR"
           
-          # Create and export the certificate. Using a placeholder password.
-          dotnet dev-certs https -ep $HOME/.aspnet/https/aspnetcore-dev.pfx -p P@ssw0rd1
+          echo "Creating and exporting ASP.NET Core development certificate to PFX format..."
+          dotnet dev-certs https --export-path "$CERT_PFX_PATH" --password "$CERT_PASSWORD" --format PFX
           
-          # Convert PFX to CRT (public certificate)
-          openssl pkcs12 -in $HOME/.aspnet/https/aspnetcore-dev.pfx -clcerts -nokeys -out $HOME/.aspnet/https/aspnetcore-dev.crt -password pass:P@ssw0rd1
+          echo "Converting PFX certificate to CRT (public certificate) format..."
+          # Corrected openssl command: removed -clcerts, added -nodes to prevent CRT encryption
+          openssl pkcs12 -in "$CERT_PFX_PATH" -nokeys -out "$CERT_CRT_PATH" -password "pass:$CERT_PASSWORD" -nodes
           
-          # Copy the certificate to the system trust store and update
-          sudo cp $HOME/.aspnet/https/aspnetcore-dev.crt /usr/local/share/ca-certificates/aspnetcore-dev.crt
+          echo "Copying CRT to system trust store..."
+          sudo cp "$CERT_CRT_PATH" /usr/local/share/ca-certificates/aspnetcore-dev.crt
+          
+          echo "Updating CA certificates bundle..."
           sudo update-ca-certificates
+          
+          echo "Verifying certificate presence in the main CA bundle..."
+          if grep -q "ASPNET_CORE_HTTPS_DEVELOPMENT_CERTIFICATE" /etc/ssl/certs/ca-certificates.crt; then
+            echo "Certificate successfully added to CA bundle."
+          else
+            echo "ERROR: Certificate NOT found in CA bundle. Trust may fail."
+          fi
+        env:
+          DOTNET_VERSION: ${{ env.DOTNET_VERSION }} # Make env var available to script
+
+      - name: Set Node.js SSL Environment Variable
+        run: |
+          echo "Setting NODE_EXTRA_CA_CERTS to use the updated system CA bundle..."
+          echo "NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt" >> $GITHUB_ENV
 
       - name: Publish .NET app
         working-directory: ./LocalShare
         run: dotnet publish -c Release -o ./bin/Release
       
       - name: Start .NET app
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ASPNETCORE_URLS: "https://localhost:5001"
+          # The following might be needed if Kestrel doesn't find the PFX automatically,
+          # ensure CERT_PFX_PATH and CERT_PASSWORD are set in GITHUB_ENV if used.
+          # ASPNETCORE_Kestrel__Certificates__Default__Path: "$HOME/.aspnet/https/aspnetcore-dev.pfx"
+          # ASPNETCORE_Kestrel__Certificates__Default__Password: "ci-dev-cert-password"
         working-directory: ./LocalShare
-        run: dotnet ./bin/Release/LocalShare.dll --urls "https://localhost:5001" &
+        run: dotnet ./bin/Release/LocalShare.dll &
+
+      - name: Wait for app and verify SSL Trust with curl
+        run: |
+          echo "Waiting for application to start (15 seconds)..."
+          sleep 15
+          echo "Verifying SSL connection to https://localhost:5001 using system CAs..."
+          # This curl command will use the system's trust store.
+          # If this fails, the certificate is not trusted at the system level.
+          curl --verbose https://localhost:5001
+          # If the above fails, you can try forcing curl to use the specific CRT for more diagnostics:
+          # curl --verbose --cacert $HOME/.aspnet/https/aspnetcore-dev.crt https://localhost:5001
 
       - name: Run Playwright tests
         working-directory: ./LocalShare/ClientApp
