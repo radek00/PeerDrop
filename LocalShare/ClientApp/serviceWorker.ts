@@ -104,6 +104,9 @@ self.addEventListener("fetch", (event) => {
 self.onmessage = (event: ExtendableMessageEvent) => {
   if (event.data === "ping") {
     debugLog("Service worker is alive", map);
+    if (event.source) {
+      event.source.postMessage("pong");
+    }
     return;
   }
   const { fileTransferMetadata, channelId } = event.data as {
