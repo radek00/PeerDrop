@@ -15,12 +15,16 @@ jobs:
         with:
           node-version: lts/*
       - name: Install dependencies
+        working-directory: ./LocalShare/ClientApp
         run: npm install -g pnpm && pnpm install
       - name: Install Playwright Browsers
+        working-directory: ./LocalShare/ClientApp
         run: pnpm exec playwright install --with-deps
       - name: Publish .NET app
+        working-directory: ./LocalShare
         run: dotnet publish -c Release -o ./bin/Release
       - name: Run Playwright tests
+        working-directory: ./LocalShare/ClientApp
         run: pnpm test-prod
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
