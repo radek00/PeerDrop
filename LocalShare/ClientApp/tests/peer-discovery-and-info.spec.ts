@@ -1,4 +1,5 @@
 import { test, expect, Page, BrowserContext } from "@playwright/test";
+import { getClientName } from "./utils/utils";
 
 const uaClient1 =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36 TestClient/1.0";
@@ -9,14 +10,6 @@ const uaClient2 =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/99.0 TestClient/2.0";
 const expectedOsClient2 = "Mac OS X";
 const expectedDeviceClient2 = "Firefox";
-
-async function getClientName(page: Page): Promise<string> {
-  const nameElement = page.getByTestId("client-name").first();
-  await expect(nameElement).toBeVisible();
-  const name = await nameElement.innerText();
-  expect(name).not.toBe("");
-  return name;
-}
 
 async function verifyRemoteClientDetails(
   page: Page,
