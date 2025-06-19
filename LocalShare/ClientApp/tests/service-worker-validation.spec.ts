@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Service worker validation", () => {
+test.describe.parallel("Service worker validation", () => {
   test("should register service worker", async ({ page }) => {
     await page.goto("/");
     const serviceWorker = await page.evaluate(() => {
