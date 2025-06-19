@@ -24,31 +24,47 @@ test.describe.parallel("File upload and download", () => {
     await context2.close();
   });
 
-  async function uploadFileToClient(senderPage, receiverName, fileName, fileContent) {
-    const connectedClient = senderPage.locator("connected-client", { hasText: receiverName }).first();
+  async function uploadFileToClient(
+    senderPage,
+    receiverName,
+    fileName,
+    fileContent
+  ) {
+    const connectedClient = senderPage
+      .locator("connected-client", { hasText: receiverName })
+      .first();
     await expect(connectedClient).toBeVisible();
-    const label = connectedClient.locator('xpath=parent::label').first();
+    const label = connectedClient.locator("xpath=parent::label").first();
     const fileInput = label.locator('input[type="file"]').first();
     await fileInput.setInputFiles({
       name: fileName,
       mimeType: "text/plain",
-      buffer: Buffer.from(fileContent)
+      buffer: Buffer.from(fileContent),
     });
   }
 
   test("file is uploaded and received by connected client", async () => {
     const client2Name = await getClientName(page2);
-    await uploadFileToClient(page1, client2Name, "testfile.txt", "Hello from client 1!");
+    await uploadFileToClient(
+      page1,
+      client2Name,
+      "testfile.txt",
+      "Hello from client 1!"
+    );
 
-    const confirmDialog = page2.locator('confirm-dialog', { hasText: 'testfile.txt' }).first().locator('.overlay').first();
+    const confirmDialog = page2
+      .locator("confirm-dialog", { hasText: "testfile.txt" })
+      .first()
+      .locator(".overlay")
+      .first();
     await expect(confirmDialog).toBeVisible();
-    const button = confirmDialog.locator('button', { hasText: 'Yes' }).first();
+    const button = confirmDialog.locator("button", { hasText: "Yes" }).first();
     await expect(button).toBeVisible();
-    const downloadPromise = page2.waitForEvent('download');
+    const downloadPromise = page2.waitForEvent("download");
     await button.click();
     const download = await downloadPromise;
     const filePath = await download.path();
-    readFile(filePath, 'utf8', (err, data) => {
+    readFile(filePath, "utf8", (err, data) => {
       expect(err).toBeNull();
       expect(data).toBe("Hello from client 1!");
     });
@@ -56,14 +72,25 @@ test.describe.parallel("File upload and download", () => {
 
   test("File transfer can be rejected by the recipient", async () => {
     const client2Name = await getClientName(page2);
-    await uploadFileToClient(page1, client2Name, "testfile.txt", "Hello from client 1!");
+    await uploadFileToClient(
+      page1,
+      client2Name,
+      "testfile.txt",
+      "Hello from client 1!"
+    );
 
-    const confirmDialog = page2.locator('confirm-dialog', { hasText: 'testfile.txt' }).first().locator('.overlay').first();
+    const confirmDialog = page2
+      .locator("confirm-dialog", { hasText: "testfile.txt" })
+      .first()
+      .locator(".overlay")
+      .first();
     await expect(confirmDialog).toBeVisible();
-    const button = confirmDialog.locator('button', { hasText: 'No' }).first();
+    const button = confirmDialog.locator("button", { hasText: "No" }).first();
     await expect(button).toBeVisible();
     await button.click();
-    const rejectedDialogOverlay = page1.locator('confirm-dialog', { hasText: 'Transfer rejection' }).locator('.overlay');
-    await rejectedDialogOverlay.waitFor({ state: 'visible', timeout: 15000 });
+    const rejectedDialogOverlay = page1
+      .locator("confirm-dialog", { hasText: "Transfer rejection" })
+      .locator(".overlay");
+    await rejectedDialogOverlay.waitFor({ state: "visible", timeout: 15000 });
   });
 });
