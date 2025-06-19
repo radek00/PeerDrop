@@ -1,4 +1,4 @@
-import { test, expect, Page, BrowserContext } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
 import { getClientName } from "./utils/utils";
 
 const uaClient1 =
@@ -11,27 +11,11 @@ const uaClient2 =
 const expectedOsClient2 = "Mac OS X";
 const expectedDeviceClient2 = "Firefox";
 
-async function verifyRemoteClientDetails(
-  page: Page,
-  remoteClientName: string,
-  remoteClientExpectedOs: string,
-  remoteClientExpectedDevice: string
-) {
-  const connectedClient = page
-    .locator("connected-client", { hasText: remoteClientName })
-    .first();
-  await expect(connectedClient).toBeVisible();
-
-  await expect(connectedClient).toContainText(remoteClientName);
-  await expect(connectedClient).toContainText(remoteClientExpectedOs);
-  await expect(connectedClient).toContainText(remoteClientExpectedDevice);
-}
-
-test.describe("Peer Discovery and Information", () => {
-  let context1: BrowserContext;
-  let page1: Page;
-  let context2: BrowserContext;
-  let page2: Page;
+test.describe.parallel("Peer Discovery and Information", () => {
+  let context1;
+  let page1;
+  let context2;
+  let page2;
 
   test.beforeEach(async ({ browser }) => {
     context1 = await browser.newContext({ userAgent: uaClient1 });
@@ -47,14 +31,27 @@ test.describe("Peer Discovery and Information", () => {
     await context2.close();
   });
 
+  async function verifyRemoteClientDetails(
+    page: Page,
+    remoteClientName: string,
+    remoteClientExpectedOs: string,
+    remoteClientExpectedDevice: string
+  ) {
+    const connectedClient = page
+      .locator("connected-client", { hasText: remoteClientName })
+      .first();
+    await expect(connectedClient).toBeVisible();
+    await expect(connectedClient).toContainText(remoteClientName);
+    await expect(connectedClient).toContainText(remoteClientExpectedOs);
+    await expect(connectedClient).toContainText(remoteClientExpectedDevice);
+  }
+
   test("clients should correctly see each other with name, OS, and device information", async () => {
     await page1.goto("/");
     await page2.goto("/");
 
     const client1Name = await getClientName(page1);
     const client2Name = await getClientName(page2);
-    console.log(`Client 1 Name: ${client1Name}`);
-    console.log(`Client 2 Name: ${client2Name}`);
 
     await verifyRemoteClientDetails(
       page2,
@@ -87,10 +84,8 @@ test.describe("Peer Discovery and Information", () => {
       { page: page3, expectedClients: [client1Name, client2Name] },
     ];
 
-    for (let i = 0; i < pages.length; i++) {
-      const currentPage = pages[i];
-      for (let j = 0; j < currentPage.expectedClients.length; j++) {
-        const clientName = currentPage.expectedClients[j];
+    for (const currentPage of pages) {
+      for (const clientName of currentPage.expectedClients) {
         const clients = currentPage.page.locator("connected-client", {
           hasText: clientName,
         });
@@ -98,10 +93,11 @@ test.describe("Peer Discovery and Information", () => {
       }
     }
     const pageToClose = pages.pop();
-    await pageToClose!.page.close();
+    if (pageToClose) {
+      await pageToClose.page.close();
+    }
 
-    for (let i = 0; i < pages.length; i++) {
-      const currentPage = pages[i];
+    for (const currentPage of pages) {
       const clients = currentPage.page.locator("connected-client", {
         hasText: client3Name,
       });
