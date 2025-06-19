@@ -1,9 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { readFile } from "fs";
+import { getClientName } from "./utils/utils";
 
 test.describe("File upload and download", () => {
 
-  test("file is uploaded and received client", async ({ browser }) => {
+  test("file is uploaded and received by connected client", async ({ browser }) => {
     const context1 = await browser.newContext();
     const context2 = await browser.newContext();
     const page1 = await context1.newPage();
@@ -12,13 +13,6 @@ test.describe("File upload and download", () => {
     await page1.goto("/");
     await page2.goto("/");
 
-    const getClientName = async (page) => {
-      const nameElement = page.getByTestId("client-name").first();
-      await expect(nameElement).toBeVisible();
-      const name = await nameElement.innerText();
-      expect(name).not.toBe("");
-      return name;
-    };
     const client2Name = await getClientName(page2);
 
     const connectedClient = page1.locator("connected-client", { hasText: client2Name }).first();
@@ -47,7 +41,6 @@ test.describe("File upload and download", () => {
         expect(err).toBeNull();
         expect(data).toBe("Hello from client 1!");
     })
-    console.log(`File downloaded to: ${filePath}`);
 
     await page1.close();
     await context1.close();
