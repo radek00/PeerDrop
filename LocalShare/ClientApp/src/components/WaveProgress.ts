@@ -201,12 +201,12 @@ export class WaveProgress extends LitElement {
       <div class="wave-container">
         <div class="wave-change"></div>
         <div class="wave-percentage"></div>
-        <div class="checkmark">
+        <div class="checkmark" data-testid="upload-success">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path class="path" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <div class="error">
+        <div class="error" data-testid="upload-error">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path d="M6 6 L18 18 M18 6 L6 18"></path>
           </svg>

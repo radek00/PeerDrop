@@ -63,4 +63,5 @@ jobs:
       - name: Build Vite project
         working-directory: ./LocalShare/ClientApp
         run: pnpm build
+  
 
