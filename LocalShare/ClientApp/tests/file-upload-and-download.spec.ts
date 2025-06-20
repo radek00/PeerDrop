@@ -1,12 +1,12 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Page, BrowserContext } from "@playwright/test";
 import { readFile } from "fs";
 import { getClientName } from "./utils/utils";
 
 test.describe.parallel("File upload and download", () => {
-  let context1;
-  let context2;
-  let page1;
-  let page2;
+  let context1: BrowserContext;
+  let context2: BrowserContext;
+  let page1: Page;
+  let page2: Page;
 
   test.beforeEach(async ({ browser }) => {
     context1 = await browser.newContext();
@@ -25,10 +25,10 @@ test.describe.parallel("File upload and download", () => {
   });
 
   async function uploadFileToClient(
-    senderPage,
-    receiverName,
-    fileName,
-    fileContent
+    senderPage: Page,
+    receiverName: string,
+    fileName: string,
+    fileContent: string
   ) {
     const connectedClient = senderPage
       .locator("connected-client", { hasText: receiverName })
@@ -68,6 +68,14 @@ test.describe.parallel("File upload and download", () => {
       expect(err).toBeNull();
       expect(data).toBe("Hello from client 1!");
     });
+    await page1.waitForTimeout(2000);
+    const client = page1.locator("connected-client", { hasText: client2Name });
+    await expect(client).toBeVisible();
+
+    const waveProgress = client.locator("wave-progress");
+    const checkmark = waveProgress.getByTestId("upload-success");
+    await checkmark.waitFor({ state: "visible", timeout: 15000 });
+    await expect(checkmark).toBeVisible();
   });
 
   test("File transfer can be rejected by the recipient", async () => {
@@ -92,5 +100,6 @@ test.describe.parallel("File upload and download", () => {
       .locator("confirm-dialog", { hasText: "Transfer rejection" })
       .locator(".overlay");
     await rejectedDialogOverlay.waitFor({ state: "visible", timeout: 15000 });
+    await expect(rejectedDialogOverlay).toBeVisible();
   });
 });
