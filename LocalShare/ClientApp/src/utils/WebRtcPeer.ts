@@ -163,10 +163,13 @@ export class WebRtcPeer {
         this.closeConnections();
         break;
     }
-  }
-
-  private async _handlePendingTransfer() {
+  }  private async _handlePendingTransfer() {
     if (await this._confirmationCallback(this._fileData!)) {
+        const stream = createWriteStream(this._fileData!, () => {
+        this.closeConnections();
+      });
+      await stream.readyPromise;
+      this._writer = stream.stream.getWriter();
       this._updateMetadataStatus(TransferStatus.InProgress);
     } else {
       this._updateMetadataStatus(TransferStatus.Rejected);
@@ -272,17 +275,8 @@ export class WebRtcPeer {
       fileReader.readAsArrayBuffer(slice);
     };
     readSlice(0);
-  }
-
-  private async onFileDataReceived(event: MessageEvent) {
+  }  private async onFileDataReceived(event: MessageEvent) {
     try {
-      if (this._receivedSize === 0) {
-        const fileStream = createWriteStream(this._fileData!, () => {
-          this.closeConnections();
-        });
-        this._writer = fileStream.getWriter();
-      }
-
       await this._writer!.write(new Uint8Array(event.data));
       this._receivedSize += event.data.byteLength;
       debugLog("Received file data", this._receivedSize, this._fileData?.size);
