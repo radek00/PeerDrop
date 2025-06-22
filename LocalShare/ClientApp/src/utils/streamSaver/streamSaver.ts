@@ -4,15 +4,17 @@ import { debugLog } from "../utils";
 export function createWriteStream(
   fileTransferMetadata: FileMetadata,
   closeCallback?: () => void
-) {
+): { stream: WritableStream, readyPromise: Promise<void> } {
   const channelId = window.crypto.randomUUID();
   navigator.serviceWorker.controller?.postMessage({
     fileTransferMetadata,
     channelId,
   });
-  return new WritableStream(
-    new WritableChunkStream(fileTransferMetadata, channelId, closeCallback)
-  );
+  const chunkStream = new WritableChunkStream(fileTransferMetadata, channelId, closeCallback);
+  return {
+    stream: new WritableStream(chunkStream),
+    readyPromise: chunkStream.readyPromise
+  };
 }
 
 class WritableChunkStream {
@@ -22,7 +24,8 @@ class WritableChunkStream {
   bytesWritten = 0;
   downloadStarted = false;
   closeCallback?: () => void;
-
+  public readyPromise: Promise<void>;
+  private _readyResolve!: () => void;
   constructor(
     fileTransferMetadata: FileMetadata,
     channelId: string,
@@ -32,6 +35,10 @@ class WritableChunkStream {
     this.chunkBroadcast = new BroadcastChannel(channelId);
     this.fileTransferMetadata = fileTransferMetadata;
 
+    this.readyPromise = new Promise<void>((resolve) => {
+      this._readyResolve = resolve;
+    });
+
     this.chunkBroadcast.onmessage = (event) => {
       if (event.data.confirmedWriteSize) {
         this.bytesWritten = event.data.confirmedWriteSize;
@@ -40,25 +47,25 @@ class WritableChunkStream {
           this.bytesWritten,
           this.fileTransferMetadata.size
         );
+        if (!this.downloadStarted) {
+          this.startDownload(this.downloadUrl!);
+        }
         if (this.bytesWritten >= this.fileTransferMetadata.size) {
           this.close();
         }
       } else if (event.data.download) {
         this.downloadUrl = event.data.download;
-        if (!this.downloadStarted && this.downloadUrl) {
-          this.startDownload(this.downloadUrl);
-        }
+        this._readyResolve();
       }
     };
-  }
 
+  }
   write(chunk: Uint8Array) {
     if (!(chunk instanceof Uint8Array)) {
       throw new TypeError("Can only write Uint8Arrays");
     }
-    setTimeout(() => {
-      this.chunkBroadcast.postMessage({ chunkData: chunk });
-    }, 100);
+    
+    this.chunkBroadcast.postMessage({ chunkData: chunk });
   }
 
   startDownload(downloadUrl: string) {

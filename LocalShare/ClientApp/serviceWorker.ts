@@ -139,7 +139,6 @@ class ReadableChunkStream {
   private clientHasFinishedSending = false;
   expectedMessages = 0;
   receivedMessages = 0;
-
   constructor(
     downloadUrl: string,
     chunkBroadcast: BroadcastChannel,
@@ -151,7 +150,9 @@ class ReadableChunkStream {
     this.isReadingStarted = false;
     this.clientHasFinishedSending = false;
     this.expectedMessages = Math.ceil(expectedBytes / 5120);
-    this.chunkBroadcast.postMessage({ download: downloadUrl });
+    this.chunkBroadcast.postMessage({ 
+      download: downloadUrl,
+    });
   }
 
   start(controller: ReadableStreamDefaultController) {
