@@ -150,7 +150,7 @@ class ReadableChunkStream {
     this.isReadingStarted = false;
     this.clientHasFinishedSending = false;
     this.expectedMessages = Math.ceil(expectedBytes / 5120);
-    this.chunkBroadcast.postMessage({ 
+    this.chunkBroadcast.postMessage({
       download: downloadUrl,
     });
   }
