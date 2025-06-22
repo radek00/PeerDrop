@@ -4,16 +4,20 @@ import { debugLog } from "../utils";
 export function createWriteStream(
   fileTransferMetadata: FileMetadata,
   closeCallback?: () => void
-): { stream: WritableStream, readyPromise: Promise<void> } {
+): { stream: WritableStream; readyPromise: Promise<void> } {
   const channelId = window.crypto.randomUUID();
   navigator.serviceWorker.controller?.postMessage({
     fileTransferMetadata,
     channelId,
   });
-  const chunkStream = new WritableChunkStream(fileTransferMetadata, channelId, closeCallback);
+  const chunkStream = new WritableChunkStream(
+    fileTransferMetadata,
+    channelId,
+    closeCallback
+  );
   return {
     stream: new WritableStream(chunkStream),
-    readyPromise: chunkStream.readyPromise
+    readyPromise: chunkStream.readyPromise,
   };
 }
 
@@ -58,13 +62,12 @@ class WritableChunkStream {
         this._readyResolve();
       }
     };
-
   }
   write(chunk: Uint8Array) {
     if (!(chunk instanceof Uint8Array)) {
       throw new TypeError("Can only write Uint8Arrays");
     }
-    
+
     this.chunkBroadcast.postMessage({ chunkData: chunk });
   }
 
