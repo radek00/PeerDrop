@@ -76,13 +76,7 @@ class WritableChunkStream {
 
     this.downloadStarted = true;
     debugLog("Client: Starting download for URL:", downloadUrl);
-    const anchorElement = document.createElement("a");
-    if (navigator.userAgent.toLowerCase().indexOf("firefox") > -1) {
-      anchorElement.setAttribute("download", "");
-    }
-    anchorElement.href = downloadUrl;
-    anchorElement.click();
-    anchorElement.remove();
+    window.location.href = downloadUrl;
     this.chunkBroadcast.postMessage({ readStarted: true });
     debugLog("Client: 'readStarted' signal sent to service worker.");
   }
