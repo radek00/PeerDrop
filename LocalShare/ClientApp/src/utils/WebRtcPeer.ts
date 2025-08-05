@@ -7,9 +7,10 @@ import { TransferStatus } from "../models/TransferStatus";
 import { createWriteStream } from "./streamSaver/streamSaver";
 import { UploadStatus } from "../models/UploadStatus";
 import { debugLog } from "./utils";
+import { HubConnection } from "@microsoft/signalr";
 
 export interface WebRtcPeerOptions {
-  signalRConnection: signalR.HubConnection;
+  signalRConnection: HubConnection;
   file?: File;
   closeCallback?: () => void;
   progressCallback?: (progress: number, status: UploadStatus) => void;
@@ -19,7 +20,7 @@ export interface WebRtcPeerOptions {
 
 export class WebRtcPeer {
   private _peerConnection: RTCPeerConnection;
-  private _signalRConnection: signalR.HubConnection;
+  private _signalRConnection: HubConnection;
   public metadataChannel?: RTCDataChannel;
   public fileTransferChannel?: RTCDataChannel;
   private _file?: File;
