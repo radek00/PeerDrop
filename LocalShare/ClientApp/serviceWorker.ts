@@ -218,11 +218,11 @@ class ReadableChunkStream {
     );
 
     try {
+      map.delete(this.downloadUrl); 
+      this.chunkBroadcast.close();
+      this.downloadUrl = undefined;
       this._controller.close();
       this._controller = null;
-      this.chunkBroadcast.close();
-      map.delete(this.downloadUrl);
-      this.downloadUrl = undefined;
     } catch (e) {
       console.error("Error during ReadableChunkStream cleanup:", e);
     }

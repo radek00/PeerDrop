@@ -6,15 +6,15 @@ export function createWriteStream(
   closeCallback?: () => void
 ): { stream: WritableStream; readyPromise: Promise<void> } {
   const channelId = window.crypto.randomUUID();
-  navigator.serviceWorker.controller?.postMessage({
-    fileTransferMetadata,
-    channelId,
-  });
   const chunkStream = new WritableChunkStream(
     fileTransferMetadata,
     channelId,
     closeCallback
   );
+    navigator.serviceWorker.controller?.postMessage({
+    fileTransferMetadata,
+    channelId,
+  });
   return {
     stream: new WritableStream(chunkStream),
     readyPromise: chunkStream.readyPromise,
