@@ -64,16 +64,16 @@ For local development and testing with HTTPS, you can generate a self-signed cer
     **Note:** Remember to update the `ASPNETCORE_Kestrel__Certificates__Default__Password` in your `docker-compose.yaml` or environment configuration to match the password you chose.
 
 ## Docker setup with Traefik and DNS challenge
+
+**Important**: If you want to access Peerdrop from devices on the same network as it's being hosted, you have to remove forwarded headers. If local ip addresses get forwarded in X-Forwarded-For the grouping logic will not work.
 ```yaml
+version: '3.4'
 networks:
   proxy:
-  secureSend:
-volumes:
-  secureSend:
 services:
-  #reverse proxy
+#reverse proxy
   traefik:
-    image: "traefik:v2.4"
+    image: "traefik:v3.4.1"
     container_name: "traefik"
     restart: unless-stopped
     command:
@@ -106,25 +106,32 @@ services:
       - "CF_API_KEY=${API_KEY}"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.traefik.rule=Host(`proxy.${BASE_DOMAIN}`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls.certresolver=myresolver"
       - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.middlewares=traefik-auth"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$apr1$$OpDQBwva$$v5GO33k8/xEoOwNBTZbgh/"
       - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.compression.compress=true"
+      - "traefik.http.middlewares.strip-local-headers.headers.customrequestheaders.X-Forwarded-For="
+      - "traefik.http.middlewares.strip-local-headers.headers.customrequestheaders.X-Real-IP="
+      - "traefik.http.middlewares.strip-local-headers.headers.customrequestheaders.X-Forwarded-Proto="
     networks:
       proxy:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./letsencrypt:/letsencrypt"
   peerdrop:
-    image: chupacabra500/PeerDrop:latest
+    image: chupacabra500/peerdrop:latest
     labels:
       - traefik.enable=true
-      - traefik.http.services.securesned.loadbalancer.server.port=80
-      - traefik.http.routers.securesend.rule=Host(`peerdrop.${BASE_DOMAIN}`)
-      - traefik.http.routers.securesend.tls.certresolver=myresolver
-      - traefik.http.routers.securesend.entrypoints=websecure
-      - traefik.docker.network=proxy
+      - traefik.http.services.peerdrop.loadbalancer.server.port=80
+      - traefik.http.routers.peerdrop.rule=Host(`peerdrop.${BASE_DOMAIN}`)
+      - traefik.http.routers.peerdrop.tls.certresolver=myresolver
+      - traefik.http.routers.peerdrop.entrypoints=websecure
+      - traefik.http.routers.peerdrop.middlewares=compression
+      - traefik.http.routers.whoami.middlewares=strip-local-headers
     networks:
-      - proxy                    
+      - proxy              
 ```
