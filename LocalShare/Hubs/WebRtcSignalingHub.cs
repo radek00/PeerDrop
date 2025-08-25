@@ -24,6 +24,7 @@ public class WebRtcSignallingHub : Hub
         Clients.Others.SendAsync(SignallingEvents.RemoveDisconnectedClient, Context.ConnectionId);
         var httpContext = Context.GetHttpContext();
         string ipAddr = (httpContext?.Connection.RemoteIpAddress?.ToString()) ?? throw new InvalidOperationException("Could not retrieve IP address.");
+        _logger.LogInformation("Client with id {ConnectionId} and IP: {IpAddress} disconnected", Context.ConnectionId, ipAddr);
         IpBasedGroups.TryGetValue(ipAddr, out var clientList);
         clientList?.TryRemove(Context.ConnectionId, out _);
         return base.OnDisconnectedAsync(exception);
