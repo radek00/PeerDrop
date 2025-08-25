@@ -76,9 +76,26 @@ class WritableChunkStream {
 
     this.downloadStarted = true;
     debugLog("Client: Starting download for URL:", downloadUrl);
-    window.location.href = downloadUrl;
+    this.createDownloadIframe(downloadUrl);
     this.chunkBroadcast.postMessage({ readStarted: true });
     debugLog("Client: 'readStarted' signal sent to service worker.");
+  }
+
+  private createDownloadIframe(src: string): HTMLIFrameElement {
+    const iframe = document.createElement('iframe');
+    iframe.hidden = true;
+    iframe.src = src;
+    iframe.style.display = 'none';
+    iframe.setAttribute('name', 'download-iframe');
+    document.body.appendChild(iframe);
+    
+    setTimeout(() => {
+      if (iframe.parentNode) {
+        iframe.parentNode.removeChild(iframe);
+      }
+    }, 5000);
+    
+    return iframe;
   }
 
   close() {
