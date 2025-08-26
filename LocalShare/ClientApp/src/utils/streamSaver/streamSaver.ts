@@ -30,6 +30,7 @@ class WritableChunkStream {
   closeCallback?: () => void;
   public readyPromise: Promise<void>;
   private _readyResolve!: () => void;
+  private _iframe: HTMLIFrameElement | null = null;
   constructor(
     fileTransferMetadata: FileMetadata,
     channelId: string,
@@ -56,6 +57,7 @@ class WritableChunkStream {
         }
         if (this.bytesWritten >= this.fileTransferMetadata.size) {
           this.close();
+          document.body.removeChild(this._iframe!);
         }
       } else if (event.data.download) {
         this.downloadUrl = event.data.download;
@@ -76,7 +78,7 @@ class WritableChunkStream {
 
     this.downloadStarted = true;
     debugLog("Client: Starting download for URL:", downloadUrl);
-    this.createDownloadIframe(downloadUrl);
+    this._iframe = this.createDownloadIframe(downloadUrl);
     this.chunkBroadcast.postMessage({ readStarted: true });
     debugLog("Client: 'readStarted' signal sent to service worker.");
   }
@@ -88,13 +90,6 @@ class WritableChunkStream {
     iframe.style.display = 'none';
     iframe.setAttribute('name', 'download-iframe');
     document.body.appendChild(iframe);
-    
-    setTimeout(() => {
-      if (iframe.parentNode) {
-        iframe.parentNode.removeChild(iframe);
-      }
-    }, 5000);
-    
     return iframe;
   }
 
