@@ -11,7 +11,7 @@ export function createWriteStream(
     channelId,
     closeCallback
   );
-    navigator.serviceWorker.controller?.postMessage({
+  navigator.serviceWorker.controller?.postMessage({
     fileTransferMetadata,
     channelId,
   });
@@ -83,11 +83,11 @@ class WritableChunkStream {
   }
 
   private createDownloadIframe(src: string): HTMLIFrameElement {
-    const iframe = document.createElement('iframe');
+    const iframe = document.createElement("iframe");
     iframe.hidden = true;
     iframe.src = src;
-    iframe.style.display = 'none';
-    iframe.setAttribute('name', 'download-iframe');
+    iframe.style.display = "none";
+    iframe.setAttribute("name", "download-iframe");
     document.body.appendChild(iframe);
     return iframe;
   }

@@ -218,7 +218,7 @@ class ReadableChunkStream {
     );
 
     try {
-      map.delete(this.downloadUrl); 
+      map.delete(this.downloadUrl);
       this.chunkBroadcast.close();
       this.downloadUrl = undefined;
       this._controller.close();
