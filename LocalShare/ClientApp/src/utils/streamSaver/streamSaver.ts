@@ -57,7 +57,6 @@ class WritableChunkStream {
         }
         if (this.bytesWritten >= this.fileTransferMetadata.size) {
           this.close();
-          document.body.removeChild(this._iframe!);
         }
       } else if (event.data.download) {
         this.downloadUrl = event.data.download;
@@ -99,6 +98,10 @@ class WritableChunkStream {
       this.bytesWritten
     );
     this.chunkBroadcast.postMessage({ clientDoneSending: true });
+    if (this._iframe) {
+      document.body.removeChild(this._iframe);
+      this._iframe = null;
+    }
     debugLog("Client: 'clientDoneSending' signal sent to service worker.");
     this.closeCallback?.();
     this.chunkBroadcast.close();
