@@ -89,6 +89,9 @@ class WritableChunkStream {
     iframe.style.display = "none";
     iframe.setAttribute("name", "download-iframe");
     document.body.appendChild(iframe);
+    iframe.onload = () => {
+      this.chunkBroadcast.postMessage({ readStarted: true });
+    };
     return iframe;
   }
 
@@ -99,8 +102,11 @@ class WritableChunkStream {
     );
     this.chunkBroadcast.postMessage({ clientDoneSending: true });
     if (this._iframe) {
-      document.body.removeChild(this._iframe);
-      this._iframe = null;
+      setTimeout(() => {
+
+        document.body.removeChild(this._iframe!);
+        this._iframe = null;
+      }, 5000);
     }
     debugLog("Client: 'clientDoneSending' signal sent to service worker.");
     this.closeCallback?.();
