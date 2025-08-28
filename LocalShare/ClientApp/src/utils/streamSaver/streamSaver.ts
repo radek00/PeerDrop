@@ -96,20 +96,19 @@ class WritableChunkStream {
   }
 
   close() {
-    debugLog(
-      "Client: Closing WritableChunkStream. Bytes written:",
-      this.bytesWritten
-    );
-    this.chunkBroadcast.postMessage({ clientDoneSending: true });
-    if (this._iframe) {
-      setTimeout(() => {
-
+    setTimeout(() => {
+      debugLog(
+        "Client: Closing WritableChunkStream. Bytes written:",
+        this.bytesWritten
+      );
+      this.chunkBroadcast.postMessage({ clientDoneSending: true });
+      if (this._iframe) {
         document.body.removeChild(this._iframe!);
         this._iframe = null;
-      }, 5000);
-    }
-    debugLog("Client: 'clientDoneSending' signal sent to service worker.");
-    this.closeCallback?.();
-    this.chunkBroadcast.close();
+      }
+      debugLog("Client: 'clientDoneSending' signal sent to service worker.");
+      this.closeCallback?.();
+      this.chunkBroadcast.close();
+    }, 1000);
   }
 }
