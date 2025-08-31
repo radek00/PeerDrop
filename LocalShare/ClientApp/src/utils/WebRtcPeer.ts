@@ -29,7 +29,10 @@ export class WebRtcPeer {
   private _receivedSize = 0;
   private _writer?: WritableStreamDefaultWriter<Uint8Array>;
   private _closeCallback?: () => void;
-  private _progressCallback?: (progress: number, status: TransferStatus) => void;
+  private _progressCallback?: (
+    progress: number,
+    status: TransferStatus
+  ) => void;
   private _targetClientId?: string;
   private _confirmationCallback: (file: FileMetadata) => Promise<boolean>;
   private _rejectionCallback?: () => void;
@@ -249,10 +252,7 @@ export class WebRtcPeer {
         offset += result.byteLength;
         debugLog("File data sent", offset, this._file!.size);
         const progress = Math.round((offset / this._file!.size) * 100);
-        this._progressCallback?.(
-          progress,
-          TransferStatus.InProgress
-        );
+        this._progressCallback?.(progress, TransferStatus.InProgress);
         if (offset < this._file!.size) {
           readSlice(offset);
         }

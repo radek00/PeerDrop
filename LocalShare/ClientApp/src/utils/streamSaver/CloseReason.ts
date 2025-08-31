@@ -1,5 +1,5 @@
 export enum CloseReason {
-    Completed,
-    Cancelled,
-    Error,
+  Completed,
+  Cancelled,
+  Error,
 }

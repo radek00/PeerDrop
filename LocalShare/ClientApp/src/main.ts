@@ -91,8 +91,9 @@ export class App extends LitElement {
   private _connectionMap: Map<string, WebRtcPeer> = new Map();
 
   @state()
-  private _clientsInProgress: Array<[clientId: string, status: TransferStatus]> =
-    [];
+  private _clientsInProgress: Array<
+    [clientId: string, status: TransferStatus]
+  > = [];
 
   connection: HubConnection = createSignalRConnection("signalr/signalling");
 
@@ -159,7 +160,7 @@ export class App extends LitElement {
           DialogType.CONFIRM
         );
         return result.isCanceled === false;
-      }
+      },
     };
     const peerConnection = new WebRtcPeer(peerOptions);
     this._connectionMap.set(payload.senderConnectionId, peerConnection);
@@ -226,7 +227,10 @@ export class App extends LitElement {
           DialogType.ALERT
         );
         this.dispatchEvent(
-          new ProgressUpdateEvent(event.client.id, [0, TransferStatus.Cancelled])
+          new ProgressUpdateEvent(event.client.id, [
+            0,
+            TransferStatus.Cancelled,
+          ])
         );
       },
     };

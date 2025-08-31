@@ -4,5 +4,5 @@ export enum TransferStatus {
   Completed,
   Error,
   Rejected,
-  Cancelled
+  Cancelled,
 }
