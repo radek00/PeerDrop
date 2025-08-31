@@ -1,9 +1,10 @@
 import { FileMetadata } from "../../models/FileMetadata";
 import { debugLog } from "../utils";
+import { CloseReason } from "./CloseReason";
 
 export function createWriteStream(
   fileTransferMetadata: FileMetadata,
-  closeCallback?: () => void
+  closeCallback?: (reason: CloseReason) => void
 ): { stream: WritableStream; readyPromise: Promise<void> } {
   const channelId = window.crypto.randomUUID();
   const chunkStream = new WritableChunkStream(
@@ -27,14 +28,14 @@ class WritableChunkStream {
   downloadUrl: string | null = null;
   bytesWritten = 0;
   downloadStarted = false;
-  closeCallback?: () => void;
+  closeCallback?: (reason: CloseReason) => void;
   public readyPromise: Promise<void>;
   private _readyResolve!: () => void;
   private _iframe: HTMLIFrameElement | null = null;
   constructor(
     fileTransferMetadata: FileMetadata,
     channelId: string,
-    closeCallback?: () => void
+    closeCallback?: (reason: CloseReason) => void
   ) {
     this.closeCallback = closeCallback;
     this.chunkBroadcast = new BroadcastChannel(channelId);
@@ -56,11 +57,17 @@ class WritableChunkStream {
           this.startDownload(this.downloadUrl!);
         }
         if (this.bytesWritten >= this.fileTransferMetadata.size) {
-          this.close();
+          this.closeWithCallback(CloseReason.Completed);
         }
       } else if (event.data.download) {
         this.downloadUrl = event.data.download;
         this._readyResolve();
+      } else if (event.data.cancel) {
+        this.closeWithCallback(CloseReason.Cancelled);
+        debugLog("Client: Download cancelled by service worker.");
+      } else if (event.data.error) {
+        this.closeWithCallback(CloseReason.Error);
+        debugLog("Client: Error occurred in service worker during download.");
       }
     };
   }
@@ -95,6 +102,11 @@ class WritableChunkStream {
     return iframe;
   }
 
+  private closeWithCallback(reason: CloseReason) {
+    this.closeCallback?.(reason);
+    this.close();
+  }
+
   close() {
     setTimeout(() => {
       debugLog(
@@ -107,7 +119,6 @@ class WritableChunkStream {
         this._iframe = null;
       }
       debugLog("Client: 'clientDoneSending' signal sent to service worker.");
-      this.closeCallback?.();
       this.chunkBroadcast.close();
     }, 1000);
   }
