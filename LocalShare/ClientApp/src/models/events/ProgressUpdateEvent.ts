@@ -1,7 +1,7 @@
-import { UploadStatus } from "../UploadStatus";
+import { TransferStatus } from "../TransferStatus";
 import { Events } from "./Events";
 
-export type ProgressTuple = [percentage: number, status: UploadStatus];
+export type ProgressTuple = [percentage: number, status: TransferStatus];
 export class ProgressUpdateEvent extends Event {
   clientId: string;
   progressTuple: ProgressTuple;
