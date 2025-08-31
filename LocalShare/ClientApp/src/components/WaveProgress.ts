@@ -6,7 +6,7 @@ import {
   ProgressTuple,
   ProgressUpdateEvent,
 } from "../models/events/ProgressUpdateEvent";
-import { UploadStatus } from "../models/UploadStatus";
+import { TransferStatus } from "../models/TransferStatus";
 
 @customElement("wave-progress")
 export class WaveProgress extends LitElement {
@@ -164,20 +164,20 @@ export class WaveProgress extends LitElement {
   ) {
     this.container.style.display = "block";
 
-    if (progresTuple[1] === UploadStatus.UPLOADING) {
+    if (progresTuple[1] === TransferStatus.InProgress) {
       this.wavePercentage.textContent = `${progresTuple[0]}%`;
       const containerHeight = this.container.offsetHeight;
       const position =
         initialPosition + containerHeight * (progresTuple[0] / 100) + 10;
       this.waveChange.style.bottom = `${position}px`;
-    } else if (progresTuple[1] === UploadStatus.STARTING) {
+    } else if (progresTuple[1] === TransferStatus.Pending) {
       this.waveChange.style.display = "block";
       this.wavePercentage.style.display = "block";
       this.wavePercentage.classList.remove("hidden");
       this.checkmark.classList.remove("visible");
       this.error.classList.remove("visible");
       this.waveChange.style.bottom = `${initialPosition}px`;
-    } else if (progresTuple[1] === UploadStatus.COMPLETED) {
+    } else if (progresTuple[1] === TransferStatus.Completed) {
       this.wavePercentage.classList.add("hidden");
       this.waveChange.style.display = "none";
       setTimeout(() => {
@@ -185,7 +185,7 @@ export class WaveProgress extends LitElement {
           this.checkmark.classList.add("visible");
         }
       }, 300);
-    } else if (progresTuple[1] === UploadStatus.ERROR || progresTuple[1] === UploadStatus.CANCELLED) {
+    } else if (progresTuple[1] === TransferStatus.Error || progresTuple[1] === TransferStatus.Cancelled) {
       this.wavePercentage.classList.add("hidden");
       this.waveChange.style.display = "none";
       setTimeout(() => {

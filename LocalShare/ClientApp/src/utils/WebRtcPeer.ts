@@ -5,7 +5,6 @@ import { SendIceCandidate } from "../models/messages/SendIceCandidate";
 import { SendOffer } from "../models/messages/SendOffer";
 import { TransferStatus } from "../models/TransferStatus";
 import { createWriteStream } from "./streamSaver/streamSaver";
-import { UploadStatus } from "../models/UploadStatus";
 import { debugLog } from "./utils";
 import { HubConnection } from "@microsoft/signalr";
 import { CloseReason } from "./streamSaver/CloseReason";
@@ -14,7 +13,7 @@ export interface WebRtcPeerOptions {
   signalRConnection: HubConnection;
   file?: File;
   closeCallback?: () => void;
-  progressCallback?: (progress: number, status: UploadStatus) => void;
+  progressCallback?: (progress: number, status: TransferStatus) => void;
   confirmationCallback?: (file: FileMetadata) => Promise<boolean>;
   rejectionCallback?: () => void;
 }
@@ -29,7 +28,7 @@ export class WebRtcPeer {
   private _receivedSize = 0;
   private _writer?: WritableStreamDefaultWriter<Uint8Array>;
   private _closeCallback?: () => void;
-  private _progressCallback?: (progress: number, status: UploadStatus) => void;
+  private _progressCallback?: (progress: number, status: TransferStatus) => void;
   private _targetClientId?: string;
   private _confirmationCallback: (file: FileMetadata) => Promise<boolean>;
   private _rejectionCallback?: () => void;
@@ -160,14 +159,14 @@ export class WebRtcPeer {
       case TransferStatus.Completed:
         debugLog("File transfer complete signal received via metadata.");
         //this.closeConnections();
-        this._progressCallback?.(100, UploadStatus.COMPLETED);
+        this._progressCallback?.(100, data.status);
         break;
       case TransferStatus.Rejected:
         this._rejectionCallback?.();
         this.closeConnections();
         break;
       case TransferStatus.Cancelled:
-        this._progressCallback?.(0, UploadStatus.CANCELLED);
+        this._progressCallback?.(0, data.status);
         this.closeConnections();
     }
   }
@@ -233,7 +232,7 @@ export class WebRtcPeer {
     fileReader.addEventListener("abort", (event) =>
       debugLog("File reading aborted:", event)
     );
-    this._progressCallback?.(0, UploadStatus.STARTING);
+    this._progressCallback?.(0, TransferStatus.Pending);
     fileReader.addEventListener("load", (e) => {
       try {
         if (!e.target?.result) return;
@@ -244,7 +243,7 @@ export class WebRtcPeer {
         const progress = Math.round((offset / this._file!.size) * 100);
         this._progressCallback?.(
           progress,
-          UploadStatus.UPLOADING
+          TransferStatus.InProgress
         );
         if (offset < this._file!.size) {
           readSlice(offset);

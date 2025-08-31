@@ -5,9 +5,9 @@ import "./ConnectedClient";
 import { ClientConnectionInfo } from "../models/messages/ClientInfo";
 import { ClientSelectedEvent } from "../models/events/ClientSelectedEvent";
 import "./WaveProgress";
-import { UploadStatus } from "../models/UploadStatus";
 import { classMap } from "lit/directives/class-map.js";
 import { scaleUpAnimation } from "../styles/sharedStyle";
+import { TransferStatus } from "../models/TransferStatus";
 
 @customElement("client-wrapper")
 export class ClientWrapper extends LitElement {
@@ -86,7 +86,7 @@ export class ClientWrapper extends LitElement {
   private clients: ClientConnectionInfo[] = [];
 
   @property({ type: Array })
-  private clientsInProgress: Array<[clientId: string, status: UploadStatus]> =
+  private clientsInProgress: Array<[clientId: string, status: TransferStatus]> =
     [];
 
   private _onInputChange(event: Event, client: ClientConnectionInfo) {
@@ -120,7 +120,7 @@ export class ClientWrapper extends LitElement {
                   <div class="file-input-wrapper">
                     <label
                       class="${classMap({
-                        disabled: clientStatus === UploadStatus.STARTING,
+                        disabled: clientStatus === TransferStatus.Pending,
                       })}"
                       for="file-input-${client.id}"
                     >
@@ -137,7 +137,7 @@ export class ClientWrapper extends LitElement {
                         type="file"
                         class="file-input"
                         id="file-input-${client.id}"
-                        ?disabled=${clientStatus === UploadStatus.STARTING}
+                        ?disabled=${clientStatus === TransferStatus.Pending}
                       />
                     </label>
                   </div>

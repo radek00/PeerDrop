@@ -15,7 +15,6 @@ import { ReceiveIceCandidate } from "./models/messages/ReceiveIceCandidate";
 import { ReceiveAnswer } from "./models/messages/ReceiveAnswer";
 import { ClientSelectedEvent } from "./models/events/ClientSelectedEvent";
 import { ProgressUpdateEvent } from "./models/events/ProgressUpdateEvent";
-import { UploadStatus } from "./models/UploadStatus";
 import {
   ConfirmDialogController,
   DialogType,
@@ -26,6 +25,7 @@ import { buttons, scaleUpAnimation } from "./styles/sharedStyle";
 import { fileSize, registerServiceWorker } from "./utils/utils";
 import "./icons/PeerIcon";
 import "./components/HeaderIcons";
+import { TransferStatus } from "./models/TransferStatus";
 
 registerServiceWorker();
 @customElement("app-component")
@@ -91,7 +91,7 @@ export class App extends LitElement {
   private _connectionMap: Map<string, WebRtcPeer> = new Map();
 
   @state()
-  private _clientsInProgress: Array<[clientId: string, status: UploadStatus]> =
+  private _clientsInProgress: Array<[clientId: string, status: TransferStatus]> =
     [];
 
   connection: HubConnection = createSignalRConnection("signalr/signalling");
@@ -190,12 +190,12 @@ export class App extends LitElement {
           (client) => client[0] !== event.client.id
         );
       },
-      progressCallback: (progress: number, status: UploadStatus) => {
+      progressCallback: (progress: number, status: TransferStatus) => {
         if (
-          status === UploadStatus.STARTING ||
-          status === UploadStatus.COMPLETED ||
-          status === UploadStatus.ERROR ||
-          status === UploadStatus.CANCELLED
+          status === TransferStatus.Pending ||
+          status === TransferStatus.Completed ||
+          status === TransferStatus.Error ||
+          status === TransferStatus.Cancelled
         ) {
           const requestedClient = this._clientsInProgress.find(
             (client) => client[0] === event.client.id
@@ -223,7 +223,7 @@ export class App extends LitElement {
     this._connectionMap.set(event.client.id, peerConnection);
     this._clientsInProgress = [
       ...this._clientsInProgress,
-      [event.client.id, UploadStatus.STARTING],
+      [event.client.id, TransferStatus.Pending],
     ];
   };
 
