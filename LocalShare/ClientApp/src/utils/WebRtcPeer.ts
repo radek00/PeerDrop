@@ -8,6 +8,7 @@ import { createWriteStream } from "./streamSaver/streamSaver";
 import { UploadStatus } from "../models/UploadStatus";
 import { debugLog } from "./utils";
 import { HubConnection } from "@microsoft/signalr";
+import { CloseReason } from "./streamSaver/CloseReason";
 
 export interface WebRtcPeerOptions {
   signalRConnection: HubConnection;
@@ -32,6 +33,7 @@ export class WebRtcPeer {
   private _targetClientId?: string;
   private _confirmationCallback: (file: FileMetadata) => Promise<boolean>;
   private _rejectionCallback?: () => void;
+  private isConnectionClosed = false;
 
   constructor(options: WebRtcPeerOptions) {
     this._signalRConnection = options.signalRConnection;
@@ -157,18 +159,22 @@ export class WebRtcPeer {
         break;
       case TransferStatus.Completed:
         debugLog("File transfer complete signal received via metadata.");
-        this.closeConnections();
+        //this.closeConnections();
+        this._progressCallback?.(100, UploadStatus.COMPLETED);
         break;
       case TransferStatus.Rejected:
         this._rejectionCallback?.();
         this.closeConnections();
         break;
+      case TransferStatus.Cancelled:
+        this._progressCallback?.(0, UploadStatus.CANCELLED);
+        this.closeConnections();
     }
   }
   private async _handlePendingTransfer() {
     if (await this._confirmationCallback(this._fileData!)) {
-      const stream = createWriteStream(this._fileData!, () => {
-        this.closeConnections();
+      const stream = createWriteStream(this._fileData!, (reason) => {
+        this.closeWithReason(reason);
       });
       await stream.readyPromise;
       this._writer = stream.stream.getWriter();
@@ -238,16 +244,16 @@ export class WebRtcPeer {
         const progress = Math.round((offset / this._file!.size) * 100);
         this._progressCallback?.(
           progress,
-          progress !== 100 ? UploadStatus.UPLOADING : UploadStatus.COMPLETED
+          UploadStatus.UPLOADING
         );
         if (offset < this._file!.size) {
           readSlice(offset);
         }
       } catch (error) {
-        this._progressCallback?.(
-          Math.round((offset / this._file!.size) * 100),
-          UploadStatus.ERROR
-        );
+        // this._progressCallback?.(
+        //   Math.round((offset / this._file!.size) * 100),
+        //   UploadStatus.ERROR
+        // );
         debugLog(
           "Error sending file data. Download might have been cancelled:",
           error
@@ -286,14 +292,31 @@ export class WebRtcPeer {
     } catch (error) {
       debugLog("Error writing file data:", error);
       this._writer?.close();
-      this.closeConnections();
+      this.closeWithReason(CloseReason.Error);
     }
   }
 
   // --- Cleanup ---
 
+  private closeWithReason(reason: CloseReason) {
+    switch (reason) {
+      case CloseReason.Cancelled:
+        this._updateMetadataStatus(TransferStatus.Cancelled);
+        break;
+      case CloseReason.Error:
+        this._updateMetadataStatus(TransferStatus.Error);
+        break;
+      case CloseReason.Completed:
+        this._updateMetadataStatus(TransferStatus.Completed);
+        break;
+    }
+    this.closeConnections();
+  }
+
   public closeConnections() {
+    if (this.isConnectionClosed) return;
     debugLog("Closing WebRTC Peer Connections and Channels.");
+    this.isConnectionClosed = true;
     this.fileTransferChannel?.close();
     this.metadataChannel?.close();
     this._peerConnection.close();

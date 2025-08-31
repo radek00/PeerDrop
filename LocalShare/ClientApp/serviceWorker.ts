@@ -172,6 +172,7 @@ class ReadableChunkStream {
           this.attemptClose();
         } catch (error) {
           console.error("Error enqueuing chunk:", error);
+          this.chunkBroadcast.postMessage({ error: true });
           this.close();
         }
       } else if (event.data.readStarted) {

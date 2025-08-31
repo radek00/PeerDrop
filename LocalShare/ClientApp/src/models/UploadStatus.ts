@@ -3,4 +3,5 @@ export enum UploadStatus {
   COMPLETED = "COMPLETED",
   ERROR = "ERROR",
   STARTING = "STARTING",
+  CANCELLED = "CANCELLED",
 }
