@@ -16,6 +16,7 @@ export interface WebRtcPeerOptions {
   progressCallback?: (progress: number, status: TransferStatus) => void;
   confirmationCallback?: (file: FileMetadata) => Promise<boolean>;
   rejectionCallback?: () => void;
+  cancellationCallback?: (file: FileMetadata) => void;
 }
 
 export class WebRtcPeer {
@@ -32,6 +33,7 @@ export class WebRtcPeer {
   private _targetClientId?: string;
   private _confirmationCallback: (file: FileMetadata) => Promise<boolean>;
   private _rejectionCallback?: () => void;
+  private _cancellationCallback?: (file: FileMetadata) => void;
   private isConnectionClosed = false;
 
   constructor(options: WebRtcPeerOptions) {
@@ -44,6 +46,7 @@ export class WebRtcPeer {
       ? options.confirmationCallback
       : () => Promise.resolve(true);
     this._rejectionCallback = options.rejectionCallback;
+    this._cancellationCallback = options.cancellationCallback;
 
     this._handleIceCandidate = this._handleIceCandidate.bind(this);
     this.handleDataChannel = this.handleDataChannel.bind(this);
@@ -166,7 +169,7 @@ export class WebRtcPeer {
         this.closeConnections();
         break;
       case TransferStatus.Cancelled:
-        this._progressCallback?.(0, data.status);
+        this._cancellationCallback?.(this._fileData!);
         this.closeConnections();
     }
   }
