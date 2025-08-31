@@ -159,7 +159,7 @@ export class App extends LitElement {
           DialogType.CONFIRM
         );
         return result.isCanceled === false;
-      },
+      }
     };
     const peerConnection = new WebRtcPeer(peerOptions);
     this._connectionMap.set(payload.senderConnectionId, peerConnection);
@@ -194,8 +194,7 @@ export class App extends LitElement {
         if (
           status === TransferStatus.Pending ||
           status === TransferStatus.Completed ||
-          status === TransferStatus.Error ||
-          status === TransferStatus.Cancelled
+          status === TransferStatus.Error
         ) {
           const requestedClient = this._clientsInProgress.find(
             (client) => client[0] === event.client.id
@@ -215,6 +214,19 @@ export class App extends LitElement {
             confirmButtonText: "OK",
           },
           DialogType.ALERT
+        );
+      },
+      cancellationCallback: async (file: FileMetadata) => {
+        await this.dialogController.reveal(
+          {
+            title: "Transfer cancelled",
+            message: `File transfer of ${file.name}(${fileSize(file.size)}) was cancelled.`,
+            confirmButtonText: "OK",
+          },
+          DialogType.ALERT
+        );
+        this.dispatchEvent(
+          new ProgressUpdateEvent(event.client.id, [0, TransferStatus.Cancelled])
         );
       },
     };
