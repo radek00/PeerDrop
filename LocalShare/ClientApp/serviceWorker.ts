@@ -205,7 +205,9 @@ class ReadableChunkStream {
 
   cancel() {
     console.warn("Stream cancelled:", this.downloadUrl);
-    this.close();
+    this.chunkBroadcast.postMessage({cancel: true});
+    map.delete(this.downloadUrl);
+    this.chunkBroadcast.close();
   }
 
   close() {
