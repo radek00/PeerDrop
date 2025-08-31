@@ -161,7 +161,7 @@ export class WebRtcPeer {
         break;
       case TransferStatus.Completed:
         debugLog("File transfer complete signal received via metadata.");
-        //this.closeConnections();
+        this.closeConnections();
         this._progressCallback?.(100, data.status);
         break;
       case TransferStatus.Rejected:
@@ -171,6 +171,11 @@ export class WebRtcPeer {
       case TransferStatus.Cancelled:
         this._cancellationCallback?.(this._fileData!);
         this.closeConnections();
+        break;
+      case TransferStatus.Error:
+        this._progressCallback?.(0, data.status);
+        this.closeConnections();
+        break;
     }
   }
   private async _handlePendingTransfer() {
@@ -252,10 +257,6 @@ export class WebRtcPeer {
           readSlice(offset);
         }
       } catch (error) {
-        // this._progressCallback?.(
-        //   Math.round((offset / this._file!.size) * 100),
-        //   UploadStatus.ERROR
-        // );
         debugLog(
           "Error sending file data. Download might have been cancelled:",
           error
