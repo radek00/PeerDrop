@@ -164,8 +164,8 @@ export class WebRtcPeer {
         break;
       case TransferStatus.Completed:
         debugLog("File transfer complete signal received via metadata.");
-        this.closeConnections();
         this._progressCallback?.(100, data.status);
+        this.closeConnections();
         break;
       case TransferStatus.Rejected:
         this._rejectionCallback?.();
