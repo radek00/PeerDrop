@@ -38,14 +38,14 @@ test.describe.parallel("File upload and download", () => {
     await expect(connectedClient).toBeVisible();
     const label = connectedClient.locator("xpath=parent::label").first();
     const fileInput = label.locator('input[type="file"]').first();
-    
+
     let buffer: Buffer<ArrayBuffer>;
     if (size) {
       buffer = Buffer.alloc(size).fill(fileContent);
     } else {
       buffer = Buffer.from(fileContent);
     }
-    
+
     await fileInput.setInputFiles({
       name: fileName,
       mimeType: "text/plain",
@@ -65,7 +65,7 @@ test.describe.parallel("File upload and download", () => {
     const confirmDialog = page2
       .locator("confirm-dialog", { hasText: "testfile.txt" })
       .first();
-    
+
     const button = confirmDialog.locator("button", { hasText: "Yes" }).first();
     await expect(button).toBeVisible();
     const downloadPromise = page2.waitForEvent("download");
@@ -110,10 +110,11 @@ test.describe.parallel("File upload and download", () => {
       .locator("confirm-dialog", { hasText: "Transfer cancelled" })
       .first();
 
-    const confirmationButton = cancellationDialog.locator("button", { hasText: "OK" }).first();
+    const confirmationButton = cancellationDialog
+      .locator("button", { hasText: "OK" })
+      .first();
     await expect(confirmationButton).toBeVisible();
     await confirmationButton.click();
-
 
     const client = page1.locator("connected-client", { hasText: client2Name });
     await expect(client).toBeVisible();
@@ -140,10 +141,13 @@ test.describe.parallel("File upload and download", () => {
     const button = confirmDialog.locator("button", { hasText: "No" }).first();
     await expect(button).toBeVisible();
     await button.click();
-    const rejectedDialogOverlay = page1
-      .locator("confirm-dialog", { hasText: "Transfer rejection" });
+    const rejectedDialog = page1
+      .locator("confirm-dialog div", {
+        hasText: "File transfer rejected by the recipient",
+      })
+      .first();
 
-    await rejectedDialogOverlay.waitFor({ state: "visible", timeout: 15000 });
-    await expect(rejectedDialogOverlay).toBeVisible();
+    await rejectedDialog.waitFor({ state: "visible", timeout: 15000 });
+    await expect(rejectedDialog).toBeVisible();
   });
 });
