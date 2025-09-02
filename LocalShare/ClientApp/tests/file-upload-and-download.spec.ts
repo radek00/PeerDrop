@@ -39,7 +39,7 @@ test.describe.parallel("File upload and download", () => {
     const label = connectedClient.locator("xpath=parent::label").first();
     const fileInput = label.locator('input[type="file"]').first();
 
-    let buffer: Buffer<ArrayBuffer>;
+    let buffer: Buffer;
     if (size) {
       buffer = Buffer.alloc(size).fill(fileContent);
     } else {
