@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { playwrightConfig } from "./playwright.config";
+import * as playwrightConfig from "./playwright.config";
 
 export default defineConfig({
   ...playwrightConfig,
