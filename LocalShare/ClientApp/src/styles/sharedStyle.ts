@@ -57,13 +57,12 @@ export const buttons = css`
 
     @media (prefers-color-scheme: dark) {
       &.primary {
-        background-color: var(--color-primary-500);
+        background-color: var(--color-primary-700);
         color: white;
 
         &:hover {
-          background-color: var(--color-primary-400);
+          background-color: var(--color-primary-600);
         }
-      }
 
       &.secondary {
         background-color: #424242;
