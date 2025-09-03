@@ -85,7 +85,7 @@ export class ConfirmDialog extends LitElement {
           </div>
           <slot name="buttons">
             <div class="buttons">
-              <button class="btn secondary" @click=${this._handleCancel}>
+              <button class="btn danger" @click=${this._handleCancel}>
                 No
               </button>
               <button class="btn primary" @click=${this._handleConfirm}>
