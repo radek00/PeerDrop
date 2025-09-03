@@ -274,7 +274,9 @@ export class App extends LitElement {
       ? html`<confirm-dialog
           @confirm=${() => this.dialogController.confirm()}
           @cancel=${() => this.dialogController.cancel()}
-          ><div slot="title">${this.dialogController.dialogContent?.title}</div>
+          ><h1 slot="title" style="margin-block: 0; font-size: 2rem">
+            ${this.dialogController.dialogContent?.title}
+          </h1>
           <div slot="message" class="message">
             ${this.dialogController.dialogContent?.message}
           </div>

@@ -55,6 +55,15 @@ export const buttons = css`
       }
     }
 
+    &.danger {
+      background-color: #d32323;
+      color: white;
+
+      &:hover {
+        background-color: #c94a4a;
+      }
+    }
+
     @media (prefers-color-scheme: dark) {
       &.primary {
         background-color: var(--color-primary-700);
@@ -63,6 +72,7 @@ export const buttons = css`
         &:hover {
           background-color: var(--color-primary-600);
         }
+      }
 
       &.secondary {
         background-color: #424242;
