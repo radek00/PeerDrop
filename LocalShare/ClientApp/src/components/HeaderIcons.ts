@@ -34,7 +34,10 @@ export class HeaderIcons extends LitElement {
       }
       .version-text {
         font-size: 0.8em;
-        color: var(--secondary-text-color, #aabdcf);
+        color: var(--secondary-text-color, #6a7077);
+        @media (prefers-color-scheme: dark) {
+          color: var(--secondary-text-color, #aabdcf);
+        }
         margin-top: 0.25rem;
       }
 
