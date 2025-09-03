@@ -19,6 +19,7 @@ export class ClientGrid {
 
   constructor() {
     this.canvas = document.createElement("canvas");
+    this.canvas.setAttribute("aria-hidden", "true");
     this.setupCanvas();
     this.ctx = this.canvas.getContext("2d")!;
     window.addEventListener("resize", this.handleResize);
