@@ -2,14 +2,15 @@ import { css, html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 import "../icons/InfoIcon";
 import "../icons/GithubIcon";
-import { buttons, headerIcon } from "../styles/sharedStyle";
+import { accessibility, buttons, headerIcon } from "../styles/sharedStyle";
 import { ConfirmDialogController } from "../utils/controllers/ConfirmDialogController";
 
 @customElement("header-icons")
 export class HeaderIcons extends LitElement {
   static styles = [
     headerIcon,
-    buttons, // Ensure buttons is correctly referenced if it's a separate style module
+    buttons,
+    accessibility,
     css`
       .wrapper {
         display: flex;
@@ -29,12 +30,12 @@ export class HeaderIcons extends LitElement {
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin-top: 0.5rem; /* Add some space above the version */
+        margin-top: 0.5rem;
       }
       .version-text {
         font-size: 0.8em;
-        color: var(--secondary-text-color, #6c757d); /* Muted color */
-        margin-top: 0.25rem; /* Space between icon and text */
+        color: var(--secondary-text-color, #aabdcf);
+        margin-top: 0.25rem;
       }
 
       h1 {
@@ -53,6 +54,7 @@ export class HeaderIcons extends LitElement {
     return html`
       <div class="wrapper">
         <button>
+          <span class="sr-only">Info</span>
           <info-icon @click=${this._onInfoClick}></info-icon>
         </button>
       </div>
@@ -76,6 +78,7 @@ export class HeaderIcons extends LitElement {
                   rel="noopener noreferrer"
                 >
                   <github-icon></github-icon>
+                  <span class="sr-only">GitHub Repository</span>
                 </a>
                 <p class="version-text">v${APP_VERSION}</p>
               </div>
