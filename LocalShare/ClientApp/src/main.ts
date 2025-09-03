@@ -50,7 +50,10 @@ export class App extends LitElement {
           font-weight: 400;
           span {
             font-style: italic;
-            color: var(--color-primary-600);
+            color: var(--color-primary-700);
+            @media (prefers-color-scheme: dark) {
+              color: var(--color-primary-600);
+            }
             font-weight: bold;
           }
         }

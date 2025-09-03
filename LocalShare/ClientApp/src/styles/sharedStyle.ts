@@ -38,11 +38,11 @@ export const buttons = css`
     }
 
     &.primary {
-      background-color: var(--color-primary-600);
+      background-color: var(--color-primary-700);
       color: white;
 
       &:hover {
-        background-color: var(--color-primary-700);
+        background-color: var(--color-primary-800);
       }
     }
 
