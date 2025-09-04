@@ -21,7 +21,11 @@ export class HeaderIcons extends LitElement {
         padding-right: 1rem;
 
         button {
-          all: unset;
+          background: none;
+          border: none;
+          padding: 0;
+          margin: 0;
+          cursor: pointer;
           width: 40px;
           height: 40px;
         }
@@ -56,9 +60,9 @@ export class HeaderIcons extends LitElement {
   render() {
     return html`
       <div class="wrapper">
-        <button>
+        <button @click=${this._onInfoClick}>
           <span class="sr-only">Info</span>
-          <info-icon @click=${this._onInfoClick}></info-icon>
+          <info-icon></info-icon>
         </button>
       </div>
       ${this.dialogController.isRevealed

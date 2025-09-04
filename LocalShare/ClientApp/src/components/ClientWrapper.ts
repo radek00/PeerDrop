@@ -101,6 +101,15 @@ export class ClientWrapper extends LitElement {
     (event.target as HTMLInputElement).value = "";
   }
 
+  private _onLabelKeyUp(event: KeyboardEvent, client: ClientConnectionInfo) {
+    if (event.key === "Enter" || event.key === " ") {
+      const input = this.shadowRoot?.getElementById(
+        `file-input-${client.id}`
+      ) as HTMLInputElement | null;
+      input?.click();
+    }
+  }
+
   render() {
     return html`
       <div
@@ -119,6 +128,8 @@ export class ClientWrapper extends LitElement {
                 return html`
                   <div class="file-input-wrapper">
                     <label
+                    tabindex="0"
+                    @keyup=${(event: KeyboardEvent) => this._onLabelKeyUp(event, client)}
                       class="${classMap({
                         disabled: clientStatus === TransferStatus.Pending,
                       })}"
@@ -131,6 +142,7 @@ export class ClientWrapper extends LitElement {
                         ></wave-progress>
                       </connected-client>
                       <input
+                        tabindex="-1"
                         @input=${(event: Event) =>
                           this._onInputChange(event, client)}
                         @click=${this._onInputClick}
