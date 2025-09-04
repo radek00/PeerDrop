@@ -7,33 +7,30 @@ export class ConfirmDialog extends LitElement {
   static styles = [
     buttons,
     css`
-      .overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+      dialog {
+        padding: 0;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        max-width: 450px;
+      }
+
+      dialog::backdrop {
         background-color: rgba(0, 0, 0, 0.6);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
         backdrop-filter: blur(3px);
       }
 
-      .dialog {
+      .dialog-content {
         background-color: var(--bg-light);
         color: var(--text-primary);
         padding: 2rem;
         border-radius: 8px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        max-width: 400px;
-        width: 90%;
         text-align: center;
       }
 
       @media (prefers-color-scheme: dark) {
-        .dialog {
+        .dialog-content {
           background-color: #051924;
         }
       }
@@ -61,6 +58,13 @@ export class ConfirmDialog extends LitElement {
     `,
   ];
 
+  updated() {
+    const dialog = this.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+    if (dialog && !dialog.open) {
+      dialog.showModal();
+    }
+  }
+
   private _handleConfirm() {
     this.dispatchEvent(
       new CustomEvent("confirm", { bubbles: true, composed: true })
@@ -75,8 +79,8 @@ export class ConfirmDialog extends LitElement {
 
   render() {
     return html`
-      <div class="overlay">
-        <div class="dialog">
+      <dialog>
+        <div class="dialog-content">
           <div class="title">
             <slot name="title">Confirm Action</slot>
           </div>
@@ -94,7 +98,7 @@ export class ConfirmDialog extends LitElement {
             </div>
           </slot>
         </div>
-      </div>
+      </dialog>
     `;
   }
 }
