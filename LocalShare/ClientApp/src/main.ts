@@ -21,7 +21,7 @@ import {
 } from "./utils/controllers/ConfirmDialogController";
 import "./components/ConfirmDialog";
 import { FileMetadata } from "./models/FileMetadata";
-import { buttons, scaleUpAnimation } from "./styles/sharedStyle";
+import { accessibility, buttons, scaleUpAnimation } from "./styles/sharedStyle";
 import { fileSize, registerServiceWorker } from "./utils/utils";
 import "./icons/PeerIcon";
 import "./components/HeaderIcons";
@@ -31,6 +31,7 @@ registerServiceWorker();
 @customElement("app-component")
 export class App extends LitElement {
   static styles = [
+    accessibility,
     buttons,
     scaleUpAnimation,
     css`
@@ -103,7 +104,10 @@ export class App extends LitElement {
   dialogController = new ConfirmDialogController(this);
   constructor() {
     super();
-    this.grid.start();
+    const isReduced = window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true;
+    if (!isReduced) {
+      this.grid.start();
+    }
     this.connection.start();
     this.addConnectedClient = this.addConnectedClient.bind(this);
     this.updateSelf = this.updateSelf.bind(this);

@@ -11,7 +11,7 @@ import { accessibility } from "../styles/sharedStyle";
 
 @customElement("wave-progress")
 export class WaveProgress extends LitElement {
-  static styles = [accessibility,css`
+  static styles = [accessibility, css`
     .wave-container {
       position: absolute;
       width: 100%;

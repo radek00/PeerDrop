@@ -109,4 +109,15 @@ export const accessibility = css`
     white-space: nowrap;
     border-width: 0;
   }
+
+  *,
+  *::before,
+  *::after {
+            @media (prefers-reduced-motion: reduce) {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition: none !important;
+        }
+
+  }
 `;
