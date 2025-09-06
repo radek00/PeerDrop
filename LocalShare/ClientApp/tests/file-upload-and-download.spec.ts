@@ -55,15 +55,16 @@ test.describe.parallel("File upload and download", () => {
 
   test("file is uploaded and received by connected client", async () => {
     const client2Name = await getClientName(page2);
+    const fileName = (new Date()).getTime().toString(36) + ".txt";
     await uploadFileToClient(
       page1,
       client2Name,
-      "testfile.txt",
+      fileName,
       "Hello from client 1!"
     );
 
     const confirmDialog = page2
-      .locator("confirm-dialog", { hasText: "testfile.txt" })
+      .locator("confirm-dialog", { hasText: fileName })
       .first();
 
     const button = confirmDialog.locator("button", { hasText: "Yes" }).first();
@@ -88,16 +89,17 @@ test.describe.parallel("File upload and download", () => {
 
   test("file upload can be cancelled", async () => {
     const client2Name = await getClientName(page2);
+    const fileName = (new Date()).getTime().toString(36) + ".txt";
     await uploadFileToClient(
       page1,
       client2Name,
-      "testfile.txt",
+      fileName,
       "Hello from client 1!",
       40 * 1024 * 1024 // 40MB
     );
 
     const confirmDialog = page2
-      .locator("confirm-dialog", { hasText: "testfile.txt" })
+      .locator("confirm-dialog", { hasText: fileName })
       .first();
 
     const button = confirmDialog.locator("button", { hasText: "Yes" }).first();
@@ -127,15 +129,16 @@ test.describe.parallel("File upload and download", () => {
 
   test("File transfer can be rejected by the recipient", async () => {
     const client2Name = await getClientName(page2);
+    const fileName = (new Date()).getTime().toString(36) + ".txt";
     await uploadFileToClient(
       page1,
       client2Name,
-      "testfile.txt",
+      fileName,
       "Hello from client 1!"
     );
 
     const confirmDialog = page2
-      .locator("confirm-dialog", { hasText: "testfile.txt" })
+      .locator("confirm-dialog", { hasText: fileName })
       .first();
 
     const button = confirmDialog.locator("button", { hasText: "No" }).first();
