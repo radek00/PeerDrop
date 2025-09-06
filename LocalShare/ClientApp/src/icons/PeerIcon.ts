@@ -10,6 +10,13 @@ export class PeerIcon extends LitElement {
         height: 60px;
         color: var(--color-primary-500);
       }
+
+      @media (prefers-reduced-motion: reduce) {
+        svg path {
+          opacity: 1 !important;
+          stroke-dashoffset: 0 !important;
+        }
+      }
     `,
   ];
   render() {
