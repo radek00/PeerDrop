@@ -38,11 +38,11 @@ export const buttons = css`
     }
 
     &.primary {
-      background-color: var(--color-primary-600);
+      background-color: var(--color-primary-700);
       color: white;
 
       &:hover {
-        background-color: var(--color-primary-700);
+        background-color: var(--color-primary-800);
       }
     }
 
@@ -55,13 +55,22 @@ export const buttons = css`
       }
     }
 
+    &.danger {
+      background-color: #d32323;
+      color: white;
+
+      &:hover {
+        background-color: #c94a4a;
+      }
+    }
+
     @media (prefers-color-scheme: dark) {
       &.primary {
-        background-color: var(--color-primary-500);
+        background-color: var(--color-primary-700);
         color: white;
 
         &:hover {
-          background-color: var(--color-primary-400);
+          background-color: var(--color-primary-600);
         }
       }
 
@@ -86,5 +95,28 @@ export const headerIcon = css`
 
   svg:hover {
     color: var(--color-primary-500);
+  }
+`;
+export const accessibility = css`
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  *,
+  *::before,
+  *::after {
+    @media (prefers-reduced-motion: reduce) {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition: none !important;
+    }
   }
 `;

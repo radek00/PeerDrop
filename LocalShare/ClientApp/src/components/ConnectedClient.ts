@@ -5,7 +5,7 @@ import "../icons/SignalIcon";
 import "../icons/DesktopIcon";
 import "../icons/TabletIcon";
 import { ClientConnectionInfo } from "../models/messages/ClientInfo";
-import { scaleUpAnimation } from "../styles/sharedStyle";
+import { accessibility, scaleUpAnimation } from "../styles/sharedStyle";
 import { IconType } from "../models/enums/IconType";
 
 @customElement("connected-client")
@@ -23,6 +23,7 @@ export class ConnectedClient extends LitElement {
   };
 
   static styles = [
+    accessibility,
     scaleUpAnimation,
     css`
       .client {

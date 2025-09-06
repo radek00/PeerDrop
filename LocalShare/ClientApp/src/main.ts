@@ -21,7 +21,7 @@ import {
 } from "./utils/controllers/ConfirmDialogController";
 import "./components/ConfirmDialog";
 import { FileMetadata } from "./models/FileMetadata";
-import { buttons, scaleUpAnimation } from "./styles/sharedStyle";
+import { accessibility, buttons, scaleUpAnimation } from "./styles/sharedStyle";
 import { fileSize, registerServiceWorker } from "./utils/utils";
 import "./icons/PeerIcon";
 import "./components/HeaderIcons";
@@ -31,6 +31,7 @@ registerServiceWorker();
 @customElement("app-component")
 export class App extends LitElement {
   static styles = [
+    accessibility,
     buttons,
     scaleUpAnimation,
     css`
@@ -50,7 +51,10 @@ export class App extends LitElement {
           font-weight: 400;
           span {
             font-style: italic;
-            color: var(--color-primary-600);
+            color: var(--color-primary-700);
+            @media (prefers-color-scheme: dark) {
+              color: var(--color-primary-600);
+            }
             font-weight: bold;
           }
         }
@@ -100,7 +104,11 @@ export class App extends LitElement {
   dialogController = new ConfirmDialogController(this);
   constructor() {
     super();
-    this.grid.start();
+    const isReduced =
+      window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true;
+    if (!isReduced) {
+      this.grid.start();
+    }
     this.connection.start();
     this.addConnectedClient = this.addConnectedClient.bind(this);
     this.updateSelf = this.updateSelf.bind(this);
@@ -271,7 +279,9 @@ export class App extends LitElement {
       ? html`<confirm-dialog
           @confirm=${() => this.dialogController.confirm()}
           @cancel=${() => this.dialogController.cancel()}
-          ><div slot="title">${this.dialogController.dialogContent?.title}</div>
+          ><h1 slot="title" style="margin-block: 0; font-size: 2rem">
+            ${this.dialogController.dialogContent?.title}
+          </h1>
           <div slot="message" class="message">
             ${this.dialogController.dialogContent?.message}
           </div>
@@ -280,6 +290,7 @@ export class App extends LitElement {
                 <button
                   @click=${() => this.dialogController.confirm()}
                   class="btn primary"
+                  autofocus
                 >
                   <span>OK</span>
                 </button>

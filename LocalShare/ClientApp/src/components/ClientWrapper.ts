@@ -6,21 +6,22 @@ import { ClientConnectionInfo } from "../models/messages/ClientInfo";
 import { ClientSelectedEvent } from "../models/events/ClientSelectedEvent";
 import "./WaveProgress";
 import { classMap } from "lit/directives/class-map.js";
-import { scaleUpAnimation } from "../styles/sharedStyle";
+import { accessibility, scaleUpAnimation } from "../styles/sharedStyle";
 import { TransferStatus } from "../models/TransferStatus";
 
 @customElement("client-wrapper")
 export class ClientWrapper extends LitElement {
   static styles = [
     scaleUpAnimation,
+    accessibility,
     css`
       .client-wrapper {
         display: flex;
         align-items: center;
         gap: 2.5rem;
         height: 100%;
-        width: 100vw;
-        overflow-x: scroll;
+        width: 100%;
+        overflow-x: auto;
         justify-content: space-around;
       }
 
@@ -101,8 +102,18 @@ export class ClientWrapper extends LitElement {
     (event.target as HTMLInputElement).value = "";
   }
 
+  private _onLabelKeyUp(event: KeyboardEvent, client: ClientConnectionInfo) {
+    if (event.key === "Enter" || event.key === " ") {
+      const input = this.shadowRoot?.getElementById(
+        `file-input-${client.id}`
+      ) as HTMLInputElement | null;
+      input?.click();
+    }
+  }
+
   render() {
     return html`
+      <h2 class="sr-only">Devices available on network</h2>
       <div
         class="client-wrapper ${classMap({
           "force-center-justify": this.clients.length < 3,
@@ -119,11 +130,17 @@ export class ClientWrapper extends LitElement {
                 return html`
                   <div class="file-input-wrapper">
                     <label
+                      tabindex="${clientStatus === TransferStatus.Pending
+                        ? -1
+                        : 0}"
+                      @keyup=${(event: KeyboardEvent) =>
+                        this._onLabelKeyUp(event, client)}
                       class="${classMap({
                         disabled: clientStatus === TransferStatus.Pending,
                       })}"
                       for="file-input-${client.id}"
                     >
+                      <span class="sr-only">Select file to send to</span>
                       <connected-client icon="phone" .client=${client}>
                         <wave-progress
                           .client=${client}
@@ -131,6 +148,7 @@ export class ClientWrapper extends LitElement {
                         ></wave-progress>
                       </connected-client>
                       <input
+                        tabindex="-1"
                         @input=${(event: Event) =>
                           this._onInputChange(event, client)}
                         @click=${this._onInputClick}

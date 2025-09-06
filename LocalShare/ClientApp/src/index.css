@@ -48,7 +48,7 @@ body {
   flex-direction: column;
 }
 
-body app-component {
+body main {
   flex-grow: 1;
 }
 
