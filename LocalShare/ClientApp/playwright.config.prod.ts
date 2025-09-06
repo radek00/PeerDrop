@@ -26,6 +26,7 @@ export default defineConfig({
     {
       name: "Mobile Chrome",
       use: { ...devices["Pixel 5"] },
+      workers: 1,
     },
     // {
     //   name: "Mobile Firefox",
