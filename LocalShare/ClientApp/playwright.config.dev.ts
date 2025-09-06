@@ -10,7 +10,6 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
   },
-  // Override the projects to only include Chrome
   projects: [
     {
       name: "chromium",
@@ -19,6 +18,7 @@ export default defineConfig({
     {
       name: "Mobile Chrome",
       use: { ...devices["Pixel 5"] },
+      workers: 1,
     },
   ],
 });
