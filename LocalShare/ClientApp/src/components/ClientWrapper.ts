@@ -6,13 +6,14 @@ import { ClientConnectionInfo } from "../models/messages/ClientInfo";
 import { ClientSelectedEvent } from "../models/events/ClientSelectedEvent";
 import "./WaveProgress";
 import { classMap } from "lit/directives/class-map.js";
-import { scaleUpAnimation } from "../styles/sharedStyle";
+import { accessibility, scaleUpAnimation } from "../styles/sharedStyle";
 import { TransferStatus } from "../models/TransferStatus";
 
 @customElement("client-wrapper")
 export class ClientWrapper extends LitElement {
   static styles = [
     scaleUpAnimation,
+    accessibility,
     css`
       .client-wrapper {
         display: flex;
@@ -112,6 +113,7 @@ export class ClientWrapper extends LitElement {
 
   render() {
     return html`
+    <h2 class="sr-only">Devices available on network</h2>
       <div
         class="client-wrapper ${classMap({
           "force-center-justify": this.clients.length < 3,
@@ -128,13 +130,14 @@ export class ClientWrapper extends LitElement {
                 return html`
                   <div class="file-input-wrapper">
                     <label
-                    tabindex="0"
+                    tabindex="${clientStatus === TransferStatus.Pending ? -1 : 0}"
                     @keyup=${(event: KeyboardEvent) => this._onLabelKeyUp(event, client)}
                       class="${classMap({
                         disabled: clientStatus === TransferStatus.Pending,
                       })}"
                       for="file-input-${client.id}"
                     >
+                    <span class="sr-only">Select file to send to</span>
                       <connected-client icon="phone" .client=${client}>
                         <wave-progress
                           .client=${client}
