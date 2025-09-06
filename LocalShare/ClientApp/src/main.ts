@@ -285,6 +285,7 @@ export class App extends LitElement {
                 <button
                   @click=${() => this.dialogController.confirm()}
                   class="btn primary"
+                  autofocus
                 >
                   <span>OK</span>
                 </button>
