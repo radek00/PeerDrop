@@ -7,10 +7,11 @@ import {
   ProgressUpdateEvent,
 } from "../models/events/ProgressUpdateEvent";
 import { TransferStatus } from "../models/TransferStatus";
+import { accessibility } from "../styles/sharedStyle";
 
 @customElement("wave-progress")
 export class WaveProgress extends LitElement {
-  static styles = css`
+  static styles = [accessibility,css`
     .wave-container {
       position: absolute;
       width: 100%;
@@ -130,13 +131,14 @@ export class WaveProgress extends LitElement {
     .error {
       background-color: red;
     }
-  `;
+  `];
 
   @query(".wave-container") private container!: HTMLDivElement;
   @query(".wave-change") private waveChange!: HTMLDivElement;
   @query(".wave-percentage") private wavePercentage!: HTMLDivElement;
   @query(".checkmark") private checkmark!: HTMLDivElement;
   @query(".error") private error!: HTMLDivElement;
+  @query(".announcement") private announcement!: HTMLDivElement;
 
   constructor() {
     super();
@@ -165,7 +167,9 @@ export class WaveProgress extends LitElement {
     this.container.style.display = "block";
 
     if (progresTuple[1] === TransferStatus.InProgress) {
-      this.wavePercentage.textContent = `${progresTuple[0]}%`;
+      const progress = progresTuple[0].toString();
+      this.wavePercentage.textContent = `${progress}%`;
+      this.waveChange.setAttribute("aria-valuenow", progress);
       const containerHeight = this.container.offsetHeight;
       const position =
         initialPosition + containerHeight * (progresTuple[0] / 100) + 10;
@@ -177,9 +181,11 @@ export class WaveProgress extends LitElement {
       this.checkmark.classList.remove("visible");
       this.error.classList.remove("visible");
       this.waveChange.style.bottom = `${initialPosition}px`;
+      this.announcement.textContent = "";
     } else if (progresTuple[1] === TransferStatus.Completed) {
       this.wavePercentage.classList.add("hidden");
       this.waveChange.style.display = "none";
+      this.announcement.textContent = "File upload completed successfully";
       setTimeout(() => {
         if (this.checkmark) {
           this.checkmark.classList.add("visible");
@@ -191,9 +197,11 @@ export class WaveProgress extends LitElement {
     ) {
       this.wavePercentage.classList.add("hidden");
       this.waveChange.style.display = "none";
+      this.announcement.textContent = "File upload failed";
       setTimeout(() => {
         if (this.error) {
           this.error.classList.add("visible");
+          this.error.setAttribute("aria-hidden", "false");
         }
       }, 300);
     }
@@ -201,19 +209,21 @@ export class WaveProgress extends LitElement {
 
   render() {
     return html`
-      <div class="wave-container">
-        <div class="wave-change"></div>
-        <div class="wave-percentage"></div>
-        <div class="checkmark" data-testid="upload-success">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <div class="wave-container" aria-label="File transfer progress">
+        <div class="wave-change"></div>"
+        <div class="wave-percentage" role="progressbar" aria-valuenow="0"></div>
+        <div class="checkmark" data-testid="upload-success" aria-hidden="true">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path class="path" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <div class="error" data-testid="upload-error">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <div class="error" data-testid="upload-error" aria-hidden="true">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path d="M6 6 L18 18 M18 6 L6 18"></path>
           </svg>
         </div>
+        <!-- Screen reader announcement region -->
+        <div class="announcement sr-only" aria-live="polite"></div>
       </div>
     `;
   }
