@@ -55,7 +55,7 @@ test.describe.parallel("File upload and download", () => {
 
   test("file is uploaded and received by connected client", async () => {
     const client2Name = await getClientName(page2);
-    const fileName = (new Date()).getTime().toString(36) + ".txt";
+    const fileName = new Date().getTime().toString(36) + ".txt";
     await uploadFileToClient(
       page1,
       client2Name,
@@ -89,7 +89,7 @@ test.describe.parallel("File upload and download", () => {
 
   test("file upload can be cancelled", async () => {
     const client2Name = await getClientName(page2);
-    const fileName = (new Date()).getTime().toString(36) + ".txt";
+    const fileName = new Date().getTime().toString(36) + ".txt";
     await uploadFileToClient(
       page1,
       client2Name,
@@ -129,7 +129,7 @@ test.describe.parallel("File upload and download", () => {
 
   test("File transfer can be rejected by the recipient", async () => {
     const client2Name = await getClientName(page2);
-    const fileName = (new Date()).getTime().toString(36) + ".txt";
+    const fileName = new Date().getTime().toString(36) + ".txt";
     await uploadFileToClient(
       page1,
       client2Name,
