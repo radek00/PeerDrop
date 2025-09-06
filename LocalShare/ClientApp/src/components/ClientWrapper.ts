@@ -20,8 +20,8 @@ export class ClientWrapper extends LitElement {
         align-items: center;
         gap: 2.5rem;
         height: 100%;
-        width: 100vw;
-        overflow-x: scroll;
+        width: 100%;
+        overflow-x: auto;
         justify-content: space-around;
       }
 
