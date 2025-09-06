@@ -11,127 +11,130 @@ import { accessibility } from "../styles/sharedStyle";
 
 @customElement("wave-progress")
 export class WaveProgress extends LitElement {
-  static styles = [accessibility, css`
-    .wave-container {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      border-radius: 50%;
-      overflow: hidden;
-      display: none; /* Initially hidden */
-      background-color: var(--wave-bg);
-    }
-
-    .wave-change {
-      position: absolute;
-      left: 50%;
-      bottom: -135px; /* Start position */
-      transition: bottom 0.5s ease-in-out;
-
-      &::before,
-      &::after {
-        content: "";
+  static styles = [
+    accessibility,
+    css`
+      .wave-container {
         position: absolute;
-        width: 400px;
-        height: 400px;
-        bottom: 0;
+        width: 100%;
+        height: 100%;
+        top: 50%;
         left: 50%;
-        background-color: var(--wave-color-1);
-        border-radius: 48% 47% 43% 46%;
-        transform: translate(-50%, 70%) rotate(0);
-        animation: rotate 7s linear infinite;
-        z-index: 1;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        overflow: hidden;
+        display: none; /* Initially hidden */
+        background-color: var(--wave-bg);
       }
 
-      &::after {
-        border-radius: 47% 42% 46% 44%;
-        background-color: var(--wave-color-2);
-        transform: translate(-50%, 70%) rotate(0);
-        animation: rotate 9s linear -4s infinite;
-        z-index: 2;
-      }
-    }
+      .wave-change {
+        position: absolute;
+        left: 50%;
+        bottom: -135px; /* Start position */
+        transition: bottom 0.5s ease-in-out;
 
-    .wave-percentage {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 1.25rem;
-      font-weight: bold;
-      color: white;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-      z-index: 10;
-      opacity: 1;
-      transition: opacity 0.3s ease-out;
+        &::before,
+        &::after {
+          content: "";
+          position: absolute;
+          width: 400px;
+          height: 400px;
+          bottom: 0;
+          left: 50%;
+          background-color: var(--wave-color-1);
+          border-radius: 48% 47% 43% 46%;
+          transform: translate(-50%, 70%) rotate(0);
+          animation: rotate 7s linear infinite;
+          z-index: 1;
+        }
 
-      &.hidden {
-        opacity: 0;
-      }
-    }
-
-    @keyframes rotate {
-      50% {
-        transform: translate(-50%, 70%) rotate(180deg);
-      }
-      100% {
-        transform: translate(-50%, 70%) rotate(360deg);
-      }
-    }
-
-    .checkmark,
-    .error {
-      position: absolute;
-      top: 30%;
-      left: 30%;
-      transform: scale(0);
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 10;
-      opacity: 0;
-      transition:
-        transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-        opacity 0.3s ease-in-out;
-
-      &.visible {
-        transform: scale(1);
-        opacity: 1;
-
-        path {
-          stroke-dashoffset: 0;
+        &::after {
+          border-radius: 47% 42% 46% 44%;
+          background-color: var(--wave-color-2);
+          transform: translate(-50%, 70%) rotate(0);
+          animation: rotate 9s linear -4s infinite;
+          z-index: 2;
         }
       }
 
-      svg {
-        width: 24px;
-        height: 24px;
-        fill: none;
-        stroke: white;
-        stroke-width: 2.5;
-        stroke-linecap: round;
-        stroke-linejoin: round;
+      .wave-percentage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: white;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+        z-index: 10;
+        opacity: 1;
+        transition: opacity 0.3s ease-out;
+
+        &.hidden {
+          opacity: 0;
+        }
       }
 
-      path {
-        stroke-dasharray: 30;
-        stroke-dashoffset: 30;
-        transition: stroke-dashoffset 0.5s ease-in-out 0.2s;
+      @keyframes rotate {
+        50% {
+          transform: translate(-50%, 70%) rotate(180deg);
+        }
+        100% {
+          transform: translate(-50%, 70%) rotate(360deg);
+        }
       }
-    }
-    .checkmark {
-      background-color: var(--checkmark-bg);
-    }
-    .error {
-      background-color: red;
-    }
-  `];
+
+      .checkmark,
+      .error {
+        position: absolute;
+        top: 30%;
+        left: 30%;
+        transform: scale(0);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        opacity: 0;
+        transition:
+          transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+          opacity 0.3s ease-in-out;
+
+        &.visible {
+          transform: scale(1);
+          opacity: 1;
+
+          path {
+            stroke-dashoffset: 0;
+          }
+        }
+
+        svg {
+          width: 24px;
+          height: 24px;
+          fill: none;
+          stroke: white;
+          stroke-width: 2.5;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
+
+        path {
+          stroke-dasharray: 30;
+          stroke-dashoffset: 30;
+          transition: stroke-dashoffset 0.5s ease-in-out 0.2s;
+        }
+      }
+      .checkmark {
+        background-color: var(--checkmark-bg);
+      }
+      .error {
+        background-color: red;
+      }
+    `,
+  ];
 
   @query(".wave-container") private container!: HTMLDivElement;
   @query(".wave-change") private waveChange!: HTMLDivElement;
@@ -210,15 +213,24 @@ export class WaveProgress extends LitElement {
   render() {
     return html`
       <div class="wave-container" aria-label="File transfer progress">
-        <div class="wave-change"></div>"
+        <div class="wave-change"></div>
+        "
         <div class="wave-percentage" role="progressbar" aria-valuenow="0"></div>
         <div class="checkmark" data-testid="upload-success" aria-hidden="true">
-          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <svg
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+          >
             <path class="path" d="M5 13l4 4L19 7" />
           </svg>
         </div>
         <div class="error" data-testid="upload-error" aria-hidden="true">
-          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <svg
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+          >
             <path d="M6 6 L18 18 M18 6 L6 18"></path>
           </svg>
         </div>

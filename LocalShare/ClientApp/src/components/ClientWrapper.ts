@@ -113,7 +113,7 @@ export class ClientWrapper extends LitElement {
 
   render() {
     return html`
-    <h2 class="sr-only">Devices available on network</h2>
+      <h2 class="sr-only">Devices available on network</h2>
       <div
         class="client-wrapper ${classMap({
           "force-center-justify": this.clients.length < 3,
@@ -130,14 +130,17 @@ export class ClientWrapper extends LitElement {
                 return html`
                   <div class="file-input-wrapper">
                     <label
-                    tabindex="${clientStatus === TransferStatus.Pending ? -1 : 0}"
-                    @keyup=${(event: KeyboardEvent) => this._onLabelKeyUp(event, client)}
+                      tabindex="${clientStatus === TransferStatus.Pending
+                        ? -1
+                        : 0}"
+                      @keyup=${(event: KeyboardEvent) =>
+                        this._onLabelKeyUp(event, client)}
                       class="${classMap({
                         disabled: clientStatus === TransferStatus.Pending,
                       })}"
                       for="file-input-${client.id}"
                     >
-                    <span class="sr-only">Select file to send to</span>
+                      <span class="sr-only">Select file to send to</span>
                       <connected-client icon="phone" .client=${client}>
                         <wave-progress
                           .client=${client}

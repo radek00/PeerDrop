@@ -104,7 +104,8 @@ export class App extends LitElement {
   dialogController = new ConfirmDialogController(this);
   constructor() {
     super();
-    const isReduced = window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true;
+    const isReduced =
+      window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true;
     if (!isReduced) {
       this.grid.start();
     }

@@ -113,11 +113,10 @@ export const accessibility = css`
   *,
   *::before,
   *::after {
-            @media (prefers-reduced-motion: reduce) {
-          animation-duration: 0.01ms !important;
-          animation-iteration-count: 1 !important;
-          transition: none !important;
-        }
-
+    @media (prefers-reduced-motion: reduce) {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition: none !important;
+    }
   }
 `;

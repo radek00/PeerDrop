@@ -59,7 +59,9 @@ export class ConfirmDialog extends LitElement {
   ];
 
   updated() {
-    const dialog = this.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+    const dialog = this.shadowRoot?.querySelector(
+      "dialog"
+    ) as HTMLDialogElement;
     if (dialog && !dialog.open) {
       dialog.showModal();
     }
