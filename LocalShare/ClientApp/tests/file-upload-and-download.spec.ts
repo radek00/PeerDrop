@@ -115,6 +115,7 @@ test.describe.parallel("File upload and download", () => {
     await button.click();
     (await downloadPromise).cancel();
 
+    await page1.waitForTimeout(2000);
     const cancellationDialog = page1
       .locator("confirm-dialog", { hasText: "Transfer cancelled" })
       .first();
