@@ -130,6 +130,7 @@ export class ClientWrapper extends LitElement {
                 return html`
                   <div class="file-input-wrapper">
                     <label
+                      aria-label="Select file to send to ${client.name}"
                       tabindex="${clientStatus === TransferStatus.Pending
                         ? -1
                         : 0}"
@@ -140,7 +141,6 @@ export class ClientWrapper extends LitElement {
                       })}"
                       for="file-input-${client.id}"
                     >
-                      <span class="sr-only">Select file to send to</span>
                       <connected-client icon="phone" .client=${client}>
                         <wave-progress
                           .client=${client}
