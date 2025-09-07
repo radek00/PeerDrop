@@ -80,6 +80,7 @@ test.describe.parallel("File upload and download", () => {
       expect(data).toBe("Hello from client 1!");
     });
 
+    await page1.waitForTimeout(2000);
     const client = page1.locator("connected-client", { hasText: client2Name });
     await expect(client).toBeVisible();
 
@@ -123,6 +124,8 @@ test.describe.parallel("File upload and download", () => {
     //check accessibility of the cancellation dialog
     await checkAccessibility(page1);
     await confirmationButton.click();
+
+    await page1.waitForTimeout(2000);
 
     const client = page1.locator("connected-client", { hasText: client2Name });
     await expect(client).toBeVisible();
