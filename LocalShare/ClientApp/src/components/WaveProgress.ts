@@ -214,7 +214,12 @@ export class WaveProgress extends LitElement {
     return html`
       <div class="wave-container">
         <div class="wave-change" aria-hidden="true"></div>
-        <div class="wave-percentage" role="progressbar" aria-valuenow="0" aria-label="File transfer progress"></div>
+        <div
+          class="wave-percentage"
+          role="progressbar"
+          aria-valuenow="0"
+          aria-label="File transfer progress"
+        ></div>
         <div class="checkmark" data-testid="upload-success" aria-hidden="true">
           <svg
             aria-hidden="true"
