@@ -81,7 +81,7 @@ test.describe.parallel("File upload and download", () => {
     });
 
     await page1.waitForTimeout(2000);
-    const client = page1.locator("connected-client", { hasText: client2Name });
+    const client = page1.locator("connected-client", { hasText: client2Name }).first();
     await expect(client).toBeVisible();
 
     const waveProgress = client.locator("wave-progress");
@@ -127,10 +127,10 @@ test.describe.parallel("File upload and download", () => {
 
     await page1.waitForTimeout(2000);
 
-    const client = page1.locator("connected-client", { hasText: client2Name });
+    const client = page1.locator("connected-client", { hasText: client2Name }).first();
     await expect(client).toBeVisible();
 
-    const waveProgress = client.locator("wave-progress");
+    const waveProgress = client.locator("wave-progress").first();
     const error = waveProgress.getByTestId("upload-error");
     await error.waitFor({ state: "visible", timeout: 15000 });
     await expect(error).toBeVisible();
