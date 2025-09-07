@@ -172,7 +172,7 @@ export class WaveProgress extends LitElement {
     if (progresTuple[1] === TransferStatus.InProgress) {
       const progress = progresTuple[0].toString();
       this.wavePercentage.textContent = `${progress}%`;
-      this.waveChange.setAttribute("aria-valuenow", progress);
+      this.wavePercentage.setAttribute("aria-valuenow", progress);
       const containerHeight = this.container.offsetHeight;
       const position =
         initialPosition + containerHeight * (progresTuple[0] / 100) + 10;
@@ -212,9 +212,9 @@ export class WaveProgress extends LitElement {
 
   render() {
     return html`
-      <div class="wave-container" aria-label="File transfer progress">
-        <div class="wave-change"></div>
-        <div class="wave-percentage" role="progressbar" aria-valuenow="0"></div>
+      <div class="wave-container">
+        <div class="wave-change" aria-hidden="true"></div>
+        <div class="wave-percentage" role="progressbar" aria-valuenow="0" aria-label="File transfer progress"></div>
         <div class="checkmark" data-testid="upload-success" aria-hidden="true">
           <svg
             aria-hidden="true"
