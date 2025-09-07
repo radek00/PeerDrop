@@ -1,5 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
-import { getClientName } from "./utils/utils";
+import { checkAccessibility, getClientName } from "./utils/utils";
 
 const uaClient1 =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36 TestClient/1.0";
@@ -44,6 +44,7 @@ test.describe.parallel("Peer Discovery and Information", () => {
     await expect(connectedClient).toContainText(remoteClientName);
     await expect(connectedClient).toContainText(remoteClientExpectedOs);
     await expect(connectedClient).toContainText(remoteClientExpectedDevice);
+    await checkAccessibility(page);
   }
 
   test("clients should correctly see each other with name, OS, and device information", async () => {
