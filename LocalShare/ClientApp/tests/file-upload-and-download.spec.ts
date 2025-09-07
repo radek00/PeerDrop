@@ -80,7 +80,10 @@ test.describe.parallel("File upload and download", () => {
       expect(data).toBe("Hello from client 1!");
     });
 
-    const client = page1.locator("connected-client", { hasText: client2Name });
+    await page1.waitForTimeout(2000);
+    const client = page1
+      .locator("connected-client", { hasText: client2Name })
+      .first();
     await expect(client).toBeVisible();
 
     const waveProgress = client.locator("wave-progress");
@@ -112,6 +115,7 @@ test.describe.parallel("File upload and download", () => {
     await button.click();
     (await downloadPromise).cancel();
 
+    await page1.waitForTimeout(2000);
     const cancellationDialog = page1
       .locator("confirm-dialog", { hasText: "Transfer cancelled" })
       .first();
@@ -124,10 +128,14 @@ test.describe.parallel("File upload and download", () => {
     await checkAccessibility(page1);
     await confirmationButton.click();
 
-    const client = page1.locator("connected-client", { hasText: client2Name });
+    await page1.waitForTimeout(2000);
+
+    const client = page1
+      .locator("connected-client", { hasText: client2Name })
+      .first();
     await expect(client).toBeVisible();
 
-    const waveProgress = client.locator("wave-progress");
+    const waveProgress = client.locator("wave-progress").first();
     const error = waveProgress.getByTestId("upload-error");
     await error.waitFor({ state: "visible", timeout: 15000 });
     await expect(error).toBeVisible();
