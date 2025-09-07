@@ -130,7 +130,7 @@ export class ClientWrapper extends LitElement {
                 return html`
                   <div class="file-input-wrapper">
                     <label
-                      aria-label="Select file to send to ${client.name}"
+                      aria-label="Select file to send to"
                       tabindex="${clientStatus === TransferStatus.Pending
                         ? -1
                         : 0}"

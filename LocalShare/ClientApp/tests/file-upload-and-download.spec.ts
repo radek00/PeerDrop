@@ -33,10 +33,7 @@ test.describe.parallel("File upload and download", () => {
     size?: number
   ) {
     const connectedClient = senderPage
-      .locator("connected-client")
-      .filter({
-        has: senderPage.locator(".client-name", { hasText: receiverName }),
-      })
+      .locator("connected-client", { hasText: receiverName })
       .first();
     await expect(connectedClient).toBeVisible();
     const label = connectedClient.locator("xpath=parent::label").first();
@@ -83,9 +80,7 @@ test.describe.parallel("File upload and download", () => {
       expect(data).toBe("Hello from client 1!");
     });
 
-    const client = page1
-      .locator("connected-client")
-      .filter({ has: page1.locator(".client-name", { hasText: client2Name }) });
+    const client = page1.locator("connected-client", { hasText: client2Name });
     await expect(client).toBeVisible();
 
     const waveProgress = client.locator("wave-progress");
@@ -129,9 +124,7 @@ test.describe.parallel("File upload and download", () => {
     await checkAccessibility(page1);
     await confirmationButton.click();
 
-    const client = page1
-      .locator("connected-client")
-      .filter({ has: page1.locator(".client-name", { hasText: client2Name }) });
+    const client = page1.locator("connected-client", { hasText: client2Name });
     await expect(client).toBeVisible();
 
     const waveProgress = client.locator("wave-progress");
