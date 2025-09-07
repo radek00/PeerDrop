@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { test, expect, Page, BrowserContext } from "@playwright/test";
 import { readFile } from "fs";
-import { getClientName } from "./utils/utils";
+import { checkAccessibility, getClientName } from "./utils/utils";
 
 test.describe.parallel("File upload and download", () => {
   let context1: BrowserContext;
@@ -69,6 +69,8 @@ test.describe.parallel("File upload and download", () => {
 
     const button = confirmDialog.locator("button", { hasText: "Yes" }).first();
     await expect(button).toBeVisible();
+    // Check accessibility of the confirmation dialog
+    await checkAccessibility(page2);
     const downloadPromise = page2.waitForEvent("download");
     await button.click();
     const download = await downloadPromise;
@@ -77,7 +79,7 @@ test.describe.parallel("File upload and download", () => {
       expect(err).toBeNull();
       expect(data).toBe("Hello from client 1!");
     });
-    await page1.waitForTimeout(2000);
+
     const client = page1.locator("connected-client", { hasText: client2Name });
     await expect(client).toBeVisible();
 
@@ -85,6 +87,8 @@ test.describe.parallel("File upload and download", () => {
     const checkmark = waveProgress.getByTestId("upload-success");
     await checkmark.waitFor({ state: "visible", timeout: 15000 });
     await expect(checkmark).toBeVisible();
+    // Check accessibility of the sender page after upload
+    await checkAccessibility(page1);
   });
 
   test("file upload can be cancelled", async () => {
@@ -116,6 +120,8 @@ test.describe.parallel("File upload and download", () => {
       .locator("button", { hasText: "OK" })
       .first();
     await expect(confirmationButton).toBeVisible();
+    //check accessibility of the cancellation dialog
+    await checkAccessibility(page1);
     await confirmationButton.click();
 
     const client = page1.locator("connected-client", { hasText: client2Name });
@@ -125,6 +131,8 @@ test.describe.parallel("File upload and download", () => {
     const error = waveProgress.getByTestId("upload-error");
     await error.waitFor({ state: "visible", timeout: 15000 });
     await expect(error).toBeVisible();
+    // Check accessibility of the sender page after cancellation
+    await checkAccessibility(page1);
   });
 
   test("File transfer can be rejected by the recipient", async () => {
@@ -152,5 +160,7 @@ test.describe.parallel("File upload and download", () => {
 
     await rejectedDialog.waitFor({ state: "visible", timeout: 15000 });
     await expect(rejectedDialog).toBeVisible();
+    // Check accessibility of the rejection dialog
+    await checkAccessibility(page1);
   });
 });
