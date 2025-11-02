@@ -37,9 +37,9 @@ test.describe.parallel("Peer Discovery and Information", () => {
     remoteClientExpectedOs: string,
     remoteClientExpectedDevice: string
   ) {
-    const connectedClient = page.getByTestId(
-      `connected-client-${remoteClientName}`
-    );
+    const connectedClient = page
+      .getByTestId(`connected-client-${remoteClientName}`)
+      .first();
     await expect(connectedClient).toBeVisible();
     await expect(connectedClient).toContainText(remoteClientName);
     await expect(connectedClient).toContainText(remoteClientExpectedOs);

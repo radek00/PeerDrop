@@ -32,9 +32,9 @@ test.describe.parallel("File upload and download", () => {
     fileContent: string,
     size?: number
   ) {
-    const connectedClient = senderPage.getByTestId(
-      `connected-client-${receiverName}`
-    );
+    const connectedClient = senderPage
+      .getByTestId(`connected-client-${receiverName}`)
+      .first();
     await expect(connectedClient).toBeVisible();
     const fileInput = connectedClient.locator('input[type="file"]').first();
 
@@ -79,7 +79,8 @@ test.describe.parallel("File upload and download", () => {
       expect(data).toBe("Hello from client 1!");
     });
 
-    const client = page1.getByTestId(`connected-client-${client2Name}`);
+    //todo: calling first should not be required. Tests only fail on pipelines
+    const client = page1.getByTestId(`connected-client-${client2Name}`).first();
     await expect(client).toBeVisible();
 
     const waveProgress = client.locator("wave-progress");
@@ -123,7 +124,7 @@ test.describe.parallel("File upload and download", () => {
     await checkAccessibility(page1);
     await confirmationButton.click();
 
-    const client = page1.getByTestId(`connected-client-${client2Name}`);
+    const client = page1.getByTestId(`connected-client-${client2Name}`).first();
     await expect(client).toBeVisible();
 
     const waveProgress = client.locator("wave-progress");
