@@ -3,6 +3,7 @@ import * as playwrightConfig from "./playwright.config";
 
 export default defineConfig({
   ...playwrightConfig,
+  workers: process.env.CI ? 1 : undefined,
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: "http://localhost:5001",
