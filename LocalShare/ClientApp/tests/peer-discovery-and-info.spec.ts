@@ -1,4 +1,4 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect, Page, BrowserContext } from "@playwright/test";
 import { checkAccessibility, getClientName } from "./utils/utils";
 
 const uaClient1 =
@@ -12,10 +12,10 @@ const expectedOsClient2 = "Mac OS X";
 const expectedDeviceClient2 = "Firefox";
 
 test.describe.parallel("Peer Discovery and Information", () => {
-  let context1;
-  let page1;
-  let context2;
-  let page2;
+  let context1: BrowserContext;
+  let page1: Page;
+  let context2: BrowserContext;
+  let page2: Page;
 
   test.beforeEach(async ({ browser }) => {
     context1 = await browser.newContext({ userAgent: uaClient1 });
