@@ -37,9 +37,9 @@ test.describe.parallel("Peer Discovery and Information", () => {
     remoteClientExpectedOs: string,
     remoteClientExpectedDevice: string
   ) {
-    const connectedClient = page
-      .locator("connected-client", { hasText: remoteClientName })
-      .first();
+    const connectedClient = page.getByTestId(
+      `connected-client-${remoteClientName}`
+    );
     await expect(connectedClient).toBeVisible();
     await expect(connectedClient).toContainText(remoteClientName);
     await expect(connectedClient).toContainText(remoteClientExpectedOs);
@@ -87,9 +87,9 @@ test.describe.parallel("Peer Discovery and Information", () => {
 
     for (const currentPage of pages) {
       for (const clientName of currentPage.expectedClients) {
-        const clients = currentPage.page.locator("connected-client", {
-          hasText: clientName,
-        });
+        const clients = currentPage.page.getByTestId(
+          `connected-client-${clientName}`
+        );
         await expect(clients).toBeVisible();
       }
     }
@@ -99,9 +99,9 @@ test.describe.parallel("Peer Discovery and Information", () => {
     }
 
     for (const currentPage of pages) {
-      const clients = currentPage.page.locator("connected-client", {
-        hasText: client3Name,
-      });
+      const clients = currentPage.page.getByTestId(
+        `connected-client-${client3Name}`
+      );
       await expect(clients).toHaveCount(0);
     }
   });
