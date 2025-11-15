@@ -140,6 +140,7 @@ export class ClientWrapper extends LitElement {
                         disabled: clientStatus === TransferStatus.Pending,
                       })}"
                       for="file-input-${client.id}"
+                      data-testid="connected-client-${client.name}"
                     >
                       <connected-client icon="phone" .client=${client}>
                         <wave-progress
