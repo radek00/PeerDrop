@@ -113,7 +113,8 @@ export class WebRtcPeer {
     );
     this.fileTransferChannel =
       this._peerConnection.createDataChannel("file-transfer");
-    this.fileTransferChannel.bufferedAmountLowThreshold = 1024 * 1024 * 10;
+    this.fileTransferChannel.bufferedAmountLowThreshold =
+      (this._peerConnection.sctp?.maxMessageSize || 65536) * 2;
 
     this.metadataChannel.onopen = this._handleMetadataChannelOpen.bind(this);
     this.metadataChannel.onmessage = this._handleMetadataMessage;
@@ -233,7 +234,8 @@ export class WebRtcPeer {
   // --- File Transfer Logic ---
 
   private sendFileData() {
-    const chunkSize = 65536; // 64KB
+    const chunkSize = this._peerConnection.sctp?.maxMessageSize || 65536;
+    debugLog("Using chunk size:", chunkSize);
     const fileReader = new FileReader();
     let offset = 0;
 
