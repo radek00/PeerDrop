@@ -123,7 +123,7 @@ export class WebRtcPeer {
         this._peerConnection.sctp?.maxMessageSize || 65536,
         1024 * 1024 * 5
       );
-      this.fileTransferChannel!.bufferedAmountLowThreshold = maxMessageSize * 2;
+      this.fileTransferChannel!.bufferedAmountLowThreshold = maxMessageSize;
     };
     this.fileTransferChannel.addEventListener(
       "close",
