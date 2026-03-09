@@ -19,12 +19,12 @@
     "lit": "^3.3.2"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.0",
-    "@playwright/test": "^1.57.0",
-    "@types/node": "^25.0.8",
-    "prettier": "^3.7.4",
+    "@axe-core/playwright": "^4.11.1",
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.4.0",
+    "prettier": "^3.8.1",
     "typescript": "~5.9.3",
     "vite": "^7.3.1",
-    "vite-plugin-mkcert": "^1.17.9"
+    "vite-plugin-mkcert": "^1.17.10"
   }
 }
