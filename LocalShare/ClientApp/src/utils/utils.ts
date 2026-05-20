@@ -23,6 +23,9 @@ export async function registerServiceWorker(): Promise<boolean> {
       }
 
       await navigator.serviceWorker.ready;
+      setInterval(() => {
+        navigator.serviceWorker.controller?.postMessage("ping");
+      }, 10000);
       return true;
     } catch (error) {
       console.error(`Registration failed with ${error}`);
