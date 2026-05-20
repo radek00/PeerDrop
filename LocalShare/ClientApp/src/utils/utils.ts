@@ -7,29 +7,29 @@ export function fileSize(size: number) {
   );
 }
 
-export async function registerServiceWorker() {
+export async function registerServiceWorker(): Promise<boolean> {
   if ("serviceWorker" in navigator) {
     try {
       const registration = await navigator.serviceWorker.register(
         `${import.meta.env.BASE_URL}${import.meta.env.VITE_WORKER}`,
-        { scope: "/", type: "module" }
+        { type: "module", scope: "/" }
       );
-      const devMode = import.meta.env.DEV;
-      if (devMode) {
-        if (registration.installing) {
-          debugLog("Service worker installing");
-        } else if (registration.waiting) {
-          debugLog("Service worker installed");
-        } else if (registration.active) {
-          debugLog("Service worker active");
-        }
+      if (registration.installing) {
+        debugLog("Service worker installing");
+      } else if (registration.waiting) {
+        debugLog("Service worker installed");
+      } else if (registration.active) {
+        debugLog("Service worker active");
       }
-      setInterval(() => {
-        navigator.serviceWorker.controller?.postMessage("ping");
-      }, 10000);
+
+      await navigator.serviceWorker.ready;
+      return true;
     } catch (error) {
       console.error(`Registration failed with ${error}`);
+      return false;
     }
+  } else {
+    return false;
   }
 }
 
