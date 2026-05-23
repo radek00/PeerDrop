@@ -147,10 +147,10 @@ export class App extends LitElement {
   }
 
   private _updateLoadingState() {
-    if (this._currentClient == null) {
-      this._loadingState = LoadingState.Loading;
-    } else if (this._workerRegistrationFailed) {
+    if (this._workerRegistrationFailed) {
       this._loadingState = LoadingState.WorkerRegistrationFailed;
+    } else if (this._currentClient == null) {
+      this._loadingState = LoadingState.Loading;
     } else {
       this._loadingState = LoadingState.Loaded;
     }
@@ -293,9 +293,9 @@ export class App extends LitElement {
 
   render() {
     return html` ${this._loadingState === LoadingState.Loading
-      ? html`<div class="overlay overlay loading">Loading...</div>`
+      ? html`<div class="overlay loading">Loading...</div>`
       : this._loadingState === LoadingState.WorkerRegistrationFailed
-        ? html`<div class="overlay overlay error">
+        ? html`<div class="overlay error">
             Your browser does not support the features required to use Peerdrop.
             Please try using a different browser.
           </div>`
