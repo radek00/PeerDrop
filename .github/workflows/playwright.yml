@@ -20,6 +20,7 @@ jobs:
         with:
           node-version: lts/*
           cache: "pnpm"
+          cache-dependency-path: ./LocalShare/ClientApp/pnpm-lock.yaml
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
