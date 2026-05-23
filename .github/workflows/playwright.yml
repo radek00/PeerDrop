@@ -12,15 +12,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@8912a9102ac27614460f54aedde9e1e7f9aec20d # v6.0.5
+        with:
+          version: 10
       - uses: actions/setup-node@v4
-      - uses: actions/setup-dotnet@v4
         with:
           node-version: lts/*
+          cache: "pnpm"
+          cache-dependency-path: ./LocalShare/ClientApp/pnpm-lock.yaml
+      - uses: actions/setup-dotnet@v4
+        with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
         working-directory: ./LocalShare/ClientApp
-        run: npm install -g pnpm && pnpm install
+        run: pnpm install
 
       - name: Install Playwright Browsers
         working-directory: ./LocalShare/ClientApp
@@ -45,5 +52,5 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: playwright-report/
+          path: ./LocalShare/ClientApp/playwright-report/
           retention-days: 30

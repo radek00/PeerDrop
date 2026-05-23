@@ -26,8 +26,8 @@ import { fileSize, registerServiceWorker } from "./utils/utils";
 import "./icons/PeerIcon";
 import "./components/HeaderIcons";
 import { TransferStatus } from "./models/TransferStatus";
+import { LoadingState } from "./models/enums/LoadingState";
 
-registerServiceWorker();
 @customElement("app-component")
 export class App extends LitElement {
   static styles = [
@@ -70,7 +70,8 @@ export class App extends LitElement {
         margin-bottom: 1.5rem;
         line-height: 1.6;
       }
-      .loading-overlay {
+
+      .overlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -80,8 +81,14 @@ export class App extends LitElement {
         justify-content: center;
         align-items: center;
         z-index: 9999;
-        color: white;
-        font-size: 2em;
+        color: var(--text-primary);
+        text-align: center;
+        &.error {
+          font-size: 1.2em;
+        }
+        &.loading {
+          font-size: 2em;
+        }
       }
     `,
   ];
@@ -91,7 +98,9 @@ export class App extends LitElement {
   private _clients: ClientConnectionInfo[] = [];
   @state()
   private _currentClient: ClientConnectionInfo | null = null;
-
+  @state()
+  private _loadingState = LoadingState.Loading;
+  private _workerRegistrationFailed = false;
   private _connectionMap: Map<string, WebRtcPeer> = new Map();
 
   @state()
@@ -104,6 +113,10 @@ export class App extends LitElement {
   dialogController = new ConfirmDialogController(this);
   constructor() {
     super();
+    registerServiceWorker().then((status: boolean) => {
+      this._workerRegistrationFailed = !status;
+      this._updateLoadingState();
+    });
     const isReduced =
       window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true;
     if (!isReduced) {
@@ -132,11 +145,23 @@ export class App extends LitElement {
     );
     this.connection.on(SignallingEvents.ReceiveAnswer, this.receiveAnswer);
   }
+
+  private _updateLoadingState() {
+    if (this._workerRegistrationFailed) {
+      this._loadingState = LoadingState.WorkerRegistrationFailed;
+    } else if (this._currentClient == null) {
+      this._loadingState = LoadingState.Loading;
+    } else {
+      this._loadingState = LoadingState.Loaded;
+    }
+  }
+
   updateSelf(allClientsInfo: AllClientsConnectionInfo) {
     this._currentClient = allClientsInfo.self;
     this._clients = allClientsInfo.otherClients;
     if (this._clients.length > 0 && this.grid.state === AnimationState.IDLE)
       this.grid.toggleState();
+    this._updateLoadingState();
   }
 
   addConnectedClient(clientInfo: ClientConnectionInfo) {
@@ -267,14 +292,19 @@ export class App extends LitElement {
   }
 
   render() {
-    return html` ${this._currentClient === null
-      ? html`<div class="loading-overlay">Loading...</div>`
-      : html` <client-wrapper
-            @onClientSelected=${this._clientSelectedListener}
-            .clients=${this._clients}
-            .clientsInProgress=${this._clientsInProgress}
-          ></client-wrapper>
-          <div class="client-main">${this.getCurrentClient()}</div>`}
+    return html` ${this._loadingState === LoadingState.Loading
+      ? html`<div class="overlay loading">Loading...</div>`
+      : this._loadingState === LoadingState.WorkerRegistrationFailed
+        ? html`<div class="overlay error">
+            Your browser does not support the features required to use Peerdrop.
+            Please try using a different browser.
+          </div>`
+        : html` <client-wrapper
+              @onClientSelected=${this._clientSelectedListener}
+              .clients=${this._clients}
+              .clientsInProgress=${this._clientsInProgress}
+            ></client-wrapper>
+            <div class="client-main">${this.getCurrentClient()}</div>`}
     ${this.dialogController.isRevealed
       ? html`<confirm-dialog
           @confirm=${() => this.dialogController.confirm()}
