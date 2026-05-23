@@ -81,7 +81,7 @@ export class App extends LitElement {
         justify-content: center;
         align-items: center;
         z-index: 9999;
-        color: white;
+        color: var(--text-primary);
         text-align: center;
         &.error {
           font-size: 1.2em;
@@ -296,7 +296,7 @@ export class App extends LitElement {
       ? html`<div class="overlay overlay loading">Loading...</div>`
       : this._loadingState === LoadingState.WorkerRegistrationFailed
         ? html`<div class="overlay overlay error">
-            Your browser does not support the features required to use PeerDrop.
+            Your browser does not support the features required to use Peerdrop.
             Please try using a different browser.
           </div>`
         : html` <client-wrapper
