@@ -100,7 +100,7 @@ export class App extends LitElement {
   private _currentClient: ClientConnectionInfo | null = null;
   @state()
   private _loadingState = LoadingState.Loading;
-  private _workerRegistrationFailed = false;
+  private _workerRegistrationFailed = true;
   private _connectionMap: Map<string, WebRtcPeer> = new Map();
 
   @state()
