@@ -14,7 +14,7 @@ RUN chmod 500 nsolid_setup_deb.sh
 RUN ./nsolid_setup_deb.sh 24
 RUN apt-get install nodejs -y
 RUN corepack enable
-RUN corepack prepare pnpm@latest-10 --activate
+RUN corepack prepare pnpm@latest-11 --activate
 
 COPY ["LocalShare/LocalShare.csproj", "LocalShare/"]
 

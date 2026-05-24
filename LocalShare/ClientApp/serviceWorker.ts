@@ -4,7 +4,7 @@ import { FileMetadata } from "./src/models/FileMetadata";
 import { sanitizeFilename, debugLog } from "./src/utils/utils";
 declare let self: ServiceWorkerGlobalScope;
 
-const CACHE_NAME = "asset-cache-v1.1.4";
+const CACHE_NAME = "asset-cache-v1.2.0";
 const ASSET_DESTINATIONS: RequestDestination[] = [
   "script",
   "style",
@@ -14,8 +14,8 @@ const ASSET_DESTINATIONS: RequestDestination[] = [
   "manifest",
 ];
 
-self.addEventListener("install", () => {
-  self.skipWaiting();
+self.addEventListener("install", (event) => {
+  event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener("activate", (event) => {
