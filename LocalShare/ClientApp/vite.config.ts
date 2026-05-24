@@ -2,6 +2,10 @@ import { fileURLToPath, URL } from "node:url";
 
 import { defineConfig, UserConfig } from "vite";
 import mkcert from "vite-plugin-mkcert";
+import _minifyHTML from 'rollup-plugin-minify-html-literals';
+
+// @ts-ignore
+const minifyHTML = _minifyHTML.default;
 
 const baseConfig: UserConfig = {
   plugins: [mkcert()],
@@ -44,6 +48,9 @@ export default defineConfig((config: UserConfig): UserConfig => {
           input: {
             app: "./index.html",
           },
+          plugins: [
+            minifyHTML()
+          ],
           output: {
             entryFileNames: () => "assets/js/[name]-[hash].js",
             codeSplitting: true,
