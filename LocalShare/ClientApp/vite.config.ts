@@ -46,7 +46,7 @@ export default defineConfig((config: UserConfig): UserConfig => {
           },
           output: {
             entryFileNames: () => "assets/js/[name]-[hash].js",
-            inlineDynamicImports: false,
+            codeSplitting: true,
           },
         },
       },
@@ -64,7 +64,7 @@ export default defineConfig((config: UserConfig): UserConfig => {
           },
           output: {
             entryFileNames: () => "[name].js",
-            inlineDynamicImports: true,
+            codeSplitting: false,
           },
         },
       },
