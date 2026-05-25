@@ -115,6 +115,9 @@ export class App extends LitElement {
     super();
     registerServiceWorker().then((status: boolean) => {
       this._workerRegistrationFailed = !status;
+      if (!this._workerRegistrationFailed) {
+        this.connection.start();
+      }
       this._updateLoadingState();
     });
     const isReduced =
@@ -122,7 +125,6 @@ export class App extends LitElement {
     if (!isReduced) {
       this.grid.start();
     }
-    this.connection.start();
     this.addConnectedClient = this.addConnectedClient.bind(this);
     this.updateSelf = this.updateSelf.bind(this);
     this.receiveOffer = this.receiveOffer.bind(this);
