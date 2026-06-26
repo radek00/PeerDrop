@@ -11,6 +11,7 @@
 		<PublishSingleFile>true</PublishSingleFile>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -27,7 +28,6 @@
 		<Exec WorkingDirectory="$(SpaRoot)" Command="pnpm install" />
 	</Target>
 
-	<!-- Docker / loose-files mode: build the SPA and copy dist output to the publish dir as physical files -->
 	<Target Name="PublishVite" AfterTargets="ComputeFilesToPublish" Condition="'$(PeerDropPackagingMode)' != 'Standalone'">
 		<Exec WorkingDirectory="$(SpaRoot)" Command="pnpm install" />
 		<Exec WorkingDirectory="$(SpaRoot)" Command="pnpm run build" />

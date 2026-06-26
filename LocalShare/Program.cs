@@ -38,7 +38,7 @@ builder.Services.AddSignalR(hubOptions =>
 #if STANDALONE
 // Standalone mode: serve the SPA from resources embedded in the single-file exe — nothing extracted to disk.
 builder.Services.AddSingleton<ISpaStaticFileProvider>(_ =>
-    new EmbeddedSpaStaticFileProvider(typeof(Program).Assembly, "LocalShare.ClientApp.dist"));
+    new EmbeddedSpaStaticFileProvider(typeof(Program).Assembly, "ClientApp/dist"));
 
 // Standalone mode: bind Kestrel to a self-signed HTTPS cert generated/persisted in local app data.
 //var certPath = Path.Combine(
