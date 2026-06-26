@@ -4,6 +4,12 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<SpaRoot>ClientApp\</SpaRoot>
+		<Configurations>Debug;Release;Standalone</Configurations>
+	</PropertyGroup>
+
+	<!-- Map the Standalone VS configuration to the packaging mode -->
+	<PropertyGroup Condition="'$(Configuration)' == 'Standalone'">
+		<PeerDropPackagingMode>Standalone</PeerDropPackagingMode>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(PeerDropPackagingMode)' == 'Standalone'">
