@@ -75,10 +75,6 @@ app.UseSpa(config =>
 
 app.MapHub<WebRtcSignallingHub>($"/signalr{WebRtcSignallingHub.Url}");
 
-#if !STANDALONE
-app.UseForwardedHeaders();
-#endif
-
 app.UseAuthorization();
 
 app.Run();
