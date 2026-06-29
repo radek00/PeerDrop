@@ -1,24 +1,32 @@
 using LocalShare.Hubs;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Net.Http.Headers;
+
+#if STANDALONE
+using LocalShare.Standalone;
+using Microsoft.AspNetCore.SpaServices.StaticFiles;
+
+#else
+using Microsoft.AspNetCore.HttpOverrides;
 using System.Net;
+
+#endif
 
 var builder = WebApplication.CreateBuilder(args);
 
+#if !STANDALONE
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders =
         ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
-        
+
     options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
-    
+
     // Trust all private networks commonly used by Docker
     options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("10.0.0.0"), 8));
     options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12));
 });
-
-builder.Services.AddControllers();
+#endif
 
 builder.Services.AddSignalR(hubOptions =>
 {
@@ -27,14 +35,25 @@ builder.Services.AddSignalR(hubOptions =>
     hubOptions.EnableDetailedErrors = true;
 });
 
+#if STANDALONE
+builder.Services.AddSingleton<ISpaStaticFileProvider>(_ =>
+    new EmbeddedSpaStaticFileProvider(typeof(Program).Assembly, "ClientApp/dist"));
+
+builder.WebHost.ConfigureKestrel((context, serverOptions) =>
+{
+    serverOptions.ListenAnyIP(5443);
+});
+#else
 builder.Services.AddSpaStaticFiles(config =>
 {
     config.RootPath = "ClientApp/dist";
 });
+#endif
 
 var app = builder.Build();
-
+#if !STANDALONE
 app.UseForwardedHeaders();
+#endif
 
 app.UseSpaStaticFiles(new StaticFileOptions()
 {
@@ -46,7 +65,6 @@ app.UseSpaStaticFiles(new StaticFileOptions()
             Public = true,
             MaxAge = TimeSpan.FromDays(400)
         };
-
     }
 });
 
@@ -57,10 +75,6 @@ app.UseSpa(config =>
 
 app.MapHub<WebRtcSignallingHub>($"/signalr{WebRtcSignallingHub.Url}");
 
-app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
-app.MapControllers();
 
 app.Run();
