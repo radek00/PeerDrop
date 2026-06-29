@@ -1,10 +1,14 @@
 using LocalShare.Hubs;
-using Microsoft.AspNetCore.SpaServices.StaticFiles;
 using Microsoft.Net.Http.Headers;
-
 
 #if STANDALONE
 using LocalShare.Standalone;
+using Microsoft.AspNetCore.SpaServices.StaticFiles;
+
+#else
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Net;
+
 #endif
 
 var builder = WebApplication.CreateBuilder(args);
