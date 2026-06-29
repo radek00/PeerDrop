@@ -28,8 +28,6 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 #endif
 
-builder.Services.AddControllers();
-
 builder.Services.AddSignalR(hubOptions =>
 {
     hubOptions.KeepAliveInterval = TimeSpan.FromSeconds(15);
@@ -55,7 +53,6 @@ builder.Services.AddSpaStaticFiles(config =>
 var app = builder.Build();
 #if !STANDALONE
 app.UseForwardedHeaders();
-app.UseHttpsRedirection();
 #endif
 
 app.UseSpaStaticFiles(new StaticFileOptions()
@@ -78,9 +75,10 @@ app.UseSpa(config =>
 
 app.MapHub<WebRtcSignallingHub>($"/signalr{WebRtcSignallingHub.Url}");
 
+#if !STANDALONE
+app.UseForwardedHeaders();
+#endif
 
 app.UseAuthorization();
-
-app.MapControllers();
 
 app.Run();
