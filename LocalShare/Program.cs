@@ -55,6 +55,7 @@ builder.Services.AddSpaStaticFiles(config =>
 var app = builder.Build();
 #if !STANDALONE
 app.UseForwardedHeaders();
+app.UseHttpsRedirection();
 #endif
 
 app.UseSpaStaticFiles(new StaticFileOptions()
