@@ -38,7 +38,11 @@ public class WebRtcSignallingHub : Hub
     {
         var httpContext = Context.GetHttpContext();
         var userAgent = HttpUserAgentParser.Parse(httpContext?.Request.Headers.UserAgent.ToString() ?? "").MapToUserAgent();
+#if STANDALONE
+        var ipAddr = "local";
+#else
         var ipAddr = (httpContext?.Connection.RemoteIpAddress?.ToString()) ?? throw new InvalidOperationException("Could not retrieve IP address.");
+#endif
 
         _logger.LogInformation("Client connected: {ConnectionId} from IP: {IpAddress}", Context.ConnectionId, ipAddr);
         var joinedClient = new ClientConnectionInfo() { Id = Context.ConnectionId, UserAgent = userAgent, Name = NameGenerator.GenerateName() };

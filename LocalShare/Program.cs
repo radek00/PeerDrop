@@ -1,12 +1,10 @@
 using LocalShare.Hubs;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.SpaServices.StaticFiles;
 using Microsoft.Net.Http.Headers;
-using System.Net;
+
 
 #if STANDALONE
 using LocalShare.Standalone;
-using Microsoft.Extensions.FileProviders;
 #endif
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,20 +34,12 @@ builder.Services.AddSignalR(hubOptions =>
 });
 
 #if STANDALONE
-// Standalone mode: serve the SPA from resources embedded in the single-file exe — nothing extracted to disk.
 builder.Services.AddSingleton<ISpaStaticFileProvider>(_ =>
     new EmbeddedSpaStaticFileProvider(typeof(Program).Assembly, "ClientApp/dist"));
 
-// Standalone mode: bind Kestrel to a self-signed HTTPS cert generated/persisted in local app data.
-//var certPath = Path.Combine(
-//    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-//    "PeerDrop", "cert.pfx");
-var httpsPort = StandaloneConfig.GetHttpsPort();
-//var cert = CertificateProvisioner.GetOrCreate(certPath);
-
-builder.WebHost.ConfigureKestrel(options =>
+builder.WebHost.ConfigureKestrel((context, serverOptions) =>
 {
-    options.ListenAnyIP(httpsPort);
+    serverOptions.ListenAnyIP(5443);
 });
 #else
 builder.Services.AddSpaStaticFiles(config =>
@@ -59,7 +49,6 @@ builder.Services.AddSpaStaticFiles(config =>
 #endif
 
 var app = builder.Build();
-
 #if !STANDALONE
 app.UseForwardedHeaders();
 #endif
@@ -84,14 +73,9 @@ app.UseSpa(config =>
 
 app.MapHub<WebRtcSignallingHub>($"/signalr{WebRtcSignallingHub.Url}");
 
-app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
-
-#if STANDALONE
-//app.Lifetime.ApplicationStarted.Register(() => StartupBanner.Print(cert, httpsPort));
-#endif
 
 app.Run();
